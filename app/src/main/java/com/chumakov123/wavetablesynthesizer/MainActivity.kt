@@ -34,12 +34,14 @@ import com.chumakov123.wavetablesynthesizer.ui.theme.WavetableSynthesizerTheme
 
 class MainActivity : ComponentActivity() {
     private val synthesizerViewModel: WavetableSynthesizerViewModel by viewModels()
-    private val synthesizer = LoggingWavetableSynthesizer()
+    private val synthesizer = NativeWavetableSynthesizer()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+        lifecycle.addObserver(synthesizer)
 
         synthesizerViewModel.wavetableSynthesizer = synthesizer
 
@@ -52,6 +54,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        lifecycle.removeObserver(synthesizer)
     }
 
     override fun onResume() {
