@@ -27,8 +27,13 @@ project("wavetablesynthesizer")
 # used in the AndroidManifest.xml file.
 add_library(${CMAKE_PROJECT_NAME} SHARED
     # List C/C++ source files with relative paths to this CMakeLists.txt.
+        WavetableFactory.cpp
         WavetableSynthesizer.cpp
+        OboeAudioPlayer.cpp
+        WavetableOscillator.cpp
         wavetablesynthesizer-native-lib.cpp)
+
+find_package(oboe REQUIRED CONFIG)
 
 include_directories(include)
 
@@ -37,5 +42,6 @@ include_directories(include)
 # build script, prebuilt third-party libraries, or Android system libraries.
 target_link_libraries(${CMAKE_PROJECT_NAME}
     # List libraries link to the target library
+    oboe::oboe
     android
     log)

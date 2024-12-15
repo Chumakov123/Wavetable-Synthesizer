@@ -19,6 +19,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags += "-std=c++2a"
+                arguments += "-DANDROID_STL=c++_shared"
             }
         }
     }
@@ -41,6 +42,7 @@ android {
     }
     buildFeatures {
         compose = true
+        prefab = true
     }
     externalNativeBuild {
         cmake {
@@ -69,4 +71,5 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.oboe)
 }
