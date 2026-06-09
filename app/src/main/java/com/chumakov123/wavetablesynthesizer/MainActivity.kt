@@ -224,7 +224,7 @@ fun WavetableSynthesizerApp(
                              onPress = {
                                  synthesizerViewModel.noteOn(freq)
                                  tryAwaitRelease()
-                                 synthesizerViewModel.noteOff()
+                                 synthesizerViewModel.noteOff(freq)
                              }
                          )
                      },

@@ -68,6 +68,7 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableOscillator::setFrequency(float frequency) {
+        _frequency = frequency;
         indexIncrement = frequency * static_cast<float>(waveTable.size()) /
                 static_cast<float>(sampleRate);
     }

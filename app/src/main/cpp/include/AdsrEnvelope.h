@@ -14,7 +14,7 @@ namespace wavetablesynthesizer {
         void noteOff();
         float getNextAmplitude();
 
-        bool isIdle() const { return _state == AdsrState::IDLE; }
+        bool isIdle() const { return _state.load(std::memory_order_acquire) == AdsrState::IDLE; }
 
         void setAttackTime(float time) { _attackTime = time; updateRates(); }
         void setDecayTime(float time) { _decayTime = time; updateRates(); }

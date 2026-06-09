@@ -106,15 +106,17 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setWavetabl
 
 JNIEXPORT void JNICALL
 Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_noteOn(JNIEnv *env, jobject thiz,
-                                                                          jlong synthesizerHandle) {
+                                                                          jlong synthesizerHandle,
+                                                                          jfloat frequencyInHz) {
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
-    if (synthesizer) synthesizer->noteOn();
+    if (synthesizer) synthesizer->noteOn(static_cast<float>(frequencyInHz));
 }
 
 JNIEXPORT void JNICALL
 Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_noteOff(JNIEnv *env, jobject thiz,
-                                                                           jlong synthesizerHandle) {
+                                                                           jlong synthesizerHandle,
+                                                                           jfloat frequencyInHz) {
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
-    if (synthesizer) synthesizer->noteOff();
+    if (synthesizer) synthesizer->noteOff(static_cast<float>(frequencyInHz));
 }
 }

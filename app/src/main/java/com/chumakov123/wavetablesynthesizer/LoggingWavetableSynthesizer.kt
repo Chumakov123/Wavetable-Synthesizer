@@ -33,11 +33,11 @@ class LoggingWavetableSynthesizer : WavetableSynthesizer {
         Log.d(TAG, "setWavetable() called with $wavetable.")
     }
 
-    override suspend fun noteOn() {
-        Log.d(TAG, "noteOn() called.")
+    override suspend fun noteOn(frequencyInHz: Float) {
+        Log.d(TAG, "noteOn() called with $frequencyInHz.")
     }
 
-    override suspend fun noteOff() {
-        Log.d(TAG, "noteOff() called.")
+    override suspend fun noteOff(frequencyInHz: Float) {
+        Log.d(TAG, "noteOff() called with $frequencyInHz.")
     }
 }

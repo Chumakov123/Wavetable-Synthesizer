@@ -22,11 +22,14 @@ namespace  wavetablesynthesizer {
         void noteOn();
         void noteOff();
         void resetEnvelope() { _envelope.reset(); }
+        bool isBusy() const { return !_envelope.isIdle(); }
+        float getFrequency() const { return _frequency; }
     private:
         static float interpolateLineary(const std::vector<float>& table, float indexValue);
 
         float index = 0.f;
         std::atomic<float> indexIncrement{0.f};
+        float _frequency = 0.f;
         std::vector<float> waveTable;
         float sampleRate = 48000.f;
         std::atomic<float> targetAmplitude{1.f};

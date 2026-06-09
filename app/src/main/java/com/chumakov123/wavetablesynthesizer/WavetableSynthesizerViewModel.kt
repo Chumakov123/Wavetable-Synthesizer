@@ -104,14 +104,13 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun noteOn(frequencyInHz: Float) {
         viewModelScope.launch {
-            wavetableSynthesizer?.setFrequency(frequencyInHz)
-            wavetableSynthesizer?.noteOn()
+            wavetableSynthesizer?.noteOn(frequencyInHz)
         }
     }
 
-    fun noteOff() {
+    fun noteOff(frequencyInHz: Float) {
         viewModelScope.launch {
-            wavetableSynthesizer?.noteOff()
+            wavetableSynthesizer?.noteOff(frequencyInHz)
         }
     }
 

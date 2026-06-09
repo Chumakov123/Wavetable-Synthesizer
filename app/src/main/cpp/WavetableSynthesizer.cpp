@@ -5,14 +5,19 @@
 #include "WavetableSynthesizer.h"
 #include "OboeAudioPlayer.h"
 #include "WavetableOscillator.h"
+#include "Mixer.h"
 
 namespace wavetablesynthesizer {
-    WavetableSynthesizer::WavetableSynthesizer()
-    : _oscillator{std::make_shared<WavetableOscillator>(
-            _wavetableFactory.getWaveTable(_currentWavetable)
-            ,sampleRate)},
-      _audioPlayer{
-              std::make_unique<OboeAudioPlayer>(_oscillator, sampleRate)} {}
+    WavetableSynthesizer::WavetableSynthesizer() {
+        auto mixer = std::make_shared<Mixer>();
+        for (int i = 0; i < MAX_VOICES; ++i) {
+            auto voice = std::make_shared<WavetableOscillator>(
+                _wavetableFactory.getWaveTable(_currentWavetable), sampleRate);
+            _voices.push_back(voice);
+            mixer->addSource(voice);
+        }
+        _audioPlayer = std::make_unique<OboeAudioPlayer>(mixer, sampleRate);
+    }
 
     WavetableSynthesizer::~WavetableSynthesizer() = default;
 
@@ -20,19 +25,17 @@ namespace wavetablesynthesizer {
         std::lock_guard<std::mutex> lock(_mutex);
         _isContinuousPlayActive = true;
         if (_isStreamOpen) {
-            _oscillator->noteOn();
+            _voices[0]->noteOn(); // Для режима слайдера используем первый голос
             return;
         }
 
         LOGD("play() called.");
-        _oscillator->resetEnvelope();
-        _oscillator->setAmplitude(_amplitude);
         _audioPlayer->stop();
 
         const auto result = _audioPlayer->play();
         if (result == 0) {
             _isStreamOpen = true;
-            _oscillator->noteOn();
+            _voices[0]->noteOn();
         } else {
             LOGD("Could not start playback.");
         }
@@ -42,7 +45,9 @@ namespace wavetablesynthesizer {
         std::lock_guard<std::mutex> lock(_mutex);
         if (!_isContinuousPlayActive) return;
         LOGD("stop() called.");
-        _oscillator->noteOff();
+        for (auto& voice : _voices) {
+            voice->noteOff();
+        }
         _isContinuousPlayActive = false;
     }
 
@@ -51,8 +56,7 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableSynthesizer::setFrequency(float frequencyInHz) {
-        _oscillator->setFrequency(frequencyInHz);
-        //LOGD("setFrequency() called with %.2f Hz argument", frequencyInHz);
+        _voices[0]->setFrequency(frequencyInHz);
     }
 
     float dbToAmplitude(float dB) {
@@ -61,41 +65,54 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::setVolume(float volumeInDb) {
         _amplitude = dbToAmplitude(volumeInDb);
-        _oscillator->setAmplitude(_amplitude);
-        //LOGD("setVolume() called with %.2f dB argument", volumeInDb);
+        for (auto& voice : _voices) {
+            voice->setAmplitude(_amplitude);
+        }
     }
 
     void WavetableSynthesizer::setWavetable(Wavetable wavetable) {
         if (_currentWavetable != wavetable) {
             _currentWavetable = wavetable;
-            _oscillator->setWavetable(_wavetableFactory.getWaveTable(wavetable));
-        }
-
-        //LOGD("setWavetable() called with %.d argument", static_cast<int>(wavetable));
-    }
-
-    void WavetableSynthesizer::noteOn() {
-        std::lock_guard<std::mutex> lock(_mutex);
-        if (_isStreamOpen) {
-            _oscillator->noteOn();
-            return;
-        }
-
-        LOGD("noteOn() opening stream.");
-        _oscillator->resetEnvelope();
-        _oscillator->setAmplitude(_amplitude);
-        _audioPlayer->stop();
-
-        const auto result = _audioPlayer->play();
-        if (result == 0) {
-            _isStreamOpen = true;
-            _oscillator->noteOn();
+            auto table = _wavetableFactory.getWaveTable(wavetable);
+            for (auto& voice : _voices) {
+                voice->setWavetable(table);
+            }
         }
     }
 
-    void WavetableSynthesizer::noteOff() {
+    void WavetableSynthesizer::noteOn(float frequencyInHz) {
         std::lock_guard<std::mutex> lock(_mutex);
-        if (_isContinuousPlayActive) return; // Не выключаем, если нажата кнопка Play
-        _oscillator->noteOff();
+
+        // 1. Ищем, не играет ли уже эта нота
+        for (auto& voice : _voices) {
+            if (voice->isBusy() && std::abs(voice->getFrequency() - frequencyInHz) < 0.1f) {
+                voice->noteOn();
+                return;
+            }
+        }
+
+        // 2. Ищем свободный голос
+        for (auto& voice : _voices) {
+            if (!voice->isBusy()) {
+                voice->setFrequency(frequencyInHz);
+                voice->setAmplitude(_amplitude);
+
+                if (!_isStreamOpen) {
+                    _audioPlayer->play();
+                    _isStreamOpen = true;
+                }
+                voice->noteOn();
+                return;
+            }
+        }
+    }
+
+    void WavetableSynthesizer::noteOff(float frequencyInHz) {
+        std::lock_guard<std::mutex> lock(_mutex);
+        for (auto& voice : _voices) {
+            if (std::abs(voice->getFrequency() - frequencyInHz) < 0.1f) {
+                voice->noteOff();
+            }
+        }
     }
 }

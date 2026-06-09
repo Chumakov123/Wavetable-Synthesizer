@@ -9,6 +9,7 @@ namespace wavetablesynthesizer {
     class AudioPlayer;
 
     constexpr  auto sampleRate = 48000;
+    constexpr  auto MAX_VOICES = 8;
 
     class WavetableSynthesizer {
     public:
@@ -20,8 +21,8 @@ namespace wavetablesynthesizer {
         void setFrequency(float frequencyInHz);
         void setVolume(float volumeInDb);
         void setWavetable(Wavetable wavetable);
-        void noteOn();
-        void noteOff();
+        void noteOn(float frequencyInHz);
+        void noteOff(float frequencyInHz);
     private:
         std::atomic<bool> _isStreamOpen = false;
         std::atomic<bool> _isContinuousPlayActive = false;
@@ -29,7 +30,7 @@ namespace wavetablesynthesizer {
         WavetableFactory _wavetableFactory;
         Wavetable _currentWavetable{Wavetable::SINE};
         float _amplitude = 1.f;
-        std::shared_ptr<WavetableOscillator> _oscillator;
+        std::vector<std::shared_ptr<WavetableOscillator>> _voices;
         std::unique_ptr<AudioPlayer> _audioPlayer;
     };
 }
