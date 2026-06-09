@@ -95,6 +95,8 @@ fun WavetableSynthesizerApp(
      synthesizerViewModel: WavetableSynthesizerViewModel
  ) {
      val isKeyboardMode = synthesizerViewModel.isKeyboardMode.observeAsState(true)
+     val isRecording = synthesizerViewModel.isRecording.observeAsState(false)
+     val isPlayingRecording = synthesizerViewModel.isPlayingRecording.observeAsState(false)
 
      Row(
          modifier = Modifier
@@ -104,22 +106,41 @@ fun WavetableSynthesizerApp(
          verticalAlignment = Alignment.CenterVertically
      ) {
          Column(
-             modifier = Modifier.weight(1f),
+             modifier = Modifier.weight(0.5f),
              horizontalAlignment = Alignment.CenterHorizontally
          ) {
              Text(stringResource(R.string.wavetable))
              WavetableSelectionButtons(synthesizerViewModel)
          }
 
-         Column(
-             horizontalAlignment = Alignment.CenterHorizontally,
-             modifier = Modifier.padding(end = 16.dp)
+         Row(
+             modifier = Modifier.weight(0.5f),
+             horizontalArrangement = Arrangement.SpaceEvenly,
+             verticalAlignment = Alignment.CenterVertically
          ) {
-             Text("Keyboard Mode")
-             Switch(
-                 checked = isKeyboardMode.value,
-                 onCheckedChange = { synthesizerViewModel.setKeyboardMode(it) }
-             )
+             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                 Text("Keyboard")
+                 Switch(
+                     checked = isKeyboardMode.value,
+                     onCheckedChange = { synthesizerViewModel.setKeyboardMode(it) }
+                 )
+             }
+
+             Button(
+                 onClick = { synthesizerViewModel.toggleRecording() },
+                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                     containerColor = if (isRecording.value) Color.Red else Color.Gray
+                 )
+             ) {
+                 Text(if (isRecording.value) "Stop Rec" else "Record")
+             }
+
+             Button(
+                 onClick = { synthesizerViewModel.playRecording() },
+                 enabled = !isRecording.value && !isPlayingRecording.value
+             ) {
+                 Text(if (isPlayingRecording.value) "Playing..." else "Play Rec")
+             }
          }
      }
  }
