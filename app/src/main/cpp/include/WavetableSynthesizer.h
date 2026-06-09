@@ -23,7 +23,8 @@ namespace wavetablesynthesizer {
         void noteOn();
         void noteOff();
     private:
-        std::atomic<bool> _isPlaying = false;
+        std::atomic<bool> _isStreamOpen = false;
+        std::atomic<bool> _isContinuousPlayActive = false;
         std::mutex _mutex;
         WavetableFactory _wavetableFactory;
         Wavetable _currentWavetable{Wavetable::SINE};

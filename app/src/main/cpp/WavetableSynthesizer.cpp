@@ -18,35 +18,36 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::play() {
         std::lock_guard<std::mutex> lock(_mutex);
-        if (_isPlaying) return;
-        LOGD("play() called.");
-        _oscillator->resetEnvelope(); // Сбрасываем огибающую перед началом, чтобы не было "хвостов"
-        _oscillator->setAmplitude(_amplitude);
+        _isContinuousPlayActive = true;
+        if (_isStreamOpen) {
+            _oscillator->noteOn();
+            return;
+        }
 
-        // Перед запуском нового стрима всегда останавливаем старый, если он был открыт
+        LOGD("play() called.");
+        _oscillator->resetEnvelope();
+        _oscillator->setAmplitude(_amplitude);
         _audioPlayer->stop();
 
         const auto result = _audioPlayer->play();
         if (result == 0) {
-            _isPlaying = true;
+            _isStreamOpen = true;
             _oscillator->noteOn();
         } else {
-            LOGD("Could not start playbacl.");
+            LOGD("Could not start playback.");
         }
     }
 
     void WavetableSynthesizer::stop() {
         std::lock_guard<std::mutex> lock(_mutex);
-        if (!_isPlaying) return;
+        if (!_isContinuousPlayActive) return;
         LOGD("stop() called.");
         _oscillator->noteOff();
-
-        _isPlaying = false;
+        _isContinuousPlayActive = false;
     }
 
     bool WavetableSynthesizer::isPlaying() const {
-        LOGD("isPlaying() called.");
-        return _isPlaying;
+        return _isContinuousPlayActive;
     }
 
     void WavetableSynthesizer::setFrequency(float frequencyInHz) {
@@ -74,19 +75,27 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableSynthesizer::noteOn() {
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            if (_isPlaying) {
-                _oscillator->noteOn();
-                return;
-            }
+        std::lock_guard<std::mutex> lock(_mutex);
+        if (_isStreamOpen) {
+            _oscillator->noteOn();
+            return;
         }
-        // Если не играет, вызываем play(), который сам захватит мьютекс
-        play();
+
+        LOGD("noteOn() opening stream.");
+        _oscillator->resetEnvelope();
+        _oscillator->setAmplitude(_amplitude);
+        _audioPlayer->stop();
+
+        const auto result = _audioPlayer->play();
+        if (result == 0) {
+            _isStreamOpen = true;
+            _oscillator->noteOn();
+        }
     }
 
     void WavetableSynthesizer::noteOff() {
         std::lock_guard<std::mutex> lock(_mutex);
+        if (_isContinuousPlayActive) return; // Не выключаем, если нажата кнопка Play
         _oscillator->noteOff();
     }
 }
