@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,6 +19,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.chumakov123.wavetablesynthesizer.R
@@ -28,6 +33,7 @@ fun WavetableSelectionPanel(
     val isKeyboardMode = synthesizerViewModel.isKeyboardMode.observeAsState(true)
     val isRecording = synthesizerViewModel.isRecording.observeAsState(false)
     val isPlayingRecording = synthesizerViewModel.isPlayingRecording.observeAsState(false)
+    val currentWavetable = synthesizerViewModel.wavetable.observeAsState(Wavetable.SINE)
 
     Row(
         modifier = Modifier
@@ -41,7 +47,10 @@ fun WavetableSelectionPanel(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(stringResource(R.string.wavetable))
-            WavetableSelectionButtons(synthesizerViewModel)
+            WavetableSelectionButtons(
+                currentWavetable = currentWavetable.value ?: Wavetable.SINE,
+                onWavetableSelected = { synthesizerViewModel.setWavetable(it) }
+            )
         }
 
         Row(
@@ -78,31 +87,40 @@ fun WavetableSelectionPanel(
 
 @Composable
 fun WavetableSelectionButtons(
-    synthesizerViewModel: WavetableSynthesizerViewModel
+    currentWavetable: Wavetable,
+    onWavetableSelected: (Wavetable) -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         for (wavetable in Wavetable.entries) {
-            WavetableButton(
-                label = stringResource(wavetable.toResourceString()),
-                onClick = {
-                    synthesizerViewModel.setWavetable(wavetable)
-                })
+            WavetableIconButton(
+                wavetable = wavetable,
+                isSelected = wavetable == currentWavetable,
+                onClick = { onWavetableSelected(wavetable) }
+            )
         }
     }
 }
 
 @Composable
-fun WavetableButton(
-    label: String,
+fun WavetableIconButton(
+    wavetable: Wavetable,
+    isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    Button(
+    IconButton(
         onClick = onClick,
-        modifier = Modifier.padding(4.dp)
+        modifier = Modifier.padding(4.dp),
+        colors = IconButtonDefaults.iconButtonColors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+            contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+        )
     ) {
-        Text(label)
+        Icon(
+            painter = painterResource(wavetable.toResourceImage()),
+            contentDescription = stringResource(wavetable.toResourceString())
+        )
     }
 }

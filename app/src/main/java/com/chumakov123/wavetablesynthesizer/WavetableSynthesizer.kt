@@ -1,32 +1,32 @@
 package com.chumakov123.wavetablesynthesizer
 
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 
 enum class Wavetable {
     SINE {
-        override fun toResourceString(): Int {
-            return R.string.sine
-        }
+        override fun toResourceString(): Int = R.string.sine
+        override fun toResourceImage(): Int = R.drawable.sine_wave
     },
     TRIANGLE {
-        override fun toResourceString(): Int {
-            return R.string.triangle
-        }
+        override fun toResourceString(): Int = R.string.triangle
+        override fun toResourceImage(): Int = R.drawable.triangle_wave
     },
     SQUARE {
-        override fun toResourceString(): Int {
-            return R.string.square
-        }
+        override fun toResourceString(): Int = R.string.square
+        override fun toResourceImage(): Int = R.drawable.square_wave
     },
     SAW {
-        override fun toResourceString(): Int {
-            return R.string.saw
-        }
+        override fun toResourceString(): Int = R.string.saw
+        override fun toResourceImage(): Int = R.drawable.sawtooth_wave
     };
 
 
     @StringRes
     abstract fun toResourceString(): Int
+
+    @DrawableRes
+    abstract fun toResourceImage(): Int
 }
 
 interface WavetableSynthesizer {

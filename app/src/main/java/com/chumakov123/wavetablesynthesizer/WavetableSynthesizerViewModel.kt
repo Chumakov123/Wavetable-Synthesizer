@@ -95,9 +95,11 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
-    private var wavetable = Wavetable.SINE
+    private val _wavetable = MutableLiveData(Wavetable.SINE)
+    val wavetable: LiveData<Wavetable> = _wavetable
+
     fun setWavetable(newWavetable: Wavetable) {
-        wavetable = newWavetable
+        _wavetable.value = newWavetable
         viewModelScope.launch {
             wavetableSynthesizer?.setWavetable(newWavetable)
         }
@@ -211,7 +213,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
         viewModelScope.launch {
             wavetableSynthesizer?.setFrequency(frequency.value!!)
             wavetableSynthesizer?.setVolume(volume.value!!)
-            wavetableSynthesizer?.setWavetable(wavetable)
+            wavetableSynthesizer?.setWavetable(wavetable.value!!)
             updatePlayLabel()
         }
     }
