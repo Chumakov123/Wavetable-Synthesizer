@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
@@ -18,8 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.chumakov123.wavetablesynthesizer.R
@@ -42,7 +40,8 @@ fun ControlsPanel(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(0.7f),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             if (isKeyboardMode.value) {
                 PianoKeyboard(synthesizerViewModel)
@@ -93,8 +92,7 @@ fun PitchControlContent(
     Slider(
         value = value,
         onValueChange = onValueChange,
-        valueRange = valueRange,
-    )
+        valueRange = valueRange,    )
     Text(
         text = frequencyValueLabel
     )
@@ -131,18 +129,14 @@ fun VolumeControlContent(
     onValueChange: (Float) -> Unit,
     valueRange: ClosedFloatingPointRange<Float>
 ) {
-    val screenHeight = LocalConfiguration.current.screenHeightDp
-    val sliderHeight = screenHeight / 4
-
-    Icon(imageVector = Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null)
-    Slider(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = Modifier
-            .width(sliderHeight.dp)
-            .rotate(270f)
-            .padding(8.dp),
-        valueRange = valueRange
-    )
-    Icon(imageVector = Icons.AutoMirrored.Filled.VolumeMute, contentDescription = null)
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(imageVector = Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null)
+        Knob(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.size(100.dp).padding(8.dp),
+            valueRange = valueRange
+        )
+        Icon(imageVector = Icons.AutoMirrored.Filled.VolumeMute, contentDescription = null)
+    }
 }

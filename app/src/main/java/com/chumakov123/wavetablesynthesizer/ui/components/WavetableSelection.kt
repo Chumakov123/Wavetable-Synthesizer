@@ -48,7 +48,7 @@ fun WavetableSelectionPanel(
         ) {
             Text(stringResource(R.string.wavetable))
             WavetableSelectionButtons(
-                currentWavetable = currentWavetable.value ?: Wavetable.SINE,
+                currentWavetable = currentWavetable.value,
                 onWavetableSelected = { synthesizerViewModel.setWavetable(it) }
             )
         }
