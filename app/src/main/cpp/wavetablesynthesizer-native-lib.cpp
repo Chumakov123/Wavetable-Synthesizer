@@ -103,4 +103,18 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setWavetabl
         LOGD("Synthesizer not created. Please, create the synthesizer first by calling create().");
     }
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_noteOn(JNIEnv *env, jobject thiz,
+                                                                          jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->noteOn();
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_noteOff(JNIEnv *env, jobject thiz,
+                                                                           jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->noteOff();
+}
 }

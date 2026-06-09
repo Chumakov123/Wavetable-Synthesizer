@@ -37,4 +37,6 @@ interface WavetableSynthesizer {
     suspend fun setFrequency(frequencyInHz: Float)
     suspend fun setVolume(volumeInDb: Float)
     suspend fun setWavetable(wavetable: Wavetable)
+    suspend fun noteOn()
+    suspend fun noteOff()
 }

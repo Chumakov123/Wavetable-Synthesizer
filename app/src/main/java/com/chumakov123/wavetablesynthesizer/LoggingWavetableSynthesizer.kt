@@ -32,4 +32,12 @@ class LoggingWavetableSynthesizer : WavetableSynthesizer {
     override suspend fun setWavetable(wavetable: Wavetable) {
         Log.d(TAG, "setWavetable() called with $wavetable.")
     }
+
+    override suspend fun noteOn() {
+        Log.d(TAG, "noteOn() called.")
+    }
+
+    override suspend fun noteOff() {
+        Log.d(TAG, "noteOff() called.")
+    }
 }

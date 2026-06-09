@@ -20,6 +20,8 @@ namespace wavetablesynthesizer {
         void setFrequency(float frequencyInHz);
         void setVolume(float volumeInDb);
         void setWavetable(Wavetable wavetable);
+        void noteOn();
+        void noteOff();
     private:
         std::atomic<bool> _isPlaying = false;
         std::mutex _mutex;

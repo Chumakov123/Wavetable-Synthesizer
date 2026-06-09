@@ -72,4 +72,21 @@ namespace wavetablesynthesizer {
 
         //LOGD("setWavetable() called with %.d argument", static_cast<int>(wavetable));
     }
+
+    void WavetableSynthesizer::noteOn() {
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            if (_isPlaying) {
+                _oscillator->noteOn();
+                return;
+            }
+        }
+        // Если не играет, вызываем play(), который сам захватит мьютекс
+        play();
+    }
+
+    void WavetableSynthesizer::noteOff() {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _oscillator->noteOff();
+    }
 }

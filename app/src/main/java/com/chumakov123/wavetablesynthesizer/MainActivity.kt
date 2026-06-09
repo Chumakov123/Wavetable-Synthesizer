@@ -31,6 +31,12 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.chumakov123.wavetablesynthesizer.ui.theme.WavetableSynthesizerTheme
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.Switch
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 
 class MainActivity : ComponentActivity() {
     private val synthesizerViewModel: WavetableSynthesizerViewModel by viewModels()
@@ -89,15 +95,33 @@ fun WavetableSynthesizerApp(
  fun WavetableSelectionPanel(
      synthesizerViewModel: WavetableSynthesizerViewModel
  ) {
-     Column(
+     val isKeyboardMode = synthesizerViewModel.isKeyboardMode.observeAsState(true)
+
+     Row(
          modifier = Modifier
              .fillMaxWidth()
-             .fillMaxHeight(0.5f),
-         verticalArrangement = Arrangement.SpaceEvenly,
-         horizontalAlignment = Alignment.CenterHorizontally
+             .fillMaxHeight(0.25f),
+         horizontalArrangement = Arrangement.SpaceBetween,
+         verticalAlignment = Alignment.CenterVertically
      ) {
-         Text(stringResource(R.string.wavetable))
-         WavetableSelectionButtons(synthesizerViewModel)
+         Column(
+             modifier = Modifier.weight(1f),
+             horizontalAlignment = Alignment.CenterHorizontally
+         ) {
+             Text(stringResource(R.string.wavetable))
+             WavetableSelectionButtons(synthesizerViewModel)
+         }
+
+         Column(
+             horizontalAlignment = Alignment.CenterHorizontally,
+             modifier = Modifier.padding(end = 16.dp)
+         ) {
+             Text("Keyboard Mode")
+             Switch(
+                 checked = isKeyboardMode.value,
+                 onCheckedChange = { synthesizerViewModel.setKeyboardMode(it) }
+             )
+         }
      }
  }
 
@@ -136,6 +160,8 @@ fun WavetableSynthesizerApp(
  fun ControlsPanel(
      synthesizerViewModel: WavetableSynthesizerViewModel
  ) {
+     val isKeyboardMode = synthesizerViewModel.isKeyboardMode.observeAsState(true)
+
      Row(
          modifier = Modifier
              .fillMaxWidth()
@@ -146,18 +172,67 @@ fun WavetableSynthesizerApp(
          Column(
              modifier = Modifier
                  .fillMaxHeight()
-                 .fillMaxWidth(0.6f),
+                 .weight(0.7f),
              horizontalAlignment = Alignment.CenterHorizontally
          ) {
-             PitchControl(synthesizerViewModel)
-             PlayControl(synthesizerViewModel)
+             if (isKeyboardMode.value) {
+                 PianoKeyboard(synthesizerViewModel)
+             } else {
+                 PitchControl(synthesizerViewModel)
+                 PlayControl(synthesizerViewModel)
+             }
          }
          Column(
-             modifier = Modifier.fillMaxSize(),
+             modifier = Modifier
+                 .fillMaxHeight()
+                 .weight(0.3f),
              verticalArrangement = Arrangement.SpaceEvenly,
              horizontalAlignment = Alignment.CenterHorizontally
          ) {
              VolumeControl(synthesizerViewModel)
+         }
+     }
+ }
+
+ @Composable
+ fun PianoKeyboard(synthesizerViewModel: WavetableSynthesizerViewModel) {
+     val notes = listOf(
+         "C" to 261.63f,
+         "D" to 293.66f,
+         "E" to 329.63f,
+         "F" to 349.23f,
+         "G" to 392.00f,
+         "A" to 440.00f,
+         "B" to 493.88f,
+         "C2" to 523.25f
+     )
+
+     Row(
+         modifier = Modifier
+             .fillMaxSize()
+             .padding(bottom = 16.dp),
+         horizontalArrangement = Arrangement.Center
+     ) {
+         notes.forEach { (name, freq) ->
+             Box(
+                 modifier = Modifier
+                     .weight(1f)
+                     .fillMaxHeight()
+                     .padding(2.dp)
+                     .background(Color.White)
+                     .pointerInput(Unit) {
+                         detectTapGestures(
+                             onPress = {
+                                 synthesizerViewModel.noteOn(freq)
+                                 tryAwaitRelease()
+                                 synthesizerViewModel.noteOff()
+                             }
+                         )
+                     },
+                 contentAlignment = Alignment.BottomCenter
+             ) {
+                 Text(name, color = Color.Black, modifier = Modifier.padding(bottom = 8.dp))
+             }
          }
      }
  }

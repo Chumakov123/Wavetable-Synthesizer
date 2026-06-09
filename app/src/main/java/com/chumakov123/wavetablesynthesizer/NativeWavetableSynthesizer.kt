@@ -16,6 +16,8 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun setFrequency(synthesizerHandle: Long, frequencyInHz: Float)
     private external fun setVolume(synthesizerHandle: Long, volumeInDb: Float)
     private external fun setWavetable(synthesizerHandle: Long, wavetable: Int)
+    private external fun noteOn(synthesizerHandle: Long)
+    private external fun noteOff(synthesizerHandle: Long)
 
     companion object {
         init {
@@ -92,6 +94,20 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             return@withContext setWavetable(synthesizerHandle, wavetable.ordinal) //ordinal - порядковый номер
+        }
+    }
+
+    override suspend fun noteOn() = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            noteOn(synthesizerHandle)
+        }
+    }
+
+    override suspend fun noteOff() = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            noteOff(synthesizerHandle)
         }
     }
 }

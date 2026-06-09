@@ -95,6 +95,26 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
+    private val _isKeyboardMode = MutableLiveData(true)
+    val isKeyboardMode: LiveData<Boolean> = _isKeyboardMode
+
+    fun setKeyboardMode(enabled: Boolean) {
+        _isKeyboardMode.value = enabled
+    }
+
+    fun noteOn(frequencyInHz: Float) {
+        viewModelScope.launch {
+            wavetableSynthesizer?.setFrequency(frequencyInHz)
+            wavetableSynthesizer?.noteOn()
+        }
+    }
+
+    fun noteOff() {
+        viewModelScope.launch {
+            wavetableSynthesizer?.noteOff()
+        }
+    }
+
     private val _playButtonLabel = MutableLiveData(R.string.play)
     val playButtonLabel: LiveData<Int> = _playButtonLabel
 
