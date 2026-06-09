@@ -18,18 +18,21 @@ namespace  wavetablesynthesizer {
         virtual void setAmplitude(float newAmplitude);
         virtual void setWavetable(const std::vector<float>& wavetable);
     private:
-        float interpolateLineary() const;
-        void swapWavetableIfNecessary();
+        float interpolateLineary(const std::vector<float>& table, float indexValue) const;
 
         float index = 0.f;
         std::atomic<float> indexIncrement{0.f};
         std::vector<float> waveTable;
         float sampleRate;
-        std::atomic<float> amplitude{1.f};
+        std::atomic<float> targetAmplitude{1.f};
+        std::atomic<float> amplitude{0.f};
         std::atomic<bool> swapWaveTable{false};
         std::vector<float> wavetableToSwap;
         std::atomic<bool> wavetableIsBeingSwapped{false};
 
+        std::atomic<bool> isCrossfading{false};
+        float crossfadeProgress = 0.f;
+        const float crossfadeStep = 0.0005f; // Скорость кроссфейда (около 40мс при 48кГц)
     };
 
     class A4Oscillator : public AudioSource {

@@ -39,6 +39,7 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
                 return
             }
 
+            stop(synthesizerHandle)
             delete(synthesizerHandle)
             synthesizerHandle = 0L
         }

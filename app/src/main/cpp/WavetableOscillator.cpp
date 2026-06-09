@@ -7,28 +7,54 @@ namespace wavetablesynthesizer {
     : waveTable{std::move(waveTable)}, sampleRate{sampleRate} {}
 
     float WavetableOscillator::getSample() {
-        swapWavetableIfNecessary();
-
-        index = std::fmod(index, static_cast<float>(waveTable.size()));
-        const auto sample = interpolateLineary();
-        index += indexIncrement;
-        return amplitude * sample;
-    }
-
-    float WavetableOscillator::interpolateLineary() const {
-        const auto truncatedIndex = static_cast<typename  decltype(waveTable)::size_type>(index);
-        const auto nextIndex = (truncatedIndex + 1u) % waveTable.size();
-        const auto nextIndexWeight = index - static_cast<float>(truncatedIndex);
-        return waveTable[nextIndex] * nextIndexWeight + (1.f - nextIndexWeight) * waveTable[truncatedIndex];
-    }
-
-    void WavetableOscillator::swapWavetableIfNecessary() {
-        wavetableIsBeingSwapped.store(true, std::memory_order_release);
-        if (swapWaveTable.load(std::memory_order_acquire)) {
-            std::swap(waveTable, wavetableToSwap);
-            swapWaveTable.store(false, std::memory_order_relaxed);
+        if (index >= static_cast<float>(waveTable.size())) {
+            index -= static_cast<float>(waveTable.size());
         }
-        wavetableIsBeingSwapped.store(false, std::memory_order_release);
+
+        float sample = 0.f;
+
+        if (isCrossfading.load(std::memory_order_acquire)) {
+            float oldSample = interpolateLineary(waveTable, index);
+            float newSample = interpolateLineary(wavetableToSwap, index);
+            sample = oldSample * (1.f - crossfadeProgress) + newSample * crossfadeProgress;
+
+            crossfadeProgress += crossfadeStep;
+            if (crossfadeProgress >= 1.f) {
+                isCrossfading.store(false, std::memory_order_release);
+                std::swap(waveTable, wavetableToSwap);
+                wavetableIsBeingSwapped.store(false, std::memory_order_release);
+                swapWaveTable.store(false, std::memory_order_relaxed);
+            }
+        } else {
+            if (swapWaveTable.load(std::memory_order_acquire)) {
+                isCrossfading.store(true, std::memory_order_release);
+                wavetableIsBeingSwapped.store(true, std::memory_order_release);
+                crossfadeProgress = 0.f;
+            }
+            sample = interpolateLineary(waveTable, index);
+        }
+
+        index += indexIncrement.load(std::memory_order_relaxed);
+
+        const float target = targetAmplitude.load(std::memory_order_relaxed);
+        float currentAmplitude = amplitude.load(std::memory_order_relaxed);
+        currentAmplitude = 0.995f * currentAmplitude + 0.005f * target;
+
+        if (std::abs(currentAmplitude - target) < 0.0001f) {
+            currentAmplitude = target;
+        }
+
+        amplitude.store(currentAmplitude, std::memory_order_relaxed);
+
+        return currentAmplitude * sample;
+    }
+
+    float WavetableOscillator::interpolateLineary(const std::vector<float>& table, float indexValue) const {
+        if (table.empty()) return 0.f;
+        const auto truncatedIndex = static_cast<std::size_t>(indexValue);
+        const auto nextIndex = (truncatedIndex + 1u) % table.size();
+        const auto nextIndexWeight = indexValue - static_cast<float>(truncatedIndex);
+        return table[nextIndex] * nextIndexWeight + (1.f - nextIndexWeight) * table[truncatedIndex];
     }
 
     void WavetableOscillator::setWavetable(const std::vector<float> &wavetable) {
@@ -46,11 +72,15 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableOscillator::setAmplitude(float newAmplitude) {
-        amplitude.store(newAmplitude);
+        targetAmplitude.store(newAmplitude);
     }
 
     void WavetableOscillator::onPlaybackStopped() {
         index = 0.f;
+        amplitude.store(0.f, std::memory_order_relaxed);
+        isCrossfading.store(false, std::memory_order_relaxed);
+        wavetableIsBeingSwapped.store(false, std::memory_order_relaxed);
+        swapWaveTable.store(false, std::memory_order_relaxed);
     }
 
     A4Oscillator::A4Oscillator(float sampleRate)

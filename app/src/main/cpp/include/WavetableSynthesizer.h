@@ -25,6 +25,7 @@ namespace wavetablesynthesizer {
         std::mutex _mutex;
         WavetableFactory _wavetableFactory;
         Wavetable _currentWavetable{Wavetable::SINE};
+        float _amplitude = 1.f;
         std::shared_ptr<WavetableOscillator> _oscillator;
         std::unique_ptr<AudioPlayer> _audioPlayer;
     };

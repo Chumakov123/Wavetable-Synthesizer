@@ -32,15 +32,15 @@ namespace {
         return triangleWaveTable;
     }
 
-    std::vector<float> generateGquareWaveTable() {
+    std::vector<float> generateSquareWaveTable() {
         auto squareWaveTable = std::vector<float>(WAVETABLE_LENGHT, 0.f);
 
-        constexpr  auto HARMONICS_COUNT = 7;
+        constexpr auto HARMONICS_COUNT = 7;
         for (auto k = 1; k <= HARMONICS_COUNT; ++k) {
             for (auto j = 0; j < WAVETABLE_LENGHT; ++j) {
                 const auto phase = 2.f * wavetablesynthesizer::PI * j / WAVETABLE_LENGHT;
-                squareWaveTable[j] += 2.f / wavetablesynthesizer::PI * std::pow(-1.f, k) * std::pow(k, -1.f)
-                        * std::sin(k*phase);
+                squareWaveTable[j] += 4.f / wavetablesynthesizer::PI * std::pow(2.f * k - 1.f, -1.f)
+                                      * std::sin((2.f * k - 1.f) * phase);
             }
         }
 
@@ -55,8 +55,8 @@ namespace {
         for (auto k = 1; k <= HARMONICS_COUNT; ++k) {
             for (auto j = 0; j < WAVETABLE_LENGHT; ++j) {
                 const auto phase = 2.f * wavetablesynthesizer::PI * j / WAVETABLE_LENGHT;
-                sawWaveTable[j] += 4.f / wavetablesynthesizer::PI * std::pow(2.f * k - 1.f, -1.f)
-                                      * std::sin((2.f * k - 1.f) * phase);
+                sawWaveTable[j] += 2.f / wavetablesynthesizer::PI * std::pow(-1.f, k) * std::pow(k, -1.f)
+                                   * std::sin(k * phase);
             }
         }
 
@@ -67,6 +67,15 @@ namespace {
     std::vector<float> generateWaveTableOnce(std::vector<float>& waveTable, F&& generator) {
         if (waveTable.empty()) {
             waveTable = generator();
+            float maxAbs = 0.0f;
+            for (float sample : waveTable) {
+                maxAbs = std::max(maxAbs, std::abs(sample));
+            }
+            if (maxAbs > 0.0f) {
+                for (float& sample : waveTable) {
+                    sample /= maxAbs;
+                }
+            }
         }
         return waveTable;
     }
@@ -97,7 +106,7 @@ namespace wavetablesynthesizer {
     }
 
     std::vector<float> WavetableFactory::squareWaveTable() {
-        return generateWaveTableOnce(_squareWaveTable, &generateGquareWaveTable);
+        return generateWaveTableOnce(_squareWaveTable, &generateSquareWaveTable);
     }
     std::vector<float> WavetableFactory::sawWaveTable() {
         return generateWaveTableOnce(_sawWaveTable, &generateSawWaveTable);

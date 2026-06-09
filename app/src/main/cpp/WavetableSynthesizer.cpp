@@ -1,5 +1,7 @@
 #include "Log.h"
 #include <cmath>
+#include <thread>
+#include <chrono>
 #include "WavetableSynthesizer.h"
 #include "OboeAudioPlayer.h"
 #include "WavetableOscillator.h"
@@ -17,6 +19,7 @@ namespace wavetablesynthesizer {
     void WavetableSynthesizer::play() {
         std::lock_guard<std::mutex> lock(_mutex);
         LOGD("play() called.");
+        _oscillator->setAmplitude(_amplitude);
         const auto result = _audioPlayer->play();
         if (result == 0) {
             _isPlaying = true;
@@ -28,6 +31,8 @@ namespace wavetablesynthesizer {
     void WavetableSynthesizer::stop() {
         std::lock_guard<std::mutex> lock(_mutex);
         LOGD("stop() called.");
+        _oscillator->setAmplitude(0.f);
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         _audioPlayer->stop();
         _isPlaying = false;
     }
@@ -47,8 +52,8 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableSynthesizer::setVolume(float volumeInDb) {
-        const auto amplitude = dbToAmplitude(volumeInDb);
-        _oscillator->setAmplitude(amplitude);
+        _amplitude = dbToAmplitude(volumeInDb);
+        _oscillator->setAmplitude(_amplitude);
         //LOGD("setVolume() called with %.2f dB argument", volumeInDb);
     }
 
