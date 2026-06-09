@@ -8,6 +8,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.exp
 import kotlin.math.ln
+import kotlin.time.Duration.Companion.milliseconds
 
 data class NoteEvent(
     val frequency: Float,
@@ -161,7 +162,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
             _recordedEvents.forEach { event ->
                 val delayTime = event.timestampMs - (System.currentTimeMillis() - startTime)
                 if (delayTime > 0) {
-                    delay(delayTime)
+                    delay(delayTime.milliseconds)
                 }
                 if (event.isNoteOn) {
                     wavetableSynthesizer?.noteOn(event.frequency)
