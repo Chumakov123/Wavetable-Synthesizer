@@ -3,6 +3,7 @@
 #include <vector>
 #include <atomic>
 #include "AudioSource.h"
+#include "AdsrEnvelope.h"
 
 namespace  wavetablesynthesizer {
     class WavetableOscillator : public AudioSource {
@@ -17,6 +18,10 @@ namespace  wavetablesynthesizer {
         virtual void setFrequency(float frequency);
         virtual void setAmplitude(float newAmplitude);
         virtual void setWavetable(const std::vector<float>& wavetable);
+
+        void noteOn();
+        void noteOff();
+        void resetEnvelope() { _envelope.reset(); }
     private:
         static float interpolateLineary(const std::vector<float>& table, float indexValue);
 
@@ -33,5 +38,7 @@ namespace  wavetablesynthesizer {
         std::atomic<bool> isCrossfading{false};
         float crossfadeProgress = 0.f;
         const float crossfadeStep = 0.0005f; // Скорость кроссфейда (около 40мс при 48кГц)
+
+        AdsrEnvelope _envelope;
     };
 }

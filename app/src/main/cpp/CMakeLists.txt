@@ -31,6 +31,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         WavetableSynthesizer.cpp
         OboeAudioPlayer.cpp
         WavetableOscillator.cpp
+        AdsrEnvelope.cpp
         wavetablesynthesizer-native-lib.cpp)
 
 find_package(oboe REQUIRED CONFIG)

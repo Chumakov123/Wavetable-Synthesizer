@@ -4,28 +4,40 @@
 #include "MathConstants.h"
 
 namespace {
-    constexpr auto WAVETABLE_LENGHT = 256;
+    constexpr int WAVETABLE_LENGTH = 256;
 
     std::vector<float> generateSineWaveTable() {
-        auto sineWaveTable = std::vector<float>(WAVETABLE_LENGHT);
+        auto sineWaveTable = std::vector<float>(WAVETABLE_LENGTH);
 
-        for (auto i = 0; i < WAVETABLE_LENGHT; ++i) {
-            sineWaveTable[i] = std::sin(2.f * wavetablesynthesizer::PI * static_cast<float>(i) / static_cast<float>(WAVETABLE_LENGHT));
+        for (auto i = 0; i < WAVETABLE_LENGTH; ++i) {
+            sineWaveTable[i] = std::sin(2.f * wavetablesynthesizer::PI * static_cast<float>(i) / static_cast<float>(WAVETABLE_LENGTH));
         }
         return sineWaveTable;
     }
 
     std::vector<float> generateTriangleWaveTable() {
-        auto triangleWaveTable = std::vector<float>(WAVETABLE_LENGHT);
+        auto triangleWaveTable = std::vector<float>(WAVETABLE_LENGTH, 0.0f);
 
         constexpr auto HARMONICS_COUNT = 13;
 
-        for (auto k = 1; k <= HARMONICS_COUNT; ++k) {
-            for (auto j = 0; j < WAVETABLE_LENGHT; ++j) {
-                const auto phase = 2.f * wavetablesynthesizer::PI * static_cast<float>(j) / static_cast<float>(WAVETABLE_LENGHT);
-                triangleWaveTable[j] += 8.f / std::pow(wavetablesynthesizer::PI, 2.f)
-                        * std::pow(-1.f, k) * std::pow(static_cast<float>(2 * k - 1), -2.f)
-                        * std::sin((2.f * static_cast<float>(k) - 1.f) * phase);
+        const float coefficient =
+                8.0f / (wavetablesynthesizer::PI * wavetablesynthesizer::PI);
+
+        for (int k = 1; k <= HARMONICS_COUNT; ++k) {
+            const float sign = (k % 2 == 0) ? 1.0f : -1.0f;
+            const auto harmonic = static_cast<float>(2 * k - 1);
+            const float harmonicFactor = 1.0f / (harmonic * harmonic);
+
+            for (int j = 0; j < WAVETABLE_LENGTH; ++j) {
+                const float phase =
+                        2.0f * wavetablesynthesizer::PI
+                        * static_cast<float>(j)
+                        / static_cast<float>(WAVETABLE_LENGTH);
+
+                triangleWaveTable[j] += coefficient
+                                        * sign
+                                        * harmonicFactor
+                                        * std::sin(harmonic * phase);
             }
         }
 
@@ -33,14 +45,26 @@ namespace {
     }
 
     std::vector<float> generateSquareWaveTable() {
-        auto squareWaveTable = std::vector<float>(WAVETABLE_LENGHT, 0.f);
+        auto squareWaveTable = std::vector<float>(WAVETABLE_LENGTH, 0.0f);
 
         constexpr auto HARMONICS_COUNT = 7;
-        for (auto k = 1; k <= HARMONICS_COUNT; ++k) {
-            for (auto j = 0; j < WAVETABLE_LENGHT; ++j) {
-                const auto phase = 2.f * wavetablesynthesizer::PI * static_cast<float>(j) / static_cast<float>(WAVETABLE_LENGHT);
-                squareWaveTable[j] += 4.f / wavetablesynthesizer::PI * std::pow(2.f * static_cast<float>(k) - 1.f, -1.f)
-                                      * std::sin((2.f * static_cast<float>(k) - 1.f) * phase);
+
+        const float coefficient =
+                4.0f / wavetablesynthesizer::PI;
+
+        for (int k = 1; k <= HARMONICS_COUNT; ++k) {
+            const auto harmonic = static_cast<float>(2 * k - 1);
+            const float harmonicFactor = 1.0f / harmonic;
+
+            for (int j = 0; j < WAVETABLE_LENGTH; ++j) {
+                const float phase =
+                        2.0f * wavetablesynthesizer::PI
+                        * static_cast<float>(j)
+                        / static_cast<float>(WAVETABLE_LENGTH);
+
+                squareWaveTable[j] += coefficient
+                                      * harmonicFactor
+                                      * std::sin(harmonic * phase);
             }
         }
 
@@ -48,15 +72,28 @@ namespace {
     }
 
     std::vector<float> generateSawWaveTable() {
-        auto sawWaveTable = std::vector<float>(WAVETABLE_LENGHT, 0.f);
+        auto sawWaveTable = std::vector<float>(WAVETABLE_LENGTH, 0.0f);
 
         constexpr auto HARMONICS_COUNT = 26;
 
-        for (auto k = 1; k <= HARMONICS_COUNT; ++k) {
-            for (auto j = 0; j < WAVETABLE_LENGHT; ++j) {
-                const auto phase = 2.f * wavetablesynthesizer::PI * static_cast<float>(j) / static_cast<float>(WAVETABLE_LENGHT);
-                sawWaveTable[j] += 2.f / wavetablesynthesizer::PI * std::pow(-1.f, k) * std::pow(static_cast<float>(k), -1.f)
-                                   * std::sin(static_cast<float>(k) * phase);
+        const float coefficient =
+                2.0f / wavetablesynthesizer::PI;
+
+        for (int k = 1; k <= HARMONICS_COUNT; ++k) {
+            const float sign = (k % 2 == 0) ? 1.0f : -1.0f;
+            const auto harmonic = static_cast<float>(k);
+            const float harmonicFactor = 1.0f / harmonic;
+
+            for (int j = 0; j < WAVETABLE_LENGTH; ++j) {
+                const float phase =
+                        2.0f * wavetablesynthesizer::PI
+                        * static_cast<float>(j)
+                        / static_cast<float>(WAVETABLE_LENGTH);
+
+                sawWaveTable[j] += coefficient
+                                   * sign
+                                   * harmonicFactor
+                                   * std::sin(harmonic * phase);
             }
         }
 
@@ -94,7 +131,7 @@ namespace wavetablesynthesizer {
             case Wavetable::SAW:
                 return sawWaveTable();
             default:
-                return {WAVETABLE_LENGHT, 0.f};
+                return {WAVETABLE_LENGTH, 0.f};
 
         }
     }

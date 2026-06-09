@@ -4,7 +4,9 @@
 
 namespace wavetablesynthesizer {
     WavetableOscillator::WavetableOscillator(std::vector<float> waveTable, float sampleRate)
-    : waveTable{std::move(waveTable)}, sampleRate{sampleRate} {}
+    : waveTable{std::move(waveTable)}, sampleRate{sampleRate} {
+        _envelope.setSampleRate(sampleRate);
+    }
 
     float WavetableOscillator::getSample() {
         if (index >= static_cast<float>(waveTable.size())) {
@@ -37,16 +39,15 @@ namespace wavetablesynthesizer {
         index += indexIncrement.load(std::memory_order_relaxed);
 
         const float target = targetAmplitude.load(std::memory_order_relaxed);
+
+        // Плавное изменение громкости (Smoothing)
         float currentAmplitude = amplitude.load(std::memory_order_relaxed);
         currentAmplitude = 0.995f * currentAmplitude + 0.005f * target;
-
-        if (std::abs(currentAmplitude - target) < 0.0001f) {
-            currentAmplitude = target;
-        }
-
         amplitude.store(currentAmplitude, std::memory_order_relaxed);
 
-        return currentAmplitude * sample;
+        const float envelopeAmplitude = _envelope.getNextAmplitude();
+
+        return currentAmplitude * envelopeAmplitude * sample;
     }
 
     float WavetableOscillator::interpolateLineary(const std::vector<float>& table, float indexValue) {
@@ -81,5 +82,13 @@ namespace wavetablesynthesizer {
         isCrossfading.store(false, std::memory_order_relaxed);
         wavetableIsBeingSwapped.store(false, std::memory_order_relaxed);
         swapWaveTable.store(false, std::memory_order_relaxed);
+    }
+
+    void WavetableOscillator::noteOn() {
+        _envelope.noteOn();
+    }
+
+    void WavetableOscillator::noteOff() {
+        _envelope.noteOff();
     }
 }

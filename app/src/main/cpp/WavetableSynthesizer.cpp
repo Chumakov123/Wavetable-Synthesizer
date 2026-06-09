@@ -18,11 +18,18 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::play() {
         std::lock_guard<std::mutex> lock(_mutex);
+        if (_isPlaying) return;
         LOGD("play() called.");
+        _oscillator->resetEnvelope(); // Сбрасываем огибающую перед началом, чтобы не было "хвостов"
         _oscillator->setAmplitude(_amplitude);
+
+        // Перед запуском нового стрима всегда останавливаем старый, если он был открыт
+        _audioPlayer->stop();
+
         const auto result = _audioPlayer->play();
         if (result == 0) {
             _isPlaying = true;
+            _oscillator->noteOn();
         } else {
             LOGD("Could not start playbacl.");
         }
@@ -30,10 +37,10 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::stop() {
         std::lock_guard<std::mutex> lock(_mutex);
+        if (!_isPlaying) return;
         LOGD("stop() called.");
-        _oscillator->setAmplitude(0.f);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        _audioPlayer->stop();
+        _oscillator->noteOff();
+
         _isPlaying = false;
     }
 
