@@ -106,11 +106,15 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isKeyboardMode = MutableLiveData(true)
     val isKeyboardMode: LiveData<Boolean> = _isKeyboardMode
 
+    private val _activeNotes = MutableLiveData<Set<Float>>(emptySet())
+    val activeNotes: LiveData<Set<Float>> = _activeNotes
+
     fun setKeyboardMode(enabled: Boolean) {
         _isKeyboardMode.value = enabled
     }
 
     fun noteOn(frequencyInHz: Float) {
+        _activeNotes.value = _activeNotes.value?.plus(frequencyInHz)
         if (_isRecording.value == true) {
             recordEvent(frequencyInHz, true)
         }
@@ -120,6 +124,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     }
 
     fun noteOff(frequencyInHz: Float) {
+        _activeNotes.value = _activeNotes.value?.minus(frequencyInHz)
         if (_isRecording.value == true) {
             recordEvent(frequencyInHz, false)
         }
@@ -165,9 +170,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
                     delay(delayTime.milliseconds)
                 }
                 if (event.isNoteOn) {
-                    wavetableSynthesizer?.noteOn(event.frequency)
+                    noteOn(event.frequency)
                 } else {
-                    wavetableSynthesizer?.noteOff(event.frequency)
+                    noteOff(event.frequency)
                 }
             }
             _isPlayingRecording.value = false
