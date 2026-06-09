@@ -10,7 +10,7 @@ namespace {
         auto sineWaveTable = std::vector<float>(WAVETABLE_LENGHT);
 
         for (auto i = 0; i < WAVETABLE_LENGHT; ++i) {
-            sineWaveTable[i] = std::sin(2 * wavetablesynthesizer::PI * static_cast<float>(i) / WAVETABLE_LENGHT);
+            sineWaveTable[i] = std::sin(2.f * wavetablesynthesizer::PI * static_cast<float>(i) / static_cast<float>(WAVETABLE_LENGHT));
         }
         return sineWaveTable;
     }
@@ -22,10 +22,10 @@ namespace {
 
         for (auto k = 1; k <= HARMONICS_COUNT; ++k) {
             for (auto j = 0; j < WAVETABLE_LENGHT; ++j) {
-                const auto phase = 2.f * wavetablesynthesizer::PI * j / WAVETABLE_LENGHT;
+                const auto phase = 2.f * wavetablesynthesizer::PI * static_cast<float>(j) / static_cast<float>(WAVETABLE_LENGHT);
                 triangleWaveTable[j] += 8.f / std::pow(wavetablesynthesizer::PI, 2.f)
-                        * std::pow(-1.f, k) * std::pow(2*k -1, -2.f)
-                        * std::sin((2.f * k - 1.f) * phase);
+                        * std::pow(-1.f, k) * std::pow(static_cast<float>(2 * k - 1), -2.f)
+                        * std::sin((2.f * static_cast<float>(k) - 1.f) * phase);
             }
         }
 
@@ -38,9 +38,9 @@ namespace {
         constexpr auto HARMONICS_COUNT = 7;
         for (auto k = 1; k <= HARMONICS_COUNT; ++k) {
             for (auto j = 0; j < WAVETABLE_LENGHT; ++j) {
-                const auto phase = 2.f * wavetablesynthesizer::PI * j / WAVETABLE_LENGHT;
-                squareWaveTable[j] += 4.f / wavetablesynthesizer::PI * std::pow(2.f * k - 1.f, -1.f)
-                                      * std::sin((2.f * k - 1.f) * phase);
+                const auto phase = 2.f * wavetablesynthesizer::PI * static_cast<float>(j) / static_cast<float>(WAVETABLE_LENGHT);
+                squareWaveTable[j] += 4.f / wavetablesynthesizer::PI * std::pow(2.f * static_cast<float>(k) - 1.f, -1.f)
+                                      * std::sin((2.f * static_cast<float>(k) - 1.f) * phase);
             }
         }
 
@@ -54,9 +54,9 @@ namespace {
 
         for (auto k = 1; k <= HARMONICS_COUNT; ++k) {
             for (auto j = 0; j < WAVETABLE_LENGHT; ++j) {
-                const auto phase = 2.f * wavetablesynthesizer::PI * j / WAVETABLE_LENGHT;
-                sawWaveTable[j] += 2.f / wavetablesynthesizer::PI * std::pow(-1.f, k) * std::pow(k, -1.f)
-                                   * std::sin(k * phase);
+                const auto phase = 2.f * wavetablesynthesizer::PI * static_cast<float>(j) / static_cast<float>(WAVETABLE_LENGHT);
+                sawWaveTable[j] += 2.f / wavetablesynthesizer::PI * std::pow(-1.f, k) * std::pow(static_cast<float>(k), -1.f)
+                                   * std::sin(static_cast<float>(k) * phase);
             }
         }
 
@@ -94,7 +94,7 @@ namespace wavetablesynthesizer {
             case Wavetable::SAW:
                 return sawWaveTable();
             default:
-                return std::vector<float>(WAVETABLE_LENGHT, 0.f);
+                return {WAVETABLE_LENGHT, 0.f};
 
         }
     }

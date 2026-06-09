@@ -7,7 +7,7 @@ import kotlinx.coroutines.withContext
 
 class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserver {
     private var synthesizerHandle: Long = 0
-    private val synthesizerMutex = Object()
+    private val synthesizerMutex = Any()
     private external fun create(): Long
     private external fun delete(synthesizerHandle: Long)
     private external fun play(synthesizerHandle: Long)

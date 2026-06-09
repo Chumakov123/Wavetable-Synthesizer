@@ -49,7 +49,7 @@ namespace wavetablesynthesizer {
         return currentAmplitude * sample;
     }
 
-    float WavetableOscillator::interpolateLineary(const std::vector<float>& table, float indexValue) const {
+    float WavetableOscillator::interpolateLineary(const std::vector<float>& table, float indexValue) {
         if (table.empty()) return 0.f;
         const auto truncatedIndex = static_cast<std::size_t>(indexValue);
         const auto nextIndex = (truncatedIndex + 1u) % table.size();
@@ -81,17 +81,5 @@ namespace wavetablesynthesizer {
         isCrossfading.store(false, std::memory_order_relaxed);
         wavetableIsBeingSwapped.store(false, std::memory_order_relaxed);
         swapWaveTable.store(false, std::memory_order_relaxed);
-    }
-
-    A4Oscillator::A4Oscillator(float sampleRate)
-        : _phaseIncrement{440.f / sampleRate * 2.f * PI} {}
-    float A4Oscillator::getSample() {
-        const auto sample = 0.5f * std::sin(_phase);
-        _phase = std::fmod(_phase + _phaseIncrement, 2.f * PI);
-        return sample;
-    }
-
-    void A4Oscillator::onPlaybackStopped() {
-        _phase = 0.f;
     }
 }
