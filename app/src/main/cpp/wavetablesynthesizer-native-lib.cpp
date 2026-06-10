@@ -214,6 +214,14 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearSequen
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->clearSequence();
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setQuantizationMode(JNIEnv *env, jobject thiz,
+                                                                                        jlong synthesizerHandle,
+                                                                                        jint mode) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setQuantizationMode(static_cast<int>(mode));
+}
 }
 
 

@@ -37,14 +37,16 @@ namespace wavetablesynthesizer {
         if (!_isRecording.load()) return;
 
         std::lock_guard<std::mutex> lock(_eventsMutex);
-        _events.push_back({_currentLoopSample, frequency, true});
+        uint64_t timestamp = getQuantizedTimestamp(_currentLoopSample);
+        _events.push_back({timestamp, frequency, true});
     }
 
     void Sequencer::recordNoteOff(float frequency) {
         if (!_isRecording.load()) return;
 
         std::lock_guard<std::mutex> lock(_eventsMutex);
-        _events.push_back({_currentLoopSample, frequency, false});
+        uint64_t timestamp = getQuantizedTimestamp(_currentLoopSample);
+        _events.push_back({timestamp, frequency, false});
     }
 
     void Sequencer::startRecording() {
@@ -79,6 +81,33 @@ namespace wavetablesynthesizer {
     void Sequencer::setLoopLengthBars(int bars) {
         _loopLengthBars.store(bars);
         updateLoopLength();
+    }
+
+    void Sequencer::setQuantizationMode(QuantizationMode mode) {
+        _quantizationMode.store(mode);
+    }
+
+    uint64_t Sequencer::getQuantizedTimestamp(uint64_t timestamp) {
+        QuantizationMode mode = _quantizationMode.load();
+        if (mode == QuantizationMode::None) return timestamp;
+
+        float bpm = _bpm.load();
+        float samplesPerBeat = static_cast<float>(_sampleRate) * 60.0f / bpm;
+        float samplesPerGrid = 0.0f;
+
+        if (mode == QuantizationMode::Beat_1_16) {
+            samplesPerGrid = samplesPerBeat / 4.0f; // 1/16 note = 1/4 beat
+        } else if (mode == QuantizationMode::Beat_1_32) {
+            samplesPerGrid = samplesPerBeat / 8.0f; // 1/32 note = 1/8 beat
+        }
+
+        if (samplesPerGrid <= 0.0f) return timestamp;
+
+        // Округляем до ближайшей сетки
+        auto quantized = static_cast<uint64_t>(std::round(static_cast<float>(timestamp) / samplesPerGrid) * samplesPerGrid);
+
+        // Гарантируем, что не вышли за границы лупа
+        return quantized % _loopLengthSamples;
     }
 
     void Sequencer::updateLoopLength() {

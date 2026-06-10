@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -46,36 +47,41 @@ fun WavetableSynthesizerApp(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(4.dp),
+            .padding(2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        // Верхняя панель
+        // Ряд 1: Глобальное управление (Studio + Synth Settings)
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().background(Color(0xFF222222), RoundedCornerShape(4.dp)).padding(2.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Левая группа: Клавиатура и Октава
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("KEY", fontSize = 9.sp, color = Color.Gray)
-                    Switch(
-                        checked = isKeyboardMode,
-                        onCheckedChange = { synthesizerViewModel.setKeyboardMode(it) },
-                        modifier = Modifier.scale(0.6f)
-                    )
-                }
-                OctaveControl(synthesizerViewModel, modifier = Modifier.padding(start = 4.dp))
+            // Группа слева: Клавиатура, Октава, Громкость
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Switch(
+                    checked = isKeyboardMode,
+                    onCheckedChange = { synthesizerViewModel.setKeyboardMode(it) },
+                    modifier = Modifier.scale(0.5f)
+                )
+                OctaveControl(synthesizerViewModel)
+                VolumeControl(synthesizerViewModel)
+            }
+
+            // Группа справа: Метроном, Транспорт
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 MetronomeControl(synthesizerViewModel)
                 TransportControls(synthesizerViewModel)
             }
+        }
 
-            // Центральная группа: Переключатель панелей WAVE/ADSR
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+        // Ряд 2: Параметры звука (Presets + Mode + Content)
+        Row(
+            modifier = Modifier.fillMaxWidth().height(65.dp).padding(horizontal = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 PresetSelector(synthesizerViewModel)
                 ModeSelector(
                     currentMode = panelMode,
@@ -83,26 +89,15 @@ fun WavetableSynthesizerApp(
                 )
             }
 
-            // Правая группа: Громкость
-            VolumeControl(synthesizerViewModel)
-        }
-
-        // Контент выбранной панели
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(70.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            when (panelMode) {
-                WavetableSynthesizerViewModel.ControlPanelMode.WAVE -> {
-                    WavetableSelectionPanel(synthesizerViewModel)
-                }
-                WavetableSynthesizerViewModel.ControlPanelMode.ADSR -> {
-                    AdsrControls(synthesizerViewModel)
-                }
-                WavetableSynthesizerViewModel.ControlPanelMode.LFO -> {
-                    LfoControls(synthesizerViewModel)
+            // Контент выбранной панели (WAVE, ADSR, LFO)
+            Box(
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                when (panelMode) {
+                    WavetableSynthesizerViewModel.ControlPanelMode.WAVE -> WavetableSelectionPanel(synthesizerViewModel)
+                    WavetableSynthesizerViewModel.ControlPanelMode.ADSR -> AdsrControls(synthesizerViewModel)
+                    WavetableSynthesizerViewModel.ControlPanelMode.LFO -> LfoControls(synthesizerViewModel)
                 }
             }
         }
@@ -134,8 +129,8 @@ private fun ModeSelector(
     Row(
         modifier = Modifier
             .background(Color.DarkGray, RoundedCornerShape(4.dp))
-            .padding(2.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
+            .padding(1.dp),
+        horizontalArrangement = Arrangement.spacedBy(1.dp)
     ) {
         WavetableSynthesizerViewModel.ControlPanelMode.entries.forEach { mode ->
             val isSelected = currentMode == mode
@@ -146,11 +141,11 @@ private fun ModeSelector(
                         RoundedCornerShape(2.dp)
                     )
                     .clickable { onModeSelected(mode) }
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(
                     text = mode.name,
-                    fontSize = 9.sp,
+                    fontSize = 8.sp,
                     color = if (isSelected) Color.White else Color.LightGray
                 )
             }

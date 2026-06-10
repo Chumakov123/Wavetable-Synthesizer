@@ -55,4 +55,5 @@ interface WavetableSynthesizer {
     suspend fun setRecording(enabled: Boolean)
     suspend fun setPlayback(enabled: Boolean)
     suspend fun clearSequence()
+    suspend fun setQuantizationMode(mode: Int)
 }

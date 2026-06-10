@@ -87,7 +87,7 @@ fun OctaveControl(
                 onClick = { synthesizerViewModel.setOctave(octave - 1) },
                 modifier = Modifier.size(24.dp)
             ) {
-                Icon(Icons.Default.Remove, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Remove, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Gray)
             }
             Box(
                 modifier = Modifier
@@ -105,7 +105,7 @@ fun OctaveControl(
                 onClick = { synthesizerViewModel.setOctave(octave + 1) },
                 modifier = Modifier.size(24.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Gray)
             }
         }
     }

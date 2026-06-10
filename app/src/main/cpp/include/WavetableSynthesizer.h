@@ -42,6 +42,7 @@ namespace wavetablesynthesizer {
         void setRecording(bool enabled);
         void setPlayback(bool enabled);
         void clearSequence();
+        void setQuantizationMode(int mode);
 
     private:
         std::atomic<bool> _isStreamOpen = false;

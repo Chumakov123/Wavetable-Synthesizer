@@ -191,6 +191,13 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::setMetronomeEnabled(bool enabled) {
         _metronome->setEnabled(enabled);
+        if (enabled && !_isStreamOpen) {
+            std::lock_guard<std::mutex> lock(_mutex);
+            if (!_isStreamOpen) {
+                _audioPlayer->play();
+                _isStreamOpen = true;
+            }
+        }
     }
 
     void WavetableSynthesizer::setBpm(float bpm) {
@@ -210,6 +217,14 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::clearSequence() {
         _sequencer->clear();
+        std::lock_guard<std::mutex> lock(_mutex);
+        for (auto& voice : _voices) {
+            voice->noteOff();
+        }
+    }
+
+    void WavetableSynthesizer::setQuantizationMode(int mode) {
+        _sequencer->setQuantizationMode(static_cast<QuantizationMode>(mode));
     }
 
     void WavetableSynthesizer::sequencerCallback(void* receiver, float frequency, bool isNoteOn) {

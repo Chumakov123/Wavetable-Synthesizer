@@ -30,6 +30,7 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun setRecording(synthesizerHandle: Long, enabled: Boolean)
     private external fun setPlayback(synthesizerHandle: Long, enabled: Boolean)
     private external fun clearSequence(synthesizerHandle: Long)
+    private external fun setQuantizationMode(synthesizerHandle: Long, mode: Int)
 
     companion object {
         init {
@@ -204,6 +205,13 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             clearSequence(synthesizerHandle)
+        }
+    }
+
+    override suspend fun setQuantizationMode(mode: Int) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setQuantizationMode(synthesizerHandle, mode)
         }
     }
 }

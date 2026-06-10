@@ -13,6 +13,12 @@ namespace wavetablesynthesizer {
         bool isNoteOn;
     };
 
+    enum class QuantizationMode {
+        None,
+        Beat_1_16,
+        Beat_1_32
+    };
+
     class Sequencer {
     public:
         Sequencer(double sampleRate);
@@ -32,6 +38,7 @@ namespace wavetablesynthesizer {
 
         void setLoopLengthBars(int bars);
         void setBpm(float bpm);
+        void setQuantizationMode(QuantizationMode mode);
 
         bool isRecording() const { return _isRecording.load(); }
         bool isPlaying() const { return _isPlaying.load(); }
@@ -57,9 +64,12 @@ namespace wavetablesynthesizer {
         uint64_t _currentLoopSample = 0;
         uint64_t _loopLengthSamples = 0;
 
+        std::atomic<QuantizationMode> _quantizationMode{QuantizationMode::None};
+
         NoteCallback _noteCallback = nullptr;
         void* _receiver = nullptr;
 
         void updateLoopLength();
+        uint64_t getQuantizedTimestamp(uint64_t timestamp);
     };
 }

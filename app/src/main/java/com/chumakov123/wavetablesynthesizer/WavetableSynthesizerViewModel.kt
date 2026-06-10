@@ -140,6 +140,14 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isMetronomeEnabled = MutableLiveData(false)
     val isMetronomeEnabled: LiveData<Boolean> = _isMetronomeEnabled
 
+    enum class Quantization(val label: String) {
+        OFF("OFF"),
+        GRID_1_16("1/16"),
+        GRID_1_32("1/32")
+    }
+    private val _quantization = MutableLiveData(Quantization.OFF)
+    val quantization: LiveData<Quantization> = _quantization
+
     private val _activeNotes = MutableLiveData<Set<Float>>(emptySet())
     val activeNotes: LiveData<Set<Float>> = _activeNotes
 
@@ -234,6 +242,13 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
+    fun setQuantization(mode: Quantization) {
+        _quantization.value = mode
+        viewModelScope.launch {
+            wavetableSynthesizer?.setQuantizationMode(mode.ordinal)
+        }
+    }
+
     fun noteOn(frequencyInHz: Float) {
         _activeNotes.value = _activeNotes.value?.plus(frequencyInHz)
         viewModelScope.launch {
@@ -325,6 +340,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
             wavetableSynthesizer?.setTremoloDepth(tremoloDepth.value!!)
             wavetableSynthesizer?.setBpm(bpm.value!!)
             wavetableSynthesizer?.setMetronomeEnabled(isMetronomeEnabled.value!!)
+            wavetableSynthesizer?.setQuantizationMode(quantization.value!!.ordinal)
             updatePlayLabel()
         }
     }

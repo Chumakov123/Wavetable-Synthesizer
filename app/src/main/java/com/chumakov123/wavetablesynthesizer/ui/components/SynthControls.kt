@@ -1,10 +1,14 @@
 package com.chumakov123.wavetablesynthesizer.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
@@ -55,16 +59,9 @@ fun PitchControlContent(
     valueRange: ClosedFloatingPointRange<Float>,
     frequencyValueLabel: String
 ) {
-    Text(
-        text = pitchControlLabel,
-    )
-    Slider(
-        value = value,
-        onValueChange = onValueChange,
-        valueRange = valueRange,    )
-    Text(
-        text = frequencyValueLabel
-    )
+    Text(text = pitchControlLabel, fontSize = 12.sp)
+    Slider(value = value, onValueChange = onValueChange, valueRange = valueRange)
+    Text(text = frequencyValueLabel, fontSize = 10.sp)
 }
 
 @Composable
@@ -82,31 +79,15 @@ fun VolumeControl(
     synthesizerViewModel: WavetableSynthesizerViewModel
 ) {
     val volume = synthesizerViewModel.volume.observeAsState()
-
-    VolumeControlContent(
-        value = volume.value!!,
-        onValueChange = {
-            synthesizerViewModel.setVolume(it)
-        },
-        valueRange = synthesizerViewModel.volumeRange
-    )
-}
-
-@Composable
-fun VolumeControlContent(
-    value: Float,
-    onValueChange: (Float) -> Unit,
-    valueRange: ClosedFloatingPointRange<Float>
-) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(imageVector = Icons.AutoMirrored.Filled.VolumeMute, contentDescription = null, modifier = Modifier.size(20.dp))
+        Icon(Icons.AutoMirrored.Filled.VolumeMute, null, Modifier.size(14.dp), tint = Color.Gray)
         Knob(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier.size(60.dp).padding(4.dp),
-            valueRange = valueRange
+            value = volume.value!!,
+            onValueChange = { synthesizerViewModel.setVolume(it) },
+            modifier = Modifier.size(36.dp).padding(2.dp),
+            valueRange = synthesizerViewModel.volumeRange
         )
-        Icon(imageVector = Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, modifier = Modifier.size(20.dp))
+        Icon(Icons.AutoMirrored.Filled.VolumeUp, null, Modifier.size(14.dp), tint = Color.Gray)
     }
 }
 
@@ -117,25 +98,20 @@ fun MetronomeControl(viewModel: WavetableSynthesizerViewModel) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("METRO", fontSize = 9.sp, color = Color.Gray)
-            Switch(
-                checked = isEnabled,
-                onCheckedChange = { viewModel.setMetronomeEnabled(it) },
-                modifier = Modifier.scale(0.6f)
-            )
-        }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("BPM: ${bpm.toInt()}", fontSize = 9.sp, color = Color.Gray)
-            Knob(
-                value = bpm,
-                onValueChange = { viewModel.setBpm(it) },
-                valueRange = 40f..240f,
-                modifier = Modifier.size(35.dp)
-            )
-        }
+        Switch(
+            checked = isEnabled,
+            onCheckedChange = { viewModel.setMetronomeEnabled(it) },
+            modifier = Modifier.scale(0.5f)
+        )
+        Text("BPM:${bpm.toInt()}", fontSize = 9.sp, color = Color.Gray)
+        Knob(
+            value = bpm,
+            onValueChange = { viewModel.setBpm(it) },
+            valueRange = 40f..240f,
+            modifier = Modifier.size(32.dp)
+        )
     }
 }
 
@@ -146,40 +122,38 @@ fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(horizontal = 8.dp)
+        horizontalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        IconButton(
-            onClick = { viewModel.toggleRecording() },
-            modifier = Modifier.size(32.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.FiberManualRecord,
-                contentDescription = "Record",
-                tint = if (isRecording) Color.Red else Color.Gray
-            )
+        IconButton(onClick = { viewModel.toggleRecording() }, modifier = Modifier.size(30.dp)) {
+            Icon(Icons.Default.FiberManualRecord, null, Modifier.size(18.dp), tint = if (isRecording) Color.Red else Color.Gray)
         }
-
-        IconButton(
-            onClick = { viewModel.togglePlayback() },
-            modifier = Modifier.size(32.dp)
-        ) {
-            Icon(
-                imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
-                contentDescription = "Play Loop",
-                tint = if (isPlaying) Color.Green else Color.Gray
-            )
+        IconButton(onClick = { viewModel.togglePlayback() }, modifier = Modifier.size(30.dp)) {
+            Icon(if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow, null, Modifier.size(18.dp), tint = if (isPlaying) Color.Green else Color.Gray)
         }
+        IconButton(onClick = { viewModel.clearSequence() }, modifier = Modifier.size(30.dp)) {
+            Icon(Icons.Default.Delete, null, Modifier.size(18.dp), tint = Color.Gray)
+        }
+        QuantizationSelector(viewModel)
+    }
+}
 
-        IconButton(
-            onClick = { viewModel.clearSequence() },
-            modifier = Modifier.size(32.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Clear",
-                tint = Color.Gray
-            )
+@Composable
+fun QuantizationSelector(viewModel: WavetableSynthesizerViewModel) {
+    val currentQuant by viewModel.quantization.observeAsState(WavetableSynthesizerViewModel.Quantization.OFF)
+    Row(
+        modifier = Modifier.background(Color.DarkGray, RoundedCornerShape(4.dp)).padding(1.dp),
+        horizontalArrangement = Arrangement.spacedBy(1.dp)
+    ) {
+        WavetableSynthesizerViewModel.Quantization.entries.forEach { mode ->
+            val isSelected = currentQuant == mode
+            Box(
+                modifier = Modifier
+                    .background(if (isSelected) Color.Gray else Color.Transparent, RoundedCornerShape(2.dp))
+                    .clickable { viewModel.setQuantization(mode) }
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+            ) {
+                Text(text = mode.label, fontSize = 7.sp, color = if (isSelected) Color.White else Color.LightGray)
+            }
         }
     }
 }
