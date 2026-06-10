@@ -108,11 +108,18 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isKeyboardMode = MutableLiveData(true)
     val isKeyboardMode: LiveData<Boolean> = _isKeyboardMode
 
+    private val _octave = MutableLiveData(0)
+    val octave: LiveData<Int> = _octave
+
     private val _activeNotes = MutableLiveData<Set<Float>>(emptySet())
     val activeNotes: LiveData<Set<Float>> = _activeNotes
 
     fun setKeyboardMode(enabled: Boolean) {
         _isKeyboardMode.value = enabled
+    }
+
+    fun setOctave(octave: Int) {
+        _octave.value = octave
     }
 
     fun noteOn(frequencyInHz: Float) {

@@ -3,18 +3,25 @@ package com.chumakov123.wavetablesynthesizer.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -24,106 +31,149 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import kotlin.math.pow
 
 @Composable
 fun PianoKeyboard(synthesizerViewModel: WavetableSynthesizerViewModel) {
-    val whiteNotes = listOf(
-        "C" to 261.63f, "D" to 293.66f, "E" to 329.63f, "F" to 349.23f,
-        "G" to 392.00f, "A" to 440.00f, "B" to 493.88f, "C2" to 523.25f
-    )
+    val octave by synthesizerViewModel.octave.observeAsState(0)
+    val multiplier = 2f.pow(octave)
 
-    val blackNotes = listOf(
-        "C#" to 277.18f to 0, "D#" to 311.13f to 1, "F#" to 369.99f to 3,
-        "G#" to 415.30f to 4, "A#" to 466.16f to 5
-    )
+    val baseWhiteNotes = remember {
+        listOf(
+            "C" to 261.63f, "D" to 293.66f, "E" to 329.63f, "F" to 349.23f,
+            "G" to 392.00f, "A" to 440.00f, "B" to 493.88f, "C2" to 523.25f
+        )
+    }
 
-    val activeNotes = synthesizerViewModel.activeNotes.observeAsState(emptySet())
-    val pointerToFreq = remember { mutableMapOf<PointerId, Float>() }
+    val baseBlackNotes = remember {
+        listOf(
+            ("C#" to 277.18f) to 0, ("D#" to 311.13f) to 1, ("F#" to 369.99f) to 3,
+            ("G#" to 415.30f) to 4, ("A#" to 466.16f) to 5
+        )
+    }
 
-    BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 16.dp)
+    val activeNotes by synthesizerViewModel.activeNotes.observeAsState(emptySet())
+    val pointerToBaseFreq = remember { mutableMapOf<PointerId, Float>() }
+
+    val currentMultiplierState = rememberUpdatedState(multiplier)
+
+    val prevMultiplier = remember { mutableFloatStateOf(multiplier) }
+    LaunchedEffect(multiplier) {
+        val oldMult = prevMultiplier.floatValue
+        if (oldMult != multiplier) {
+            pointerToBaseFreq.values.forEach { baseFreq ->
+                synthesizerViewModel.noteOff(baseFreq * oldMult)
+                synthesizerViewModel.noteOn(baseFreq * multiplier)
+            }
+            prevMultiplier.floatValue = multiplier
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val whiteKeyWidth = this.maxWidth / whiteNotes.size
-        val blackKeyWidth = whiteKeyWidth * 0.6f
-        val blackKeyHeight = this.maxHeight * 0.6f
-        
-        val whiteKeyWidthPx = constraints.maxWidth.toFloat() / whiteNotes.size
-        val blackKeyWidthPx = whiteKeyWidthPx * 0.6f
-        val blackKeyHeightPx = constraints.maxHeight.toFloat() * 0.6f
+        Row(
+            modifier = Modifier.padding(bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(onClick = { synthesizerViewModel.setOctave(octave - 1) }) {
+                Text("-")
+            }
+            Text(text = "Octave: $octave")
+            Button(onClick = { synthesizerViewModel.setOctave(octave + 1) }) {
+                Text("+")
+            }
+        }
 
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(whiteKeyWidthPx, blackKeyWidthPx, blackKeyHeightPx) {
-                awaitEachGesture {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        event.changes.forEach { change ->
-                            val pointerId = change.id
-                            if (change.pressed) {
-                                val newFreq = getFrequencyAt(
-                                    change.position,
-                                    whiteKeyWidthPx,
-                                    blackKeyWidthPx,
-                                    blackKeyHeightPx,
-                                    whiteNotes,
-                                    blackNotes
-                                )
-                                val oldFreq = pointerToFreq[pointerId]
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 48.dp, vertical = 16.dp)
+        ) {
+            val whiteKeyWidth = this.maxWidth / baseWhiteNotes.size
+            val blackKeyWidth = whiteKeyWidth * 0.6f
+            val blackKeyHeight = this.maxHeight * 0.6f
 
-                                if (newFreq != oldFreq) {
-                                    if (oldFreq != null) synthesizerViewModel.noteOff(oldFreq)
-                                    if (newFreq != null) synthesizerViewModel.noteOn(newFreq)
-                                    if (newFreq != null) {
-                                        pointerToFreq[pointerId] = newFreq
-                                    } else {
-                                        pointerToFreq.remove(pointerId)
+            val whiteKeyWidthPx = constraints.maxWidth.toFloat() / baseWhiteNotes.size
+            val blackKeyWidthPx = whiteKeyWidthPx * 0.6f
+            val blackKeyHeightPx = constraints.maxHeight.toFloat() * 0.6f
+
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(whiteKeyWidthPx, blackKeyWidthPx, blackKeyHeightPx) {
+                    awaitEachGesture {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            event.changes.forEach { change ->
+                                val pointerId = change.id
+                                if (change.pressed) {
+                                    val newBaseFreq = getFrequencyAt(
+                                        change.position,
+                                        whiteKeyWidthPx,
+                                        blackKeyWidthPx,
+                                        blackKeyHeightPx,
+                                        baseWhiteNotes,
+                                        baseBlackNotes
+                                    )
+                                    val oldBaseFreq = pointerToBaseFreq[pointerId]
+
+                                    if (newBaseFreq != oldBaseFreq) {
+                                        val m = currentMultiplierState.value
+                                        if (oldBaseFreq != null) synthesizerViewModel.noteOff(oldBaseFreq * m)
+                                        if (newBaseFreq != null) {
+                                            synthesizerViewModel.noteOn(newBaseFreq * m)
+                                            pointerToBaseFreq[pointerId] = newBaseFreq
+                                        } else {
+                                            pointerToBaseFreq.remove(pointerId)
+                                        }
+                                    }
+                                    change.consume()
+                                } else {
+                                    val releasedBaseFreq = pointerToBaseFreq.remove(pointerId)
+                                    if (releasedBaseFreq != null) {
+                                        synthesizerViewModel.noteOff(releasedBaseFreq * currentMultiplierState.value)
                                     }
                                 }
-                                change.consume()
-                            } else {
-                                val releasedFreq = pointerToFreq.remove(pointerId)
-                                if (releasedFreq != null) {
-                                    synthesizerViewModel.noteOff(releasedFreq)
-                                }
                             }
+                            if (event.changes.all { !it.pressed }) break
                         }
-                        // Выходим из цикла, если все пальцы подняты
-                        if (event.changes.all { !it.pressed }) break
+                    }
+                }) {
+                // Белые клавиши
+                Row(modifier = Modifier.fillMaxSize()) {
+                    baseWhiteNotes.forEach { (name, baseFreq) ->
+                        val freq = baseFreq * multiplier
+                        PianoKey(
+                            name = name,
+                            isActive = activeNotes.contains(freq),
+                            color = Color.White,
+                            activeColor = Color.Yellow,
+                            textColor = Color.Black,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .border(0.5.dp, Color.Black)
+                        )
                     }
                 }
-            }) {
-            // Белые клавиши
-            Row(modifier = Modifier.fillMaxSize()) {
-                whiteNotes.forEach { (name, freq) ->
+
+                // Черные клавиши
+                baseBlackNotes.forEach { (noteInfo, index) ->
+                    val (name, baseFreq) = noteInfo
+                    val freq = baseFreq * multiplier
                     PianoKey(
                         name = name,
-                        isActive = activeNotes.value.contains(freq),
-                        color = Color.White,
+                        isActive = activeNotes.contains(freq),
+                        color = Color.Black,
                         activeColor = Color.Yellow,
-                        textColor = Color.Black,
+                        textColor = Color.White,
                         modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .border(0.5.dp, Color.Black)
+                            .offset(x = whiteKeyWidth * (index + 1) - blackKeyWidth / 2)
+                            .size(blackKeyWidth, blackKeyHeight)
                     )
                 }
-            }
-
-            // Черные клавиши
-            blackNotes.forEach { (noteInfo, index) ->
-                val (name, freq) = noteInfo
-                PianoKey(
-                    name = name,
-                    isActive = activeNotes.value.contains(freq),
-                    color = Color.Black,
-                    activeColor = Color.Yellow,
-                    textColor = Color.White,
-                    modifier = Modifier
-                        .offset(x = whiteKeyWidth * (index + 1) - blackKeyWidth / 2)
-                        .size(blackKeyWidth, blackKeyHeight)
-                )
             }
         }
     }
