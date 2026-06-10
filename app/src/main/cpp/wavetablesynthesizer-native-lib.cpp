@@ -191,6 +191,29 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setBpm(JNIE
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setBpm(static_cast<float>(bpm));
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setRecording(JNIEnv *env, jobject thiz,
+                                                                                 jlong synthesizerHandle,
+                                                                                 jboolean enabled) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setRecording(static_cast<bool>(enabled));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setPlayback(JNIEnv *env, jobject thiz,
+                                                                                jlong synthesizerHandle,
+                                                                                jboolean enabled) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setPlayback(static_cast<bool>(enabled));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearSequence(JNIEnv *env, jobject thiz,
+                                                                                  jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->clearSequence();
+}
 }
 
 

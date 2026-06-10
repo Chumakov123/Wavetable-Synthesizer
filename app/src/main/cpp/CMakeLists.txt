@@ -33,6 +33,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         WavetableOscillator.cpp
         AdsrEnvelope.cpp
         Metronome.cpp
+        Sequencer.cpp
         wavetablesynthesizer-native-lib.cpp)
 
 find_package(oboe REQUIRED CONFIG)

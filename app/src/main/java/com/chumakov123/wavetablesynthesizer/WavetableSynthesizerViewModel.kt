@@ -4,17 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.exp
 import kotlin.math.ln
-import kotlin.time.Duration.Companion.milliseconds
-
-data class NoteEvent(
-    val frequency: Float,
-    val isNoteOn: Boolean,
-    val timestampMs: Long
-)
 
 class WavetableSynthesizerViewModel : ViewModel() {
     var wavetableSynthesizer: WavetableSynthesizer? = null
@@ -244,9 +236,6 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun noteOn(frequencyInHz: Float) {
         _activeNotes.value = _activeNotes.value?.plus(frequencyInHz)
-        if (_isRecording.value == true) {
-            recordEvent(frequencyInHz, true)
-        }
         viewModelScope.launch {
             wavetableSynthesizer?.noteOn(frequencyInHz)
         }
@@ -254,9 +243,6 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun noteOff(frequencyInHz: Float) {
         _activeNotes.value = _activeNotes.value?.minus(frequencyInHz)
-        if (_isRecording.value == true) {
-            recordEvent(frequencyInHz, false)
-        }
         viewModelScope.launch {
             wavetableSynthesizer?.noteOff(frequencyInHz)
         }
@@ -265,46 +251,35 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isRecording = MutableLiveData(false)
     val isRecording: LiveData<Boolean> = _isRecording
 
-    private val _recordedEvents = mutableListOf<NoteEvent>()
-    private var recordingStartTime: Long = 0
-
     fun toggleRecording() {
-        if (_isRecording.value == true) {
-            _isRecording.value = false
-        } else {
-            _recordedEvents.clear()
-            recordingStartTime = System.currentTimeMillis()
-            _isRecording.value = true
+        val isCurrentlyRecording = _isRecording.value ?: false
+        val nextRecordingState = !isCurrentlyRecording
+        
+        _isRecording.value = nextRecordingState
+        
+        // В нативной части при старте записи всегда включается playback
+        // При остановке записи playback продолжается для зацикливания
+        _isPlayingRecording.value = true
+        
+        viewModelScope.launch {
+            wavetableSynthesizer?.setRecording(nextRecordingState)
         }
-    }
-
-    private fun recordEvent(frequency: Float, isNoteOn: Boolean) {
-        val timestamp = System.currentTimeMillis() - recordingStartTime
-        _recordedEvents.add(NoteEvent(frequency, isNoteOn, timestamp))
     }
 
     private val _isPlayingRecording = MutableLiveData(false)
     val isPlayingRecording: LiveData<Boolean> = _isPlayingRecording
 
-    fun playRecording() {
-        if (_recordedEvents.isEmpty() || _isPlayingRecording.value == true) return
-
+    fun togglePlayback() {
+        val newState = !(_isPlayingRecording.value ?: false)
+        _isPlayingRecording.value = newState
         viewModelScope.launch {
-            _isPlayingRecording.value = true
-            val startTime = System.currentTimeMillis()
-            
-            _recordedEvents.forEach { event ->
-                val delayTime = event.timestampMs - (System.currentTimeMillis() - startTime)
-                if (delayTime > 0) {
-                    delay(delayTime.milliseconds)
-                }
-                if (event.isNoteOn) {
-                    noteOn(event.frequency)
-                } else {
-                    noteOff(event.frequency)
-                }
-            }
-            _isPlayingRecording.value = false
+            wavetableSynthesizer?.setPlayback(newState)
+        }
+    }
+
+    fun clearSequence() {
+        viewModelScope.launch {
+            wavetableSynthesizer?.clearSequence()
         }
     }
 

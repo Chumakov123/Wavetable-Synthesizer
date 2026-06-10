@@ -27,6 +27,7 @@ import com.chumakov123.wavetablesynthesizer.ui.components.AdsrControls
 import com.chumakov123.wavetablesynthesizer.ui.components.LfoControls
 import com.chumakov123.wavetablesynthesizer.ui.components.MetronomeControl
 import com.chumakov123.wavetablesynthesizer.ui.components.OctaveControl
+import com.chumakov123.wavetablesynthesizer.ui.components.TransportControls
 import com.chumakov123.wavetablesynthesizer.ui.components.PitchControl
 import com.chumakov123.wavetablesynthesizer.ui.components.PlayControl
 import com.chumakov123.wavetablesynthesizer.ui.components.PianoKeyboard
@@ -67,6 +68,7 @@ fun WavetableSynthesizerApp(
                 }
                 OctaveControl(synthesizerViewModel, modifier = Modifier.padding(start = 4.dp))
                 MetronomeControl(synthesizerViewModel)
+                TransportControls(synthesizerViewModel)
             }
 
             // Центральная группа: Переключатель панелей WAVE/ADSR

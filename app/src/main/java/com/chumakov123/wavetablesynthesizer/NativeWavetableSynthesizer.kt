@@ -27,6 +27,9 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun setTremoloDepth(synthesizerHandle: Long, depth: Float)
     private external fun setMetronomeEnabled(synthesizerHandle: Long, enabled: Boolean)
     private external fun setBpm(synthesizerHandle: Long, bpm: Float)
+    private external fun setRecording(synthesizerHandle: Long, enabled: Boolean)
+    private external fun setPlayback(synthesizerHandle: Long, enabled: Boolean)
+    private external fun clearSequence(synthesizerHandle: Long)
 
     companion object {
         init {
@@ -180,6 +183,27 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             setBpm(synthesizerHandle, bpm)
+        }
+    }
+
+    override suspend fun setRecording(enabled: Boolean) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setRecording(synthesizerHandle, enabled)
+        }
+    }
+
+    override suspend fun setPlayback(enabled: Boolean) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setPlayback(synthesizerHandle, enabled)
+        }
+    }
+
+    override suspend fun clearSequence() = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            clearSequence(synthesizerHandle)
         }
     }
 }

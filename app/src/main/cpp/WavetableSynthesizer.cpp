@@ -1,11 +1,10 @@
 #include "Log.h"
 #include <cmath>
-#include <thread>
-#include <chrono>
 #include "WavetableSynthesizer.h"
 #include "OboeAudioPlayer.h"
 #include "WavetableOscillator.h"
 #include "Mixer.h"
+#include "Sequencer.h"
 
 namespace wavetablesynthesizer {
     WavetableSynthesizer::WavetableSynthesizer() {
@@ -26,6 +25,10 @@ namespace wavetablesynthesizer {
 
         _metronome = std::make_shared<Metronome>(sampleRate);
         mixer->addSource(_metronome);
+
+        _sequencer = std::make_shared<Sequencer>(sampleRate);
+        _sequencer->setNoteCallback(sequencerCallback, this);
+        mixer->setSequencer(_sequencer);
 
         _audioPlayer = std::make_unique<OboeAudioPlayer>(mixer, sampleRate);
     }
@@ -92,6 +95,11 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableSynthesizer::noteOn(float frequencyInHz) {
+        _sequencer->recordNoteOn(frequencyInHz);
+        internalNoteOn(frequencyInHz);
+    }
+
+    void WavetableSynthesizer::internalNoteOn(float frequencyInHz) {
         std::lock_guard<std::mutex> lock(_mutex);
 
         // 1. Ищем, не играет ли уже эта нота
@@ -119,6 +127,11 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableSynthesizer::noteOff(float frequencyInHz) {
+        _sequencer->recordNoteOff(frequencyInHz);
+        internalNoteOff(frequencyInHz);
+    }
+
+    void WavetableSynthesizer::internalNoteOff(float frequencyInHz) {
         std::lock_guard<std::mutex> lock(_mutex);
         for (auto& voice : _voices) {
             if (std::abs(voice->getFrequency() - frequencyInHz) < 0.1f) {
@@ -182,5 +195,26 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::setBpm(float bpm) {
         _metronome->setBpm(bpm);
+        _sequencer->setBpm(bpm);
+    }
+
+    void WavetableSynthesizer::setRecording(bool enabled) {
+        if (enabled) _sequencer->startRecording();
+        else _sequencer->stopRecording();
+    }
+
+    void WavetableSynthesizer::setPlayback(bool enabled) {
+        if (enabled) _sequencer->startPlayback();
+        else _sequencer->stopPlayback();
+    }
+
+    void WavetableSynthesizer::clearSequence() {
+        _sequencer->clear();
+    }
+
+    void WavetableSynthesizer::sequencerCallback(void* receiver, float frequency, bool isNoteOn) {
+        auto* synth = static_cast<WavetableSynthesizer*>(receiver);
+        if (isNoteOn) synth->internalNoteOn(frequency);
+        else synth->internalNoteOff(frequency);
     }
 }

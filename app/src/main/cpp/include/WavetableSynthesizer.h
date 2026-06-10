@@ -4,6 +4,7 @@
 #include "Wavetable.h"
 #include "WavetableFactory.h"
 #include "Metronome.h"
+#include "Sequencer.h"
 
 namespace wavetablesynthesizer {
     class WavetableOscillator;
@@ -36,6 +37,12 @@ namespace wavetablesynthesizer {
 
         void setMetronomeEnabled(bool enabled);
         void setBpm(float bpm);
+
+        // Методы для Секвенсора
+        void setRecording(bool enabled);
+        void setPlayback(bool enabled);
+        void clearSequence();
+
     private:
         std::atomic<bool> _isStreamOpen = false;
         std::atomic<bool> _isContinuousPlayActive = false;
@@ -55,6 +62,12 @@ namespace wavetablesynthesizer {
 
         std::vector<std::shared_ptr<WavetableOscillator>> _voices;
         std::shared_ptr<Metronome> _metronome;
+        std::shared_ptr<Sequencer> _sequencer;
         std::unique_ptr<AudioPlayer> _audioPlayer;
+
+        // Внутренний метод для нот (чтобы избежать рекурсии при записи)
+        void internalNoteOn(float frequencyInHz);
+        void internalNoteOff(float frequencyInHz);
+        static void sequencerCallback(void* receiver, float frequency, bool isNoteOn);
     };
 }

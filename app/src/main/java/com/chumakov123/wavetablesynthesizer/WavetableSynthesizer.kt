@@ -51,4 +51,8 @@ interface WavetableSynthesizer {
 
     suspend fun setMetronomeEnabled(enabled: Boolean)
     suspend fun setBpm(bpm: Float)
+
+    suspend fun setRecording(enabled: Boolean)
+    suspend fun setPlayback(enabled: Boolean)
+    suspend fun clearSequence()
 }

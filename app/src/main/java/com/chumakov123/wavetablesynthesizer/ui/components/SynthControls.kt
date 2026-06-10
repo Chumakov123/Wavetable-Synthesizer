@@ -8,8 +8,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FiberManualRecord
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -129,6 +134,51 @@ fun MetronomeControl(viewModel: WavetableSynthesizerViewModel) {
                 onValueChange = { viewModel.setBpm(it) },
                 valueRange = 40f..240f,
                 modifier = Modifier.size(35.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
+    val isRecording by viewModel.isRecording.observeAsState(false)
+    val isPlaying by viewModel.isPlayingRecording.observeAsState(false)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(horizontal = 8.dp)
+    ) {
+        IconButton(
+            onClick = { viewModel.toggleRecording() },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.FiberManualRecord,
+                contentDescription = "Record",
+                tint = if (isRecording) Color.Red else Color.Gray
+            )
+        }
+
+        IconButton(
+            onClick = { viewModel.togglePlayback() },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
+                contentDescription = "Play Loop",
+                tint = if (isPlaying) Color.Green else Color.Gray
+            )
+        }
+
+        IconButton(
+            onClick = { viewModel.clearSequence() },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Clear",
+                tint = Color.Gray
             )
         }
     }
