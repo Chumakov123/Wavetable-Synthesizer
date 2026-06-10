@@ -62,4 +62,6 @@ interface WavetableSynthesizer {
     suspend fun clearActiveTrack()
     suspend fun setQuantizationMode(mode: Int)
     suspend fun setActiveTrack(trackId: Int)
+
+    suspend fun triggerKick()
 }

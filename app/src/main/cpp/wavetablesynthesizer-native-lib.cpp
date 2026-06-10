@@ -261,6 +261,13 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setActiveTr
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setActiveTrack(static_cast<int>(trackId));
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_triggerKick(JNIEnv *env, jobject thiz,
+                                                                               jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->triggerKick();
+}
 }
 
 

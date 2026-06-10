@@ -17,6 +17,9 @@ namespace wavetablesynthesizer {
         _metronome = std::make_shared<Metronome>(sampleRate);
         mixer->addSource(_metronome);
 
+        _drumTrack = std::make_shared<DrumTrack>(sampleRate);
+        mixer->addSource(_drumTrack);
+
         _sequencer = std::make_shared<Sequencer>(sampleRate);
         _sequencer->setNoteCallback(sequencerCallback, this);
         mixer->setSequencer(_sequencer);
@@ -182,6 +185,14 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::setQuantizationMode(int mode) {
         _sequencer->setQuantizationMode(static_cast<QuantizationMode>(mode));
+    }
+
+    void WavetableSynthesizer::triggerKick() {
+        if (!_isStreamOpen) {
+            _audioPlayer->play();
+            _isStreamOpen = true;
+        }
+        _drumTrack->triggerKick();
     }
 
     void WavetableSynthesizer::sequencerCallback(void* receiver, int trackId, float frequency, bool isNoteOn) {

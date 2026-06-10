@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
 import com.chumakov123.wavetablesynthesizer.ui.components.AdsrControls
+import com.chumakov123.wavetablesynthesizer.ui.components.DrumSection
 import com.chumakov123.wavetablesynthesizer.ui.components.FxControls
 import com.chumakov123.wavetablesynthesizer.ui.components.LfoControls
 import com.chumakov123.wavetablesynthesizer.ui.components.MetronomeControl
@@ -44,6 +45,7 @@ fun WavetableSynthesizerApp(
     synthesizerViewModel: WavetableSynthesizerViewModel
 ) {
     val isKeyboardMode by synthesizerViewModel.isKeyboardMode.observeAsState(true)
+    val isDrumsMode by synthesizerViewModel.isDrumsMode.observeAsState(false)
     val panelMode by synthesizerViewModel.controlPanelMode.observeAsState(WavetableSynthesizerViewModel.ControlPanelMode.WAVE)
 
     Column(
@@ -61,11 +63,22 @@ fun WavetableSynthesizerApp(
         ) {
             // Группа слева: Клавиатура, Октава, Громкость
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Switch(
-                    checked = isKeyboardMode,
-                    onCheckedChange = { synthesizerViewModel.setKeyboardMode(it) },
-                    modifier = Modifier.scale(0.5f)
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("PIANO", fontSize = 8.sp, color = if (isKeyboardMode) Color.White else Color.Gray)
+                    Switch(
+                        checked = isKeyboardMode,
+                        onCheckedChange = { synthesizerViewModel.setKeyboardMode(it) },
+                        modifier = Modifier.scale(0.5f)
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("DRUMS", fontSize = 8.sp, color = if (isDrumsMode) Color.White else Color.Gray)
+                    Switch(
+                        checked = isDrumsMode,
+                        onCheckedChange = { synthesizerViewModel.setDrumsMode(it) },
+                        modifier = Modifier.scale(0.5f)
+                    )
+                }
                 OctaveControl(synthesizerViewModel)
                 VolumeControl(synthesizerViewModel)
             }
@@ -108,19 +121,21 @@ fun WavetableSynthesizerApp(
             }
         }
 
-        // Нижняя часть: Клавиатура
+        // Нижняя часть: Клавиатура или Барабаны
         Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            if (isKeyboardMode) {
-                PianoKeyboard(synthesizerViewModel)
-            } else {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    PitchControl(synthesizerViewModel)
-                    PlayControl(synthesizerViewModel)
+            when {
+                isDrumsMode -> DrumSection(synthesizerViewModel)
+                isKeyboardMode -> PianoKeyboard(synthesizerViewModel)
+                else -> {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        PitchControl(synthesizerViewModel)
+                        PlayControl(synthesizerViewModel)
+                    }
                 }
             }
         }

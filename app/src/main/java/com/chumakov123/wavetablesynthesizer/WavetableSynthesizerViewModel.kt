@@ -102,6 +102,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isKeyboardMode = MutableLiveData(true)
     val isKeyboardMode: LiveData<Boolean> = _isKeyboardMode
 
+    private val _isDrumsMode = MutableLiveData(false)
+    val isDrumsMode: LiveData<Boolean> = _isDrumsMode
+
     private val _presets = MutableLiveData(Preset.defaultPresets)
     val presets: LiveData<List<Preset>> = _presets
 
@@ -184,6 +187,12 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setKeyboardMode(enabled: Boolean) {
         _isKeyboardMode.value = enabled
+        if (enabled) _isDrumsMode.value = false
+    }
+
+    fun setDrumsMode(enabled: Boolean) {
+        _isDrumsMode.value = enabled
+        if (enabled) _isKeyboardMode.value = false
     }
 
     fun setControlPanelMode(mode: ControlPanelMode) {
@@ -406,6 +415,12 @@ class WavetableSynthesizerViewModel : ViewModel() {
     fun clearSequence() {
         viewModelScope.launch {
             wavetableSynthesizer?.clearActiveTrack()
+        }
+    }
+
+    fun triggerKick() {
+        viewModelScope.launch {
+            wavetableSynthesizer?.triggerKick()
         }
     }
 

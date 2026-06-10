@@ -6,6 +6,7 @@
 #include "Metronome.h"
 #include "Sequencer.h"
 #include "SynthTrack.h"
+#include "DrumSynth.h"
 
 namespace wavetablesynthesizer {
     class AudioPlayer;
@@ -54,6 +55,9 @@ namespace wavetablesynthesizer {
         void clearActiveTrack();
         void setQuantizationMode(int mode);
 
+        // Drums
+        void triggerKick();
+
     private:
         std::atomic<bool> _isStreamOpen = false;
         std::atomic<bool> _isContinuousPlayActive = false;
@@ -64,6 +68,7 @@ namespace wavetablesynthesizer {
 
         std::shared_ptr<Metronome> _metronome;
         std::shared_ptr<Sequencer> _sequencer;
+        std::shared_ptr<DrumTrack> _drumTrack;
         std::unique_ptr<AudioPlayer> _audioPlayer;
 
         // Внутренний метод для нот (чтобы избежать рекурсии при записи)

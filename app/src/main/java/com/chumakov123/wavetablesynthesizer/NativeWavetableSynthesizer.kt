@@ -36,6 +36,7 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun clearActiveTrack(synthesizerHandle: Long)
     private external fun setQuantizationMode(synthesizerHandle: Long, mode: Int)
     private external fun setActiveTrack(synthesizerHandle: Long, trackId: Int)
+    private external fun triggerKick(synthesizerHandle: Long)
 
     companion object {
         init {
@@ -252,6 +253,13 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             setActiveTrack(synthesizerHandle, trackId)
+        }
+    }
+
+    override suspend fun triggerKick() = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            triggerKick(synthesizerHandle)
         }
     }
 }
