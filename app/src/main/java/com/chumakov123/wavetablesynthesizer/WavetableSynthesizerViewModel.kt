@@ -108,6 +108,12 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isKeyboardMode = MutableLiveData(true)
     val isKeyboardMode: LiveData<Boolean> = _isKeyboardMode
 
+    private val _presets = MutableLiveData(Preset.defaultPresets)
+    val presets: LiveData<List<Preset>> = _presets
+
+    private val _selectedPresetIndex = MutableLiveData(0)
+    val selectedPresetIndex: LiveData<Int> = _selectedPresetIndex
+
     enum class ControlPanelMode { WAVE, ADSR, LFO }
     private val _controlPanelMode = MutableLiveData(ControlPanelMode.WAVE)
     val controlPanelMode: LiveData<ControlPanelMode> = _controlPanelMode
@@ -145,6 +151,22 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setControlPanelMode(mode: ControlPanelMode) {
         _controlPanelMode.value = mode
+    }
+
+    fun loadPreset(index: Int) {
+        val preset = _presets.value?.getOrNull(index) ?: return
+        _selectedPresetIndex.value = index
+        
+        _wavetable.value = preset.wavetable
+        _attack.value = preset.attack
+        _decay.value = preset.decay
+        _sustain.value = preset.sustain
+        _release.value = preset.release
+        _lfoRate.value = preset.lfoRate
+        _lfoDepth.value = preset.lfoDepth
+        _tremoloDepth.value = preset.tremoloDepth
+        
+        applyParameters()
     }
 
     fun setOctave(octave: Int) {

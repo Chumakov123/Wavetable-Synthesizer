@@ -29,6 +29,7 @@ import com.chumakov123.wavetablesynthesizer.ui.components.OctaveControl
 import com.chumakov123.wavetablesynthesizer.ui.components.PitchControl
 import com.chumakov123.wavetablesynthesizer.ui.components.PlayControl
 import com.chumakov123.wavetablesynthesizer.ui.components.PianoKeyboard
+import com.chumakov123.wavetablesynthesizer.ui.components.PresetSelector
 import com.chumakov123.wavetablesynthesizer.ui.components.VolumeControl
 import com.chumakov123.wavetablesynthesizer.ui.components.WavetableSelectionPanel
 
@@ -67,10 +68,16 @@ fun WavetableSynthesizerApp(
             }
 
             // Центральная группа: Переключатель панелей WAVE/ADSR
-            ModeSelector(
-                currentMode = panelMode,
-                onModeSelected = { synthesizerViewModel.setControlPanelMode(it) }
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                PresetSelector(synthesizerViewModel)
+                ModeSelector(
+                    currentMode = panelMode,
+                    onModeSelected = { synthesizerViewModel.setControlPanelMode(it) }
+                )
+            }
 
             // Правая группа: Громкость
             VolumeControl(synthesizerViewModel)
