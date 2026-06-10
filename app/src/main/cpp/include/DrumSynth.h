@@ -1,9 +1,19 @@
 #pragma once
 #include <atomic>
 #include <cmath>
+#include <random>
 #include "AudioSource.h"
 
 namespace wavetablesynthesizer {
+
+    class WhiteNoise {
+    public:
+        WhiteNoise() : _dist(-1.0f, 1.0f) {}
+        float getSample() { return _dist(_engine); }
+    private:
+        std::mt19937 _engine{std::random_device{}()};
+        std::uniform_real_distribution<float> _dist;
+    };
 
     class KickDrum {
     public:
@@ -24,8 +34,27 @@ namespace wavetablesynthesizer {
 
         float _startFreq = 150.0f;
         float _endFreq = 40.0f;
-        float _pitchDecay = 0.05f; // Постоянная времени для падения частоты
-        float _ampDecay = 0.15f;   // Постоянная времени для затухания громкости
+        float _pitchDecay = 0.05f;
+        float _ampDecay = 0.15f;
+    };
+
+    class SnareDrum {
+    public:
+        SnareDrum(double sampleRate);
+        void trigger();
+        float getSample();
+
+    private:
+        double _sampleRate;
+        float _phase = 0.0f;
+        float _bodyAmp = 0.0f;
+        float _noiseAmp = 0.0f;
+
+        WhiteNoise _noise;
+
+        const float _bodyFreq = 180.0f;
+        const float _bodyDecay = 0.08f;
+        const float _noiseDecay = 0.15f;
     };
 
     class DrumTrack : public AudioSource {
@@ -35,11 +64,10 @@ namespace wavetablesynthesizer {
          void onPlaybackStopped() override;
 
          void triggerKick();
-         // Будущие методы:
-         // void triggerSnare();
-         // void triggerHat();
+         void triggerSnare();
 
     private:
          KickDrum _kick;
+         SnareDrum _snare;
     };
 }

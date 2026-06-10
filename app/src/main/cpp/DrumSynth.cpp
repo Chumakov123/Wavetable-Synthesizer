@@ -19,31 +19,58 @@ namespace wavetablesynthesizer {
 
         float sample = std::sin(_phase);
 
-        // Добавим небольшое искажение для "характера" (soft clipping)
         sample = std::tanh(sample * 1.5f);
 
-        // Обновляем фазу
         _phase += 2.0f * M_PI * _currentFreq / static_cast<float>(_sampleRate);
         if (_phase > 2.0f * M_PI) _phase -= 2.0f * M_PI;
 
-        // Падение частоты (Pitch Envelope)
-        // Чем больше _pitchDecay, тем медленнее падает частота
         float pitchCoefficient = std::exp(-1.0f / (static_cast<float>(_sampleRate) * _pitchDecay));
         _currentFreq = _endFreq + (_currentFreq - _endFreq) * pitchCoefficient;
 
-        // Затухание громкости (Amplitude Envelope)
         float ampCoefficient = std::exp(-1.0f / (static_cast<float>(_sampleRate) * _ampDecay));
         _amplitude *= ampCoefficient;
 
         return sample * _amplitude;
     }
 
+    // --- SnareDrum ---
+
+    SnareDrum::SnareDrum(double sampleRate) : _sampleRate(sampleRate) {}
+
+    void SnareDrum::trigger() {
+        _phase = 0.0f;
+        _bodyAmp = 1.0f;
+        _noiseAmp = 1.0f;
+    }
+
+    float SnareDrum::getSample() {
+        if (_bodyAmp <= 0.0001f && _noiseAmp <= 0.0001f) {
+            _bodyAmp = 0.0f;
+            _noiseAmp = 0.0f;
+            return 0.0f;
+        }
+
+        float bodySample = std::sin(_phase) * _bodyAmp * 0.5f;
+        _phase += 2.0f * M_PI * _bodyFreq / static_cast<float>(_sampleRate);
+        if (_phase > 2.0f * M_PI) _phase -= 2.0f * M_PI;
+
+        float noiseSample = _noise.getSample() * _noiseAmp * 0.5f;
+
+        float bodyCoeff = std::exp(-1.0f / (static_cast<float>(_sampleRate) * _bodyDecay));
+        float noiseCoeff = std::exp(-1.0f / (static_cast<float>(_sampleRate) * _noiseDecay));
+
+        _bodyAmp *= bodyCoeff;
+        _noiseAmp *= noiseCoeff;
+
+        return bodySample + noiseSample;
+    }
+
     // --- DrumTrack ---
 
-    DrumTrack::DrumTrack(double sampleRate) : _kick(sampleRate) {}
+    DrumTrack::DrumTrack(double sampleRate) : _kick(sampleRate), _snare(sampleRate) {}
 
     float DrumTrack::getSample() {
-        return _kick.getSample();
+        return _kick.getSample() + _snare.getSample();
     }
 
     void DrumTrack::onPlaybackStopped() {
@@ -52,5 +79,9 @@ namespace wavetablesynthesizer {
 
     void DrumTrack::triggerKick() {
         _kick.trigger();
+    }
+
+    void DrumTrack::triggerSnare() {
+        _snare.trigger();
     }
 }

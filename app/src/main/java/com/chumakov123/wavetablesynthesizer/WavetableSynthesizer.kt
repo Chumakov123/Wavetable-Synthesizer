@@ -64,4 +64,5 @@ interface WavetableSynthesizer {
     suspend fun setActiveTrack(trackId: Int)
 
     suspend fun triggerKick()
+    suspend fun triggerSnare()
 }

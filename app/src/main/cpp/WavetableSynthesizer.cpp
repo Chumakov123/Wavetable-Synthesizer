@@ -195,6 +195,14 @@ namespace wavetablesynthesizer {
         _drumTrack->triggerKick();
     }
 
+    void WavetableSynthesizer::triggerSnare() {
+        if (!_isStreamOpen) {
+            _audioPlayer->play();
+            _isStreamOpen = true;
+        }
+        _drumTrack->triggerSnare();
+    }
+
     void WavetableSynthesizer::sequencerCallback(void* receiver, int trackId, float frequency, bool isNoteOn) {
         auto* synth = static_cast<WavetableSynthesizer*>(receiver);
         if (isNoteOn) synth->internalNoteOn(trackId, frequency);

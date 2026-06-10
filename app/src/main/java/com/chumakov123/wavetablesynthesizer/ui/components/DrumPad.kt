@@ -69,8 +69,12 @@ fun DrumSection(viewModel: WavetableSynthesizerViewModel) {
             modifier = Modifier.weight(1f),
             color = Color(0xFF6200EE)
         )
-        // Будущие пады
-        DrumPad(label = "SNARE", onClick = { }, modifier = Modifier.weight(1f))
+        DrumPad(
+            label = "SNARE",
+            onClick = { viewModel.triggerSnare() },
+            modifier = Modifier.weight(1f),
+            color = Color(0xFFE91E63)
+        )
         DrumPad(label = "HAT", onClick = { }, modifier = Modifier.weight(1f))
         DrumPad(label = "FX", onClick = { }, modifier = Modifier.weight(1f))
     }

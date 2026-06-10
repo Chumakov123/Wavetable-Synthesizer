@@ -424,6 +424,12 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
+    fun triggerSnare() {
+        viewModelScope.launch {
+            wavetableSynthesizer?.triggerSnare()
+        }
+    }
+
     private val _playButtonLabel = MutableLiveData(R.string.play)
     val playButtonLabel: LiveData<Int> = _playButtonLabel
 
