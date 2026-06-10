@@ -33,6 +33,7 @@ import com.chumakov123.wavetablesynthesizer.ui.components.PitchControl
 import com.chumakov123.wavetablesynthesizer.ui.components.PlayControl
 import com.chumakov123.wavetablesynthesizer.ui.components.PianoKeyboard
 import com.chumakov123.wavetablesynthesizer.ui.components.PresetSelector
+import com.chumakov123.wavetablesynthesizer.ui.components.TrackSelector
 import com.chumakov123.wavetablesynthesizer.ui.components.VolumeControl
 import com.chumakov123.wavetablesynthesizer.ui.components.WavetableSelectionPanel
 
@@ -82,7 +83,10 @@ fun WavetableSynthesizerApp(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                PresetSelector(synthesizerViewModel)
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    PresetSelector(synthesizerViewModel)
+                    TrackSelector(synthesizerViewModel)
+                }
                 ModeSelector(
                     currentMode = panelMode,
                     onModeSelected = { synthesizerViewModel.setControlPanelMode(it) }

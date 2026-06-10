@@ -29,8 +29,8 @@ namespace wavetablesynthesizer {
                     sample += source->getSample();
                 }
             }
-            // Нормализуем громкость, чтобы избежать клиппинга при аккордах
-            return sample * 0.3f;
+            // Нормализуем громкость
+            return sample * 0.25f;
         }
 
         void onPlaybackStopped() override {

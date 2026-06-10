@@ -20,7 +20,7 @@ namespace wavetablesynthesizer {
                 for (const auto& event : _events) {
                     if (event.timestamp == _currentLoopSample) {
                         if (_noteCallback) {
-                            _noteCallback(_receiver, event.frequency, event.isNoteOn);
+                            _noteCallback(_receiver, event.trackId, event.frequency, event.isNoteOn);
                         }
                     }
                 }
@@ -33,20 +33,20 @@ namespace wavetablesynthesizer {
         }
     }
 
-    void Sequencer::recordNoteOn(float frequency) {
+    void Sequencer::recordNoteOn(int trackId, float frequency) {
         if (!_isRecording.load()) return;
 
         std::lock_guard<std::mutex> lock(_eventsMutex);
         uint64_t timestamp = getQuantizedTimestamp(_currentLoopSample);
-        _events.push_back({timestamp, frequency, true});
+        _events.push_back({timestamp, frequency, true, trackId});
     }
 
-    void Sequencer::recordNoteOff(float frequency) {
+    void Sequencer::recordNoteOff(int trackId, float frequency) {
         if (!_isRecording.load()) return;
 
         std::lock_guard<std::mutex> lock(_eventsMutex);
         uint64_t timestamp = getQuantizedTimestamp(_currentLoopSample);
-        _events.push_back({timestamp, frequency, false});
+        _events.push_back({timestamp, frequency, false, trackId});
     }
 
     void Sequencer::startRecording() {
@@ -71,6 +71,13 @@ namespace wavetablesynthesizer {
         std::lock_guard<std::mutex> lock(_eventsMutex);
         _events.clear();
         _currentLoopSample = 0;
+    }
+
+    void Sequencer::clearTrack(int trackId) {
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+        _events.erase(std::remove_if(_events.begin(), _events.end(),
+                                     [trackId](const MidiEvent& e) { return e.trackId == trackId; }),
+                      _events.end());
     }
 
     void Sequencer::setBpm(float bpm) {

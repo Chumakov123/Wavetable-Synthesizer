@@ -2,25 +2,16 @@
 #include <cmath>
 #include "WavetableSynthesizer.h"
 #include "OboeAudioPlayer.h"
-#include "WavetableOscillator.h"
 #include "Mixer.h"
-#include "Sequencer.h"
 
 namespace wavetablesynthesizer {
     WavetableSynthesizer::WavetableSynthesizer() {
         auto mixer = std::make_shared<Mixer>();
-        for (int i = 0; i < MAX_VOICES; ++i) {
-            auto voice = std::make_shared<WavetableOscillator>(
-                _wavetableFactory.getWaveTable(_currentWavetable), sampleRate);
-            voice->setAttackTime(_attackTime);
-            voice->setDecayTime(_decayTime);
-            voice->setSustainLevel(_sustainLevel);
-            voice->setReleaseTime(_releaseTime);
-            voice->setLfoRate(_lfoRate);
-            voice->setLfoDepth(_lfoDepth);
-            voice->setTremoloDepth(_tremoloDepth);
-            _voices.push_back(voice);
-            mixer->addSource(voice);
+
+        for (int i = 0; i < NUM_TRACKS; ++i) {
+            auto track = std::make_shared<SynthTrack>(sampleRate);
+            _tracks.push_back(track);
+            mixer->addSource(track);
         }
 
         _metronome = std::make_shared<Metronome>(sampleRate);
@@ -38,10 +29,7 @@ namespace wavetablesynthesizer {
     void WavetableSynthesizer::play() {
         std::lock_guard<std::mutex> lock(_mutex);
         _isContinuousPlayActive = true;
-        if (_isStreamOpen) {
-            _voices[0]->noteOn(); // Для режима слайдера используем первый голос
-            return;
-        }
+        if (_isStreamOpen) return;
 
         LOGD("play() called.");
         _audioPlayer->stop();
@@ -49,7 +37,6 @@ namespace wavetablesynthesizer {
         const auto result = _audioPlayer->play();
         if (result == 0) {
             _isStreamOpen = true;
-            _voices[0]->noteOn();
         } else {
             LOGD("Could not start playback.");
         }
@@ -59,8 +46,8 @@ namespace wavetablesynthesizer {
         std::lock_guard<std::mutex> lock(_mutex);
         if (!_isContinuousPlayActive) return;
         LOGD("stop() called.");
-        for (auto& voice : _voices) {
-            voice->noteOff();
+        for (auto& track : _tracks) {
+            track->stopAllNotes();
         }
         _isContinuousPlayActive = false;
     }
@@ -69,124 +56,76 @@ namespace wavetablesynthesizer {
         return _isContinuousPlayActive;
     }
 
-    void WavetableSynthesizer::setFrequency(float frequencyInHz) {
-        _voices[0]->setFrequency(frequencyInHz);
+    void WavetableSynthesizer::setActiveTrack(int trackId) {
+        if (trackId >= 0 && trackId < NUM_TRACKS) {
+            std::lock_guard<std::mutex> lock(_mutex);
+            _activeTrackId = trackId;
+        }
     }
 
-    float dbToAmplitude(float dB) {
-        return std::pow(10.f, dB / 20.f);
+    void WavetableSynthesizer::setFrequency(float frequencyInHz) {
+        // First voice of active track for slider mode
     }
 
     void WavetableSynthesizer::setVolume(float volumeInDb) {
-        _amplitude = dbToAmplitude(volumeInDb);
-        for (auto& voice : _voices) {
-            voice->setAmplitude(_amplitude);
-        }
+        _tracks[_activeTrackId]->setVolume(volumeInDb);
     }
 
     void WavetableSynthesizer::setWavetable(Wavetable wavetable) {
-        if (_currentWavetable != wavetable) {
-            _currentWavetable = wavetable;
-            auto table = _wavetableFactory.getWaveTable(wavetable);
-            for (auto& voice : _voices) {
-                voice->setWavetable(table);
-            }
-        }
+        _tracks[_activeTrackId]->setWavetable(wavetable);
     }
 
     void WavetableSynthesizer::noteOn(float frequencyInHz) {
-        _sequencer->recordNoteOn(frequencyInHz);
-        internalNoteOn(frequencyInHz);
+        _sequencer->recordNoteOn(_activeTrackId, frequencyInHz);
+        internalNoteOn(_activeTrackId, frequencyInHz);
     }
 
-    void WavetableSynthesizer::internalNoteOn(float frequencyInHz) {
-        std::lock_guard<std::mutex> lock(_mutex);
+    void WavetableSynthesizer::internalNoteOn(int trackId, float frequencyInHz) {
+        if (trackId < 0 || trackId >= NUM_TRACKS) return;
 
-        // 1. Ищем, не играет ли уже эта нота
-        for (auto& voice : _voices) {
-            if (voice->isBusy() && std::abs(voice->getFrequency() - frequencyInHz) < 0.1f) {
-                voice->noteOn();
-                return;
-            }
+        if (!_isStreamOpen) {
+            _audioPlayer->play();
+            _isStreamOpen = true;
         }
-
-        // 2. Ищем свободный голос
-        for (auto& voice : _voices) {
-            if (!voice->isBusy()) {
-                voice->setFrequency(frequencyInHz);
-                voice->setAmplitude(_amplitude);
-
-                if (!_isStreamOpen) {
-                    _audioPlayer->play();
-                    _isStreamOpen = true;
-                }
-                voice->noteOn();
-                return;
-            }
-        }
+        _tracks[trackId]->noteOn(frequencyInHz);
     }
 
     void WavetableSynthesizer::noteOff(float frequencyInHz) {
-        _sequencer->recordNoteOff(frequencyInHz);
-        internalNoteOff(frequencyInHz);
+        _sequencer->recordNoteOff(_activeTrackId, frequencyInHz);
+        internalNoteOff(_activeTrackId, frequencyInHz);
     }
 
-    void WavetableSynthesizer::internalNoteOff(float frequencyInHz) {
-        std::lock_guard<std::mutex> lock(_mutex);
-        for (auto& voice : _voices) {
-            if (std::abs(voice->getFrequency() - frequencyInHz) < 0.1f) {
-                voice->noteOff();
-            }
-        }
+    void WavetableSynthesizer::internalNoteOff(int trackId, float frequencyInHz) {
+        if (trackId < 0 || trackId >= NUM_TRACKS) return;
+        _tracks[trackId]->noteOff(frequencyInHz);
     }
 
     void WavetableSynthesizer::setAttackTime(float time) {
-        _attackTime = time;
-        for (auto& voice : _voices) {
-            voice->setAttackTime(time);
-        }
+        _tracks[_activeTrackId]->setAttackTime(time);
     }
 
     void WavetableSynthesizer::setDecayTime(float time) {
-        _decayTime = time;
-        for (auto& voice : _voices) {
-            voice->setDecayTime(time);
-        }
+        _tracks[_activeTrackId]->setDecayTime(time);
     }
 
     void WavetableSynthesizer::setSustainLevel(float level) {
-        _sustainLevel = level;
-        for (auto& voice : _voices) {
-            voice->setSustainLevel(level);
-        }
+        _tracks[_activeTrackId]->setSustainLevel(level);
     }
 
     void WavetableSynthesizer::setReleaseTime(float time) {
-        _releaseTime = time;
-        for (auto& voice : _voices) {
-            voice->setReleaseTime(time);
-        }
+        _tracks[_activeTrackId]->setReleaseTime(time);
     }
 
     void WavetableSynthesizer::setLfoRate(float rate) {
-        _lfoRate = rate;
-        for (auto& voice : _voices) {
-            voice->setLfoRate(rate);
-        }
+        _tracks[_activeTrackId]->setLfoRate(rate);
     }
 
     void WavetableSynthesizer::setLfoDepth(float depth) {
-        _lfoDepth = depth;
-        for (auto& voice : _voices) {
-            voice->setLfoDepth(depth);
-        }
+        _tracks[_activeTrackId]->setLfoDepth(depth);
     }
 
     void WavetableSynthesizer::setTremoloDepth(float depth) {
-        _tremoloDepth = depth;
-        for (auto& voice : _voices) {
-            voice->setTremoloDepth(depth);
-        }
+        _tracks[_activeTrackId]->setTremoloDepth(depth);
     }
 
     void WavetableSynthesizer::setMetronomeEnabled(bool enabled) {
@@ -218,18 +157,24 @@ namespace wavetablesynthesizer {
     void WavetableSynthesizer::clearSequence() {
         _sequencer->clear();
         std::lock_guard<std::mutex> lock(_mutex);
-        for (auto& voice : _voices) {
-            voice->noteOff();
+        for (auto& track : _tracks) {
+            track->stopAllNotes();
         }
+    }
+
+    void WavetableSynthesizer::clearActiveTrack() {
+        _sequencer->clearTrack(_activeTrackId);
+        std::lock_guard<std::mutex> lock(_mutex);
+        _tracks[_activeTrackId]->stopAllNotes();
     }
 
     void WavetableSynthesizer::setQuantizationMode(int mode) {
         _sequencer->setQuantizationMode(static_cast<QuantizationMode>(mode));
     }
 
-    void WavetableSynthesizer::sequencerCallback(void* receiver, float frequency, bool isNoteOn) {
+    void WavetableSynthesizer::sequencerCallback(void* receiver, int trackId, float frequency, bool isNoteOn) {
         auto* synth = static_cast<WavetableSynthesizer*>(receiver);
-        if (isNoteOn) synth->internalNoteOn(frequency);
-        else synth->internalNoteOff(frequency);
+        if (isNoteOn) synth->internalNoteOn(trackId, frequency);
+        else synth->internalNoteOff(trackId, frequency);
     }
 }

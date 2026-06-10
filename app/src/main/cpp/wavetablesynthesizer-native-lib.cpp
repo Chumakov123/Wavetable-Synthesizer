@@ -216,11 +216,26 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearSequen
 }
 
 JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearActiveTrack(JNIEnv *env, jobject thiz,
+                                                                                     jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->clearActiveTrack();
+}
+
+JNIEXPORT void JNICALL
 Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setQuantizationMode(JNIEnv *env, jobject thiz,
                                                                                         jlong synthesizerHandle,
                                                                                         jint mode) {
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setQuantizationMode(static_cast<int>(mode));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setActiveTrack(JNIEnv *env, jobject thiz,
+                                                                                   jlong synthesizerHandle,
+                                                                                   jint trackId) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setActiveTrack(static_cast<int>(trackId));
 }
 }
 

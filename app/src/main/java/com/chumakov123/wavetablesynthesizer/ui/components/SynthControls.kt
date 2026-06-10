@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -153,6 +152,31 @@ fun QuantizationSelector(viewModel: WavetableSynthesizerViewModel) {
                     .padding(horizontal = 4.dp, vertical = 2.dp)
             ) {
                 Text(text = mode.label, fontSize = 7.sp, color = if (isSelected) Color.White else Color.LightGray)
+            }
+        }
+    }
+}
+
+@Composable
+fun TrackSelector(viewModel: WavetableSynthesizerViewModel) {
+    val selectedTrack by viewModel.selectedTrack.observeAsState(0)
+    Row(
+        modifier = Modifier.background(Color.DarkGray, RoundedCornerShape(4.dp)).padding(1.dp),
+        horizontalArrangement = Arrangement.spacedBy(1.dp)
+    ) {
+        for (i in 0 until 4) {
+            val isSelected = selectedTrack == i
+            Box(
+                modifier = Modifier
+                    .background(if (isSelected) Color(0xFF444444) else Color.Transparent, RoundedCornerShape(2.dp))
+                    .clickable { viewModel.setSelectedTrack(i) }
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "T${i + 1}",
+                    fontSize = 10.sp,
+                    color = if (isSelected) Color.Green else Color.LightGray
+                )
             }
         }
     }

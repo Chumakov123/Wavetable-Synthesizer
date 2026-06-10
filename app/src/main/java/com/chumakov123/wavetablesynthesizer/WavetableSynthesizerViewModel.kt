@@ -75,13 +75,14 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
-    private val _volume = MutableLiveData(-24f)
+    private val _volume = MutableLiveData(-12f)
     val volume: LiveData<Float> = _volume
 
     val volumeRange = (-60f)..0f
 
     fun setVolume(volumeInDb: Float) {
         _volume.value = volumeInDb
+        trackStates[_selectedTrack.value!!].volume = volumeInDb
         viewModelScope.launch {
             wavetableSynthesizer?.setVolume(volumeInDb)
         }
@@ -92,6 +93,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setWavetable(newWavetable: Wavetable) {
         _wavetable.value = newWavetable
+        trackStates[_selectedTrack.value!!].wavetable = newWavetable
         viewModelScope.launch {
             wavetableSynthesizer?.setWavetable(newWavetable)
         }
@@ -140,6 +142,23 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isMetronomeEnabled = MutableLiveData(false)
     val isMetronomeEnabled: LiveData<Boolean> = _isMetronomeEnabled
 
+    private val _selectedTrack = MutableLiveData(0)
+    val selectedTrack: LiveData<Int> = _selectedTrack
+
+    data class TrackState(
+        var wavetable: Wavetable = Wavetable.SINE,
+        var attack: Float = 0.01f,
+        var decay: Float = 0.1f,
+        var sustain: Float = 0.7f,
+        var release: Float = 0.3f,
+        var lfoRate: Float = 5.0f,
+        var lfoDepth: Float = 0.0f,
+        var tremoloDepth: Float = 0.0f,
+        var volume: Float = -12f
+    )
+    
+    private val trackStates = Array(4) { TrackState() }
+
     enum class Quantization(val label: String) {
         OFF("OFF"),
         GRID_1_16("1/16"),
@@ -162,7 +181,19 @@ class WavetableSynthesizerViewModel : ViewModel() {
     fun loadPreset(index: Int) {
         val preset = _presets.value?.getOrNull(index) ?: return
         _selectedPresetIndex.value = index
-        
+
+        val currentTrack = _selectedTrack.value!!
+        trackStates[currentTrack].apply {
+            wavetable = preset.wavetable
+            attack = preset.attack
+            decay = preset.decay
+            sustain = preset.sustain
+            release = preset.release
+            lfoRate = preset.lfoRate
+            lfoDepth = preset.lfoDepth
+            tremoloDepth = preset.tremoloDepth
+        }
+
         _wavetable.value = preset.wavetable
         _attack.value = preset.attack
         _decay.value = preset.decay
@@ -171,7 +202,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
         _lfoRate.value = preset.lfoRate
         _lfoDepth.value = preset.lfoDepth
         _tremoloDepth.value = preset.tremoloDepth
-        
+
         applyParameters()
     }
 
@@ -181,6 +212,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setAttack(time: Float) {
         _attack.value = time
+        trackStates[_selectedTrack.value!!].attack = time
         viewModelScope.launch {
             wavetableSynthesizer?.setAttackTime(time)
         }
@@ -188,6 +220,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setDecay(time: Float) {
         _decay.value = time
+        trackStates[_selectedTrack.value!!].decay = time
         viewModelScope.launch {
             wavetableSynthesizer?.setDecayTime(time)
         }
@@ -195,6 +228,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setSustain(level: Float) {
         _sustain.value = level
+        trackStates[_selectedTrack.value!!].sustain = level
         viewModelScope.launch {
             wavetableSynthesizer?.setSustainLevel(level)
         }
@@ -202,6 +236,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setRelease(time: Float) {
         _release.value = time
+        trackStates[_selectedTrack.value!!].release = time
         viewModelScope.launch {
             wavetableSynthesizer?.setReleaseTime(time)
         }
@@ -209,6 +244,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setLfoRate(rate: Float) {
         _lfoRate.value = rate
+        trackStates[_selectedTrack.value!!].lfoRate = rate
         viewModelScope.launch {
             wavetableSynthesizer?.setLfoRate(rate)
         }
@@ -216,6 +252,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setLfoDepth(depth: Float) {
         _lfoDepth.value = depth
+        trackStates[_selectedTrack.value!!].lfoDepth = depth
         viewModelScope.launch {
             wavetableSynthesizer?.setLfoDepth(depth)
         }
@@ -223,8 +260,40 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setTremoloDepth(depth: Float) {
         _tremoloDepth.value = depth
+        trackStates[_selectedTrack.value!!].tremoloDepth = depth
         viewModelScope.launch {
             wavetableSynthesizer?.setTremoloDepth(depth)
+        }
+    }
+
+    fun setSelectedTrack(trackId: Int) {
+        _selectedTrack.value = trackId
+
+        val state = trackStates[trackId]
+        _wavetable.value = state.wavetable
+        _attack.value = state.attack
+        _decay.value = state.decay
+        _sustain.value = state.sustain
+        _release.value = state.release
+        _lfoRate.value = state.lfoRate
+        _lfoDepth.value = state.lfoDepth
+        _tremoloDepth.value = state.tremoloDepth
+        _volume.value = state.volume
+
+        viewModelScope.launch {
+            wavetableSynthesizer?.setActiveTrack(trackId)
+            
+            wavetableSynthesizer?.apply {
+                setWavetable(state.wavetable)
+                setAttackTime(state.attack)
+                setDecayTime(state.decay)
+                setSustainLevel(state.sustain)
+                setReleaseTime(state.release)
+                setLfoRate(state.lfoRate)
+                setLfoDepth(state.lfoDepth)
+                setTremoloDepth(state.tremoloDepth)
+                setVolume(state.volume)
+            }
         }
     }
 
@@ -294,7 +363,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun clearSequence() {
         viewModelScope.launch {
-            wavetableSynthesizer?.clearSequence()
+            wavetableSynthesizer?.clearActiveTrack()
         }
     }
 
@@ -328,16 +397,26 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun applyParameters() {
         viewModelScope.launch {
-            wavetableSynthesizer?.setFrequency(frequency.value!!)
-            wavetableSynthesizer?.setVolume(volume.value!!)
-            wavetableSynthesizer?.setWavetable(wavetable.value!!)
-            wavetableSynthesizer?.setAttackTime(attack.value!!)
-            wavetableSynthesizer?.setDecayTime(decay.value!!)
-            wavetableSynthesizer?.setSustainLevel(sustain.value!!)
-            wavetableSynthesizer?.setReleaseTime(release.value!!)
-            wavetableSynthesizer?.setLfoRate(lfoRate.value!!)
-            wavetableSynthesizer?.setLfoDepth(lfoDepth.value!!)
-            wavetableSynthesizer?.setTremoloDepth(tremoloDepth.value!!)
+            val currentSelected = _selectedTrack.value ?: 0
+            
+            for (i in 0 until 4) {
+                wavetableSynthesizer?.setActiveTrack(i)
+                val state = trackStates[i]
+                wavetableSynthesizer?.apply {
+                    setWavetable(state.wavetable)
+                    setAttackTime(state.attack)
+                    setDecayTime(state.decay)
+                    setSustainLevel(state.sustain)
+                    setReleaseTime(state.release)
+                    setLfoRate(state.lfoRate)
+                    setLfoDepth(state.lfoDepth)
+                    setTremoloDepth(state.tremoloDepth)
+                    setVolume(state.volume)
+                }
+            }
+            
+            wavetableSynthesizer?.setActiveTrack(currentSelected)
+            
             wavetableSynthesizer?.setBpm(bpm.value!!)
             wavetableSynthesizer?.setMetronomeEnabled(isMetronomeEnabled.value!!)
             wavetableSynthesizer?.setQuantizationMode(quantization.value!!.ordinal)

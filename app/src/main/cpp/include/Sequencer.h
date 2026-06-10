@@ -11,6 +11,7 @@ namespace wavetablesynthesizer {
         uint64_t timestamp; // Время в семплах от начала лупа
         float frequency;
         bool isNoteOn;
+        int trackId;
     };
 
     enum class QuantizationMode {
@@ -26,8 +27,8 @@ namespace wavetablesynthesizer {
         void process(uint64_t currentFrame, uint32_t numFrames);
 
         // Запись событий
-        void recordNoteOn(float frequency);
-        void recordNoteOff(float frequency);
+        void recordNoteOn(int trackId, float frequency);
+        void recordNoteOff(int trackId, float frequency);
 
         // Управление
         void startRecording();
@@ -35,6 +36,7 @@ namespace wavetablesynthesizer {
         void startPlayback();
         void stopPlayback();
         void clear();
+        void clearTrack(int trackId);
 
         void setLoopLengthBars(int bars);
         void setBpm(float bpm);
@@ -44,7 +46,7 @@ namespace wavetablesynthesizer {
         bool isPlaying() const { return _isPlaying.load(); }
 
         // Callback для синтезатора
-        using NoteCallback = void(*)(void* receiver, float frequency, bool isNoteOn);
+        using NoteCallback = void(*)(void* receiver, int trackId, float frequency, bool isNoteOn);
         void setNoteCallback(NoteCallback callback, void* receiver) {
             _noteCallback = callback;
             _receiver = receiver;
