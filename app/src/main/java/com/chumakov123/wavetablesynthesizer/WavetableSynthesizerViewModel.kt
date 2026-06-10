@@ -133,6 +133,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _lfoDepth = MutableLiveData(0.0f)
     val lfoDepth: LiveData<Float> = _lfoDepth
 
+    private val _tremoloDepth = MutableLiveData(0.0f)
+    val tremoloDepth: LiveData<Float> = _tremoloDepth
+
     private val _activeNotes = MutableLiveData<Set<Float>>(emptySet())
     val activeNotes: LiveData<Set<Float>> = _activeNotes
 
@@ -187,6 +190,13 @@ class WavetableSynthesizerViewModel : ViewModel() {
         _lfoDepth.value = depth
         viewModelScope.launch {
             wavetableSynthesizer?.setLfoDepth(depth)
+        }
+    }
+
+    fun setTremoloDepth(depth: Float) {
+        _tremoloDepth.value = depth
+        viewModelScope.launch {
+            wavetableSynthesizer?.setTremoloDepth(depth)
         }
     }
 
@@ -295,6 +305,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
             wavetableSynthesizer?.setReleaseTime(release.value!!)
             wavetableSynthesizer?.setLfoRate(lfoRate.value!!)
             wavetableSynthesizer?.setLfoDepth(lfoDepth.value!!)
+            wavetableSynthesizer?.setTremoloDepth(tremoloDepth.value!!)
             updatePlayLabel()
         }
     }

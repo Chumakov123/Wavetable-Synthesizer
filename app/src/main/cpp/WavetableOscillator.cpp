@@ -37,7 +37,8 @@ namespace wavetablesynthesizer {
             sample = interpolateLineary(waveTable, index);
         }
 
-        const float lfoModulation = _lfo.getNextSample() * _lfoDepth.load(std::memory_order_relaxed);
+        const float lfoValue = _lfo.getNextSample();
+        const float lfoModulation = lfoValue * _lfoDepth.load(std::memory_order_relaxed);
         index += indexIncrement.load(std::memory_order_relaxed) * (1.f + lfoModulation);
 
         const float target = targetAmplitude.load(std::memory_order_relaxed);
@@ -48,8 +49,9 @@ namespace wavetablesynthesizer {
         amplitude.store(currentAmplitude, std::memory_order_relaxed);
 
         const float envelopeAmplitude = _envelope.getNextAmplitude();
+        const float tremoloModulation = 1.f + lfoValue * _tremoloDepth.load(std::memory_order_relaxed);
 
-        return currentAmplitude * envelopeAmplitude * sample;
+        return currentAmplitude * envelopeAmplitude * sample * tremoloModulation;
     }
 
     float WavetableOscillator::interpolateLineary(const std::vector<float>& table, float indexValue) {

@@ -31,6 +31,7 @@ namespace wavetablesynthesizer {
 
         void setLfoRate(float rate);
         void setLfoDepth(float depth);
+        void setTremoloDepth(float depth);
     private:
         std::atomic<bool> _isStreamOpen = false;
         std::atomic<bool> _isContinuousPlayActive = false;
@@ -46,6 +47,7 @@ namespace wavetablesynthesizer {
 
         float _lfoRate = 5.0f;
         float _lfoDepth = 0.0f;
+        float _tremoloDepth = 0.0f;
 
         std::vector<std::shared_ptr<WavetableOscillator>> _voices;
         std::unique_ptr<AudioPlayer> _audioPlayer;

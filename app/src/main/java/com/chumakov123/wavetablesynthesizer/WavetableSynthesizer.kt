@@ -47,4 +47,5 @@ interface WavetableSynthesizer {
 
     suspend fun setLfoRate(rate: Float)
     suspend fun setLfoDepth(depth: Float)
+    suspend fun setTremoloDepth(depth: Float)
 }

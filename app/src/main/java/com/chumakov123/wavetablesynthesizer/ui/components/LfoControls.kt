@@ -20,11 +20,12 @@ fun LfoControls(
     modifier: Modifier = Modifier
 ) {
     val rate = synthesizerViewModel.lfoRate.observeAsState(5.0f)
-    val depth = synthesizerViewModel.lfoDepth.observeAsState(0.0f)
+    val vibratoDepth = synthesizerViewModel.lfoDepth.observeAsState(0.0f)
+    val tremoloDepth = synthesizerViewModel.tremoloDepth.observeAsState(0.0f)
 
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         LfoKnob(
@@ -35,9 +36,16 @@ fun LfoControls(
             unit = "Hz"
         )
         LfoKnob(
-            label = "DEPTH",
-            value = depth.value,
+            label = "VIBRATO",
+            value = vibratoDepth.value,
             onValueChange = { synthesizerViewModel.setLfoDepth(it) },
+            valueRange = 0.0f..0.5f,
+            unit = ""
+        )
+        LfoKnob(
+            label = "TREMOLO",
+            value = tremoloDepth.value,
+            onValueChange = { synthesizerViewModel.setTremoloDepth(it) },
             valueRange = 0.0f..0.5f,
             unit = ""
         )

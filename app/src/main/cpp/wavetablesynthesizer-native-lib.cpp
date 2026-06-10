@@ -167,5 +167,14 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setLfoDepth
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setLfoDepth(static_cast<float>(depth));
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setTremoloDepth(JNIEnv *env, jobject thiz,
+                                                                                   jlong synthesizerHandle,
+                                                                                   jfloat depth) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setTremoloDepth(static_cast<float>(depth));
 }
+}
+
 

@@ -19,6 +19,7 @@ namespace wavetablesynthesizer {
             voice->setReleaseTime(_releaseTime);
             voice->setLfoRate(_lfoRate);
             voice->setLfoDepth(_lfoDepth);
+            voice->setTremoloDepth(_tremoloDepth);
             _voices.push_back(voice);
             mixer->addSource(voice);
         }
@@ -161,6 +162,13 @@ namespace wavetablesynthesizer {
         _lfoDepth = depth;
         for (auto& voice : _voices) {
             voice->setLfoDepth(depth);
+        }
+    }
+
+    void WavetableSynthesizer::setTremoloDepth(float depth) {
+        _tremoloDepth = depth;
+        for (auto& voice : _voices) {
+            voice->setTremoloDepth(depth);
         }
     }
 }

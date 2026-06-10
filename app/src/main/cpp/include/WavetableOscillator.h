@@ -33,6 +33,7 @@ namespace  wavetablesynthesizer {
 
         void setLfoRate(float rate) { _lfo.setFrequency(rate); }
         void setLfoDepth(float depth) { _lfoDepth.store(depth, std::memory_order_relaxed); }
+        void setTremoloDepth(float depth) { _tremoloDepth.store(depth, std::memory_order_relaxed); }
     private:
         static float interpolateLineary(const std::vector<float>& table, float indexValue);
 
@@ -54,5 +55,6 @@ namespace  wavetablesynthesizer {
         AdsrEnvelope _envelope;
         Lfo _lfo;
         std::atomic<float> _lfoDepth{0.f};
+        std::atomic<float> _tremoloDepth{0.f};
     };
 }
