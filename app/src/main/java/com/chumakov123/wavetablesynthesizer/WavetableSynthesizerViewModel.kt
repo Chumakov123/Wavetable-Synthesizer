@@ -108,8 +108,24 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isKeyboardMode = MutableLiveData(true)
     val isKeyboardMode: LiveData<Boolean> = _isKeyboardMode
 
+    enum class ControlPanelMode { WAVE, ADSR }
+    private val _controlPanelMode = MutableLiveData(ControlPanelMode.WAVE)
+    val controlPanelMode: LiveData<ControlPanelMode> = _controlPanelMode
+
     private val _octave = MutableLiveData(0)
     val octave: LiveData<Int> = _octave
+
+    private val _attack = MutableLiveData(0.01f)
+    val attack: LiveData<Float> = _attack
+
+    private val _decay = MutableLiveData(0.1f)
+    val decay: LiveData<Float> = _decay
+
+    private val _sustain = MutableLiveData(0.7f)
+    val sustain: LiveData<Float> = _sustain
+
+    private val _release = MutableLiveData(0.3f)
+    val release: LiveData<Float> = _release
 
     private val _activeNotes = MutableLiveData<Set<Float>>(emptySet())
     val activeNotes: LiveData<Set<Float>> = _activeNotes
@@ -118,8 +134,40 @@ class WavetableSynthesizerViewModel : ViewModel() {
         _isKeyboardMode.value = enabled
     }
 
+    fun setControlPanelMode(mode: ControlPanelMode) {
+        _controlPanelMode.value = mode
+    }
+
     fun setOctave(octave: Int) {
         _octave.value = octave
+    }
+
+    fun setAttack(time: Float) {
+        _attack.value = time
+        viewModelScope.launch {
+            wavetableSynthesizer?.setAttackTime(time)
+        }
+    }
+
+    fun setDecay(time: Float) {
+        _decay.value = time
+        viewModelScope.launch {
+            wavetableSynthesizer?.setDecayTime(time)
+        }
+    }
+
+    fun setSustain(level: Float) {
+        _sustain.value = level
+        viewModelScope.launch {
+            wavetableSynthesizer?.setSustainLevel(level)
+        }
+    }
+
+    fun setRelease(time: Float) {
+        _release.value = time
+        viewModelScope.launch {
+            wavetableSynthesizer?.setReleaseTime(time)
+        }
     }
 
     fun noteOn(frequencyInHz: Float) {
@@ -221,6 +269,10 @@ class WavetableSynthesizerViewModel : ViewModel() {
             wavetableSynthesizer?.setFrequency(frequency.value!!)
             wavetableSynthesizer?.setVolume(volume.value!!)
             wavetableSynthesizer?.setWavetable(wavetable.value!!)
+            wavetableSynthesizer?.setAttackTime(attack.value!!)
+            wavetableSynthesizer?.setDecayTime(decay.value!!)
+            wavetableSynthesizer?.setSustainLevel(sustain.value!!)
+            wavetableSynthesizer?.setReleaseTime(release.value!!)
             updatePlayLabel()
         }
     }

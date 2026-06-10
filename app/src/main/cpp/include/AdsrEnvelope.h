@@ -18,7 +18,7 @@ namespace wavetablesynthesizer {
 
         void setAttackTime(float time) { _attackTime = time; updateRates(); }
         void setDecayTime(float time) { _decayTime = time; updateRates(); }
-        void setSustainLevel(float level) { _sustainLevel = level; }
+        void setSustainLevel(float level) { _sustainLevel = level; updateRates(); }
         void setReleaseTime(float time) { _releaseTime = time; updateRates(); }
 
         void reset() {

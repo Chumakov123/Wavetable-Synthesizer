@@ -18,6 +18,10 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun setWavetable(synthesizerHandle: Long, wavetable: Int)
     private external fun noteOn(synthesizerHandle: Long, frequencyInHz: Float)
     private external fun noteOff(synthesizerHandle: Long, frequencyInHz: Float)
+    private external fun setAttackTime(synthesizerHandle: Long, time: Float)
+    private external fun setDecayTime(synthesizerHandle: Long, time: Float)
+    private external fun setSustainLevel(synthesizerHandle: Long, level: Float)
+    private external fun setReleaseTime(synthesizerHandle: Long, time: Float)
 
     companion object {
         init {
@@ -108,6 +112,34 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             noteOff(synthesizerHandle, frequencyInHz)
+        }
+    }
+
+    override suspend fun setAttackTime(time: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setAttackTime(synthesizerHandle, time)
+        }
+    }
+
+    override suspend fun setDecayTime(time: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setDecayTime(synthesizerHandle, time)
+        }
+    }
+
+    override suspend fun setSustainLevel(level: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setSustainLevel(synthesizerHandle, level)
+        }
+    }
+
+    override suspend fun setReleaseTime(time: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setReleaseTime(synthesizerHandle, time)
         }
     }
 }

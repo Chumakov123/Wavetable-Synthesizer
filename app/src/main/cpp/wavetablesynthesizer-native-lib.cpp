@@ -119,4 +119,36 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_noteOff(JNI
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->noteOff(static_cast<float>(frequencyInHz));
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setAttackTime(JNIEnv *env, jobject thiz,
+                                                                                 jlong synthesizerHandle,
+                                                                                 jfloat time) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setAttackTime(static_cast<float>(time));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setDecayTime(JNIEnv *env, jobject thiz,
+                                                                                jlong synthesizerHandle,
+                                                                                jfloat time) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setDecayTime(static_cast<float>(time));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setSustainLevel(JNIEnv *env, jobject thiz,
+                                                                                   jlong synthesizerHandle,
+                                                                                   jfloat level) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setSustainLevel(static_cast<float>(level));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setReleaseTime(JNIEnv *env, jobject thiz,
+                                                                                  jlong synthesizerHandle,
+                                                                                  jfloat time) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setReleaseTime(static_cast<float>(time));
+}
 }

@@ -39,4 +39,9 @@ interface WavetableSynthesizer {
     suspend fun setWavetable(wavetable: Wavetable)
     suspend fun noteOn(frequencyInHz: Float)
     suspend fun noteOff(frequencyInHz: Float)
+
+    suspend fun setAttackTime(time: Float)
+    suspend fun setDecayTime(time: Float)
+    suspend fun setSustainLevel(level: Float)
+    suspend fun setReleaseTime(time: Float)
 }

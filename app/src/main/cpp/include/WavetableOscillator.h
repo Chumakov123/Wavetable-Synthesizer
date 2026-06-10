@@ -24,6 +24,11 @@ namespace  wavetablesynthesizer {
         void resetEnvelope() { _envelope.reset(); }
         bool isBusy() const { return !_envelope.isIdle(); }
         float getFrequency() const { return _frequency; }
+
+        void setAttackTime(float time) { _envelope.setAttackTime(time); }
+        void setDecayTime(float time) { _envelope.setDecayTime(time); }
+        void setSustainLevel(float level) { _envelope.setSustainLevel(level); }
+        void setReleaseTime(float time) { _envelope.setReleaseTime(time); }
     private:
         static float interpolateLineary(const std::vector<float>& table, float indexValue);
 

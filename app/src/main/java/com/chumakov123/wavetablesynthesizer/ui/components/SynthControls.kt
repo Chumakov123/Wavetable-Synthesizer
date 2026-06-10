@@ -1,10 +1,6 @@
 package com.chumakov123.wavetablesynthesizer.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -22,45 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.chumakov123.wavetablesynthesizer.R
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
-
-@Composable
-fun ControlsPanel(
-    synthesizerViewModel: WavetableSynthesizerViewModel
-) {
-    val isKeyboardMode = synthesizerViewModel.isKeyboardMode.observeAsState(true)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .weight(0.7f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            if (isKeyboardMode.value) {
-                PianoKeyboard(synthesizerViewModel)
-            } else {
-                PitchControl(synthesizerViewModel)
-                PlayControl(synthesizerViewModel)
-            }
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .weight(0.3f),
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            VolumeControl(synthesizerViewModel)
-        }
-    }
-}
 
 @Composable
 fun PitchControl(
@@ -129,14 +86,14 @@ fun VolumeControlContent(
     onValueChange: (Float) -> Unit,
     valueRange: ClosedFloatingPointRange<Float>
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(imageVector = Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(imageVector = Icons.AutoMirrored.Filled.VolumeMute, contentDescription = null, modifier = Modifier.size(20.dp))
         Knob(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.size(100.dp).padding(8.dp),
+            modifier = Modifier.size(60.dp).padding(4.dp),
             valueRange = valueRange
         )
-        Icon(imageVector = Icons.AutoMirrored.Filled.VolumeMute, contentDescription = null)
+        Icon(imageVector = Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, modifier = Modifier.size(20.dp))
     }
 }

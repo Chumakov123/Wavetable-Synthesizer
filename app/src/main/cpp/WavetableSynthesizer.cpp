@@ -13,6 +13,10 @@ namespace wavetablesynthesizer {
         for (int i = 0; i < MAX_VOICES; ++i) {
             auto voice = std::make_shared<WavetableOscillator>(
                 _wavetableFactory.getWaveTable(_currentWavetable), sampleRate);
+            voice->setAttackTime(_attackTime);
+            voice->setDecayTime(_decayTime);
+            voice->setSustainLevel(_sustainLevel);
+            voice->setReleaseTime(_releaseTime);
             _voices.push_back(voice);
             mixer->addSource(voice);
         }
@@ -113,6 +117,34 @@ namespace wavetablesynthesizer {
             if (std::abs(voice->getFrequency() - frequencyInHz) < 0.1f) {
                 voice->noteOff();
             }
+        }
+    }
+
+    void WavetableSynthesizer::setAttackTime(float time) {
+        _attackTime = time;
+        for (auto& voice : _voices) {
+            voice->setAttackTime(time);
+        }
+    }
+
+    void WavetableSynthesizer::setDecayTime(float time) {
+        _decayTime = time;
+        for (auto& voice : _voices) {
+            voice->setDecayTime(time);
+        }
+    }
+
+    void WavetableSynthesizer::setSustainLevel(float level) {
+        _sustainLevel = level;
+        for (auto& voice : _voices) {
+            voice->setSustainLevel(level);
+        }
+    }
+
+    void WavetableSynthesizer::setReleaseTime(float time) {
+        _releaseTime = time;
+        for (auto& voice : _voices) {
+            voice->setReleaseTime(time);
         }
     }
 }
