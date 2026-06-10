@@ -28,6 +28,9 @@ namespace wavetablesynthesizer {
         void setDecayTime(float time);
         void setSustainLevel(float level);
         void setReleaseTime(float time);
+
+        void setLfoRate(float rate);
+        void setLfoDepth(float depth);
     private:
         std::atomic<bool> _isStreamOpen = false;
         std::atomic<bool> _isContinuousPlayActive = false;
@@ -40,6 +43,9 @@ namespace wavetablesynthesizer {
         float _decayTime = 0.1f;
         float _sustainLevel = 0.7f;
         float _releaseTime = 0.3f;
+
+        float _lfoRate = 5.0f;
+        float _lfoDepth = 0.0f;
 
         std::vector<std::shared_ptr<WavetableOscillator>> _voices;
         std::unique_ptr<AudioPlayer> _audioPlayer;

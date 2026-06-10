@@ -4,6 +4,7 @@
 #include <atomic>
 #include "AudioSource.h"
 #include "AdsrEnvelope.h"
+#include "Lfo.h"
 
 namespace  wavetablesynthesizer {
     class WavetableOscillator : public AudioSource {
@@ -29,6 +30,9 @@ namespace  wavetablesynthesizer {
         void setDecayTime(float time) { _envelope.setDecayTime(time); }
         void setSustainLevel(float level) { _envelope.setSustainLevel(level); }
         void setReleaseTime(float time) { _envelope.setReleaseTime(time); }
+
+        void setLfoRate(float rate) { _lfo.setFrequency(rate); }
+        void setLfoDepth(float depth) { _lfoDepth.store(depth, std::memory_order_relaxed); }
     private:
         static float interpolateLineary(const std::vector<float>& table, float indexValue);
 
@@ -48,5 +52,7 @@ namespace  wavetablesynthesizer {
         const float crossfadeStep = 0.0005f; // Скорость кроссфейда (около 40мс при 48кГц)
 
         AdsrEnvelope _envelope;
+        Lfo _lfo;
+        std::atomic<float> _lfoDepth{0.f};
     };
 }

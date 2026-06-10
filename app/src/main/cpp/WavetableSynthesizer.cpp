@@ -17,6 +17,8 @@ namespace wavetablesynthesizer {
             voice->setDecayTime(_decayTime);
             voice->setSustainLevel(_sustainLevel);
             voice->setReleaseTime(_releaseTime);
+            voice->setLfoRate(_lfoRate);
+            voice->setLfoDepth(_lfoDepth);
             _voices.push_back(voice);
             mixer->addSource(voice);
         }
@@ -145,6 +147,20 @@ namespace wavetablesynthesizer {
         _releaseTime = time;
         for (auto& voice : _voices) {
             voice->setReleaseTime(time);
+        }
+    }
+
+    void WavetableSynthesizer::setLfoRate(float rate) {
+        _lfoRate = rate;
+        for (auto& voice : _voices) {
+            voice->setLfoRate(rate);
+        }
+    }
+
+    void WavetableSynthesizer::setLfoDepth(float depth) {
+        _lfoDepth = depth;
+        for (auto& voice : _voices) {
+            voice->setLfoDepth(depth);
         }
     }
 }

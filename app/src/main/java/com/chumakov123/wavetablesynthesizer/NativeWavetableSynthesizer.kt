@@ -22,6 +22,8 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun setDecayTime(synthesizerHandle: Long, time: Float)
     private external fun setSustainLevel(synthesizerHandle: Long, level: Float)
     private external fun setReleaseTime(synthesizerHandle: Long, time: Float)
+    private external fun setLfoRate(synthesizerHandle: Long, rate: Float)
+    private external fun setLfoDepth(synthesizerHandle: Long, depth: Float)
 
     companion object {
         init {
@@ -140,6 +142,20 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             setReleaseTime(synthesizerHandle, time)
+        }
+    }
+
+    override suspend fun setLfoRate(rate: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setLfoRate(synthesizerHandle, rate)
+        }
+    }
+
+    override suspend fun setLfoDepth(depth: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setLfoDepth(synthesizerHandle, depth)
         }
     }
 }

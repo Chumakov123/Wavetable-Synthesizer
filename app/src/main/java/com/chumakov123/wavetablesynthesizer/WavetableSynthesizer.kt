@@ -44,4 +44,7 @@ interface WavetableSynthesizer {
     suspend fun setDecayTime(time: Float)
     suspend fun setSustainLevel(level: Float)
     suspend fun setReleaseTime(time: Float)
+
+    suspend fun setLfoRate(rate: Float)
+    suspend fun setLfoDepth(depth: Float)
 }

@@ -108,7 +108,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isKeyboardMode = MutableLiveData(true)
     val isKeyboardMode: LiveData<Boolean> = _isKeyboardMode
 
-    enum class ControlPanelMode { WAVE, ADSR }
+    enum class ControlPanelMode { WAVE, ADSR, LFO }
     private val _controlPanelMode = MutableLiveData(ControlPanelMode.WAVE)
     val controlPanelMode: LiveData<ControlPanelMode> = _controlPanelMode
 
@@ -126,6 +126,12 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     private val _release = MutableLiveData(0.3f)
     val release: LiveData<Float> = _release
+
+    private val _lfoRate = MutableLiveData(5.0f)
+    val lfoRate: LiveData<Float> = _lfoRate
+
+    private val _lfoDepth = MutableLiveData(0.0f)
+    val lfoDepth: LiveData<Float> = _lfoDepth
 
     private val _activeNotes = MutableLiveData<Set<Float>>(emptySet())
     val activeNotes: LiveData<Set<Float>> = _activeNotes
@@ -167,6 +173,20 @@ class WavetableSynthesizerViewModel : ViewModel() {
         _release.value = time
         viewModelScope.launch {
             wavetableSynthesizer?.setReleaseTime(time)
+        }
+    }
+
+    fun setLfoRate(rate: Float) {
+        _lfoRate.value = rate
+        viewModelScope.launch {
+            wavetableSynthesizer?.setLfoRate(rate)
+        }
+    }
+
+    fun setLfoDepth(depth: Float) {
+        _lfoDepth.value = depth
+        viewModelScope.launch {
+            wavetableSynthesizer?.setLfoDepth(depth)
         }
     }
 
@@ -273,6 +293,8 @@ class WavetableSynthesizerViewModel : ViewModel() {
             wavetableSynthesizer?.setDecayTime(decay.value!!)
             wavetableSynthesizer?.setSustainLevel(sustain.value!!)
             wavetableSynthesizer?.setReleaseTime(release.value!!)
+            wavetableSynthesizer?.setLfoRate(lfoRate.value!!)
+            wavetableSynthesizer?.setLfoDepth(lfoDepth.value!!)
             updatePlayLabel()
         }
     }

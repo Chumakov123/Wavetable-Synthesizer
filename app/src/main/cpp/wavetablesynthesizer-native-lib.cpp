@@ -151,4 +151,21 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setReleaseT
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setReleaseTime(static_cast<float>(time));
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setLfoRate(JNIEnv *env, jobject thiz,
+                                                                              jlong synthesizerHandle,
+                                                                              jfloat rate) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setLfoRate(static_cast<float>(rate));
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setLfoDepth(JNIEnv *env, jobject thiz,
+                                                                               jlong synthesizerHandle,
+                                                                               jfloat depth) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setLfoDepth(static_cast<float>(depth));
+}
+}
+

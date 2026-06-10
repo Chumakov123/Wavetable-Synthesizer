@@ -6,6 +6,7 @@ namespace wavetablesynthesizer {
     WavetableOscillator::WavetableOscillator(std::vector<float> waveTable, float sampleRate)
     : waveTable{std::move(waveTable)}, sampleRate{sampleRate} {
         _envelope.setSampleRate(sampleRate);
+        _lfo.setSampleRate(sampleRate);
     }
 
     float WavetableOscillator::getSample() {
@@ -36,7 +37,8 @@ namespace wavetablesynthesizer {
             sample = interpolateLineary(waveTable, index);
         }
 
-        index += indexIncrement.load(std::memory_order_relaxed);
+        const float lfoModulation = _lfo.getNextSample() * _lfoDepth.load(std::memory_order_relaxed);
+        index += indexIncrement.load(std::memory_order_relaxed) * (1.f + lfoModulation);
 
         const float target = targetAmplitude.load(std::memory_order_relaxed);
 
