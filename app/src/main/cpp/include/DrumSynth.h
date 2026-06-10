@@ -57,6 +57,21 @@ namespace wavetablesynthesizer {
         const float _noiseDecay = 0.15f;
     };
 
+    class HiHat {
+    public:
+        HiHat(double sampleRate);
+        void trigger();
+        float getSample();
+
+    private:
+        double _sampleRate;
+        float _amplitude = 0.0f;
+        WhiteNoise _noise;
+        float _hpfState = 0.0f;
+
+        const float _decay = 0.05f;
+    };
+
     class DrumTrack : public AudioSource {
     public:
          DrumTrack(double sampleRate);
@@ -65,9 +80,11 @@ namespace wavetablesynthesizer {
 
          void triggerKick();
          void triggerSnare();
+         void triggerHat();
 
     private:
          KickDrum _kick;
          SnareDrum _snare;
+         HiHat _hat;
     };
 }

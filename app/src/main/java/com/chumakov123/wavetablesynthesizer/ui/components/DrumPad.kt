@@ -75,7 +75,12 @@ fun DrumSection(viewModel: WavetableSynthesizerViewModel) {
             modifier = Modifier.weight(1f),
             color = Color(0xFFE91E63)
         )
-        DrumPad(label = "HAT", onClick = { }, modifier = Modifier.weight(1f))
+        DrumPad(
+            label = "HAT",
+            onClick = { viewModel.triggerHat() },
+            modifier = Modifier.weight(1f),
+            color = Color(0xFFFFEB3B)
+        )
         DrumPad(label = "FX", onClick = { }, modifier = Modifier.weight(1f))
     }
 }

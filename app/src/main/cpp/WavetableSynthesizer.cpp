@@ -203,6 +203,14 @@ namespace wavetablesynthesizer {
         _drumTrack->triggerSnare();
     }
 
+    void WavetableSynthesizer::triggerHat() {
+        if (!_isStreamOpen) {
+            _audioPlayer->play();
+            _isStreamOpen = true;
+        }
+        _drumTrack->triggerHat();
+    }
+
     void WavetableSynthesizer::sequencerCallback(void* receiver, int trackId, float frequency, bool isNoteOn) {
         auto* synth = static_cast<WavetableSynthesizer*>(receiver);
         if (isNoteOn) synth->internalNoteOn(trackId, frequency);

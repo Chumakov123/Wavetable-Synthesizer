@@ -65,12 +65,38 @@ namespace wavetablesynthesizer {
         return bodySample + noiseSample;
     }
 
+    // --- HiHat ---
+
+    HiHat::HiHat(double sampleRate) : _sampleRate(sampleRate) {}
+
+    void HiHat::trigger() {
+        _amplitude = 1.0f;
+    }
+
+    float HiHat::getSample() {
+        if (_amplitude <= 0.0001f) {
+            _amplitude = 0.0f;
+            return 0.0f;
+        }
+
+        float noise = _noise.getSample();
+
+        // High Pass Filter (простейший)
+        float out = noise - _hpfState;
+        _hpfState = noise * 0.8f; // Коэффициент фильтрации
+
+        float coeff = std::exp(-1.0f / (static_cast<float>(_sampleRate) * _decay));
+        _amplitude *= coeff;
+
+        return out * _amplitude * 0.3f;
+    }
+
     // --- DrumTrack ---
 
-    DrumTrack::DrumTrack(double sampleRate) : _kick(sampleRate), _snare(sampleRate) {}
+    DrumTrack::DrumTrack(double sampleRate) : _kick(sampleRate), _snare(sampleRate), _hat(sampleRate) {}
 
     float DrumTrack::getSample() {
-        return _kick.getSample() + _snare.getSample();
+        return _kick.getSample() + _snare.getSample() + _hat.getSample();
     }
 
     void DrumTrack::onPlaybackStopped() {
@@ -83,5 +109,9 @@ namespace wavetablesynthesizer {
 
     void DrumTrack::triggerSnare() {
         _snare.trigger();
+    }
+
+    void DrumTrack::triggerHat() {
+        _hat.trigger();
     }
 }

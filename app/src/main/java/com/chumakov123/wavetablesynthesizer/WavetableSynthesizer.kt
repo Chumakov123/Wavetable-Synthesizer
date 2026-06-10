@@ -65,4 +65,5 @@ interface WavetableSynthesizer {
 
     suspend fun triggerKick()
     suspend fun triggerSnare()
+    suspend fun triggerHat()
 }

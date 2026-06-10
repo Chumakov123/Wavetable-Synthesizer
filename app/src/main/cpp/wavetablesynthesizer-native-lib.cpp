@@ -275,6 +275,13 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_triggerSnar
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->triggerSnare();
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_triggerHat(JNIEnv *env, jobject thiz,
+                                                                              jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->triggerHat();
+}
 }
 
 
