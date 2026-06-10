@@ -25,6 +25,9 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun setLfoRate(synthesizerHandle: Long, rate: Float)
     private external fun setLfoDepth(synthesizerHandle: Long, depth: Float)
     private external fun setTremoloDepth(synthesizerHandle: Long, depth: Float)
+    private external fun setDelayTime(synthesizerHandle: Long, seconds: Float)
+    private external fun setDelayFeedback(synthesizerHandle: Long, feedback: Float)
+    private external fun setDelayWet(synthesizerHandle: Long, wet: Float)
     private external fun setMetronomeEnabled(synthesizerHandle: Long, enabled: Boolean)
     private external fun setBpm(synthesizerHandle: Long, bpm: Float)
     private external fun setRecording(synthesizerHandle: Long, enabled: Boolean)
@@ -172,6 +175,27 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             setTremoloDepth(synthesizerHandle, depth)
+        }
+    }
+
+    override suspend fun setDelayTime(seconds: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setDelayTime(synthesizerHandle, seconds)
+        }
+    }
+
+    override suspend fun setDelayFeedback(feedback: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setDelayFeedback(synthesizerHandle, feedback)
+        }
+    }
+
+    override suspend fun setDelayWet(wet: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setDelayWet(synthesizerHandle, wet)
         }
     }
 

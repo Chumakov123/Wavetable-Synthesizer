@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
 import com.chumakov123.wavetablesynthesizer.ui.components.AdsrControls
+import com.chumakov123.wavetablesynthesizer.ui.components.FxControls
 import com.chumakov123.wavetablesynthesizer.ui.components.LfoControls
 import com.chumakov123.wavetablesynthesizer.ui.components.MetronomeControl
 import com.chumakov123.wavetablesynthesizer.ui.components.OctaveControl
@@ -102,6 +103,7 @@ fun WavetableSynthesizerApp(
                     WavetableSynthesizerViewModel.ControlPanelMode.WAVE -> WavetableSelectionPanel(synthesizerViewModel)
                     WavetableSynthesizerViewModel.ControlPanelMode.ADSR -> AdsrControls(synthesizerViewModel)
                     WavetableSynthesizerViewModel.ControlPanelMode.LFO -> LfoControls(synthesizerViewModel)
+                    WavetableSynthesizerViewModel.ControlPanelMode.FX -> FxControls(synthesizerViewModel)
                 }
             }
         }

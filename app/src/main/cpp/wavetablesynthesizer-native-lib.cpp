@@ -177,6 +177,30 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setTremoloD
 }
 
 JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setDelayTime(JNIEnv *env, jobject thiz,
+                                                                                jlong synthesizerHandle,
+                                                                                jfloat seconds) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setDelayTime(static_cast<float>(seconds));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setDelayFeedback(JNIEnv *env, jobject thiz,
+                                                                                    jlong synthesizerHandle,
+                                                                                    jfloat feedback) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setDelayFeedback(static_cast<float>(feedback));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setDelayWet(JNIEnv *env, jobject thiz,
+                                                                               jlong synthesizerHandle,
+                                                                               jfloat wet) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setDelayWet(static_cast<float>(wet));
+}
+
+JNIEXPORT void JNICALL
 Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setMetronomeEnabled(JNIEnv *env, jobject thiz,
                                                                                         jlong synthesizerHandle,
                                                                                         jboolean enabled) {

@@ -6,6 +6,7 @@
 #include "WavetableOscillator.h"
 #include "Wavetable.h"
 #include "WavetableFactory.h"
+#include "DelayLine.h"
 
 namespace wavetablesynthesizer {
     class SynthTrack : public AudioSource {
@@ -30,6 +31,11 @@ namespace wavetablesynthesizer {
         void setLfoDepth(float depth);
         void setTremoloDepth(float depth);
 
+        // FX Delay
+        void setDelayTime(float seconds);
+        void setDelayFeedback(float feedback);
+        void setDelayWet(float wet);
+
         bool isBusy() const;
 
     private:
@@ -39,6 +45,9 @@ namespace wavetablesynthesizer {
         WavetableFactory _wavetableFactory;
         Wavetable _currentWavetable{Wavetable::SINE};
         float _amplitude = 0.06f; // Default volume
+
+        DelayLine _delayLine;
+
         std::mutex _mutex;
     };
 }

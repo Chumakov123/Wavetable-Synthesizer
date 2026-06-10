@@ -108,7 +108,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _selectedPresetIndex = MutableLiveData(0)
     val selectedPresetIndex: LiveData<Int> = _selectedPresetIndex
 
-    enum class ControlPanelMode { WAVE, ADSR, LFO }
+    enum class ControlPanelMode { WAVE, ADSR, LFO, FX }
     private val _controlPanelMode = MutableLiveData(ControlPanelMode.WAVE)
     val controlPanelMode: LiveData<ControlPanelMode> = _controlPanelMode
 
@@ -136,6 +136,15 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _tremoloDepth = MutableLiveData(0.0f)
     val tremoloDepth: LiveData<Float> = _tremoloDepth
 
+    private val _delayTime = MutableLiveData(0.5f)
+    val delayTime: LiveData<Float> = _delayTime
+
+    private val _delayFeedback = MutableLiveData(0.5f)
+    val delayFeedback: LiveData<Float> = _delayFeedback
+
+    private val _delayWet = MutableLiveData(0.0f)
+    val delayWet: LiveData<Float> = _delayWet
+
     private val _bpm = MutableLiveData(120f)
     val bpm: LiveData<Float> = _bpm
 
@@ -154,6 +163,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
         var lfoRate: Float = 5.0f,
         var lfoDepth: Float = 0.0f,
         var tremoloDepth: Float = 0.0f,
+        var delayTime: Float = 0.5f,
+        var delayFeedback: Float = 0.5f,
+        var delayWet: Float = 0.0f,
         var volume: Float = -12f
     )
     
@@ -266,6 +278,30 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
+    fun setDelayTime(seconds: Float) {
+        _delayTime.value = seconds
+        trackStates[_selectedTrack.value!!].delayTime = seconds
+        viewModelScope.launch {
+            wavetableSynthesizer?.setDelayTime(seconds)
+        }
+    }
+
+    fun setDelayFeedback(feedback: Float) {
+        _delayFeedback.value = feedback
+        trackStates[_selectedTrack.value!!].delayFeedback = feedback
+        viewModelScope.launch {
+            wavetableSynthesizer?.setDelayFeedback(feedback)
+        }
+    }
+
+    fun setDelayWet(wet: Float) {
+        _delayWet.value = wet
+        trackStates[_selectedTrack.value!!].delayWet = wet
+        viewModelScope.launch {
+            wavetableSynthesizer?.setDelayWet(wet)
+        }
+    }
+
     fun setSelectedTrack(trackId: Int) {
         _selectedTrack.value = trackId
 
@@ -278,6 +314,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
         _lfoRate.value = state.lfoRate
         _lfoDepth.value = state.lfoDepth
         _tremoloDepth.value = state.tremoloDepth
+        _delayTime.value = state.delayTime
+        _delayFeedback.value = state.delayFeedback
+        _delayWet.value = state.delayWet
         _volume.value = state.volume
 
         viewModelScope.launch {
@@ -292,6 +331,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
                 setLfoRate(state.lfoRate)
                 setLfoDepth(state.lfoDepth)
                 setTremoloDepth(state.tremoloDepth)
+                setDelayTime(state.delayTime)
+                setDelayFeedback(state.delayFeedback)
+                setDelayWet(state.delayWet)
                 setVolume(state.volume)
             }
         }
@@ -411,6 +453,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
                     setLfoRate(state.lfoRate)
                     setLfoDepth(state.lfoDepth)
                     setTremoloDepth(state.tremoloDepth)
+                    setDelayTime(state.delayTime)
+                    setDelayFeedback(state.delayFeedback)
+                    setDelayWet(state.delayWet)
                     setVolume(state.volume)
                 }
             }

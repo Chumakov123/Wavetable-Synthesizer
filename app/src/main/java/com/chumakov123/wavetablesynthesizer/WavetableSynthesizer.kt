@@ -49,6 +49,10 @@ interface WavetableSynthesizer {
     suspend fun setLfoDepth(depth: Float)
     suspend fun setTremoloDepth(depth: Float)
 
+    suspend fun setDelayTime(seconds: Float)
+    suspend fun setDelayFeedback(feedback: Float)
+    suspend fun setDelayWet(wet: Float)
+
     suspend fun setMetronomeEnabled(enabled: Boolean)
     suspend fun setBpm(bpm: Float)
 

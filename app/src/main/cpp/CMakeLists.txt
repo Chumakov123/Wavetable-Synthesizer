@@ -35,6 +35,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         Metronome.cpp
         Sequencer.cpp
         SynthTrack.cpp
+        DelayLine.cpp
         wavetablesynthesizer-native-lib.cpp)
 
 find_package(oboe REQUIRED CONFIG)

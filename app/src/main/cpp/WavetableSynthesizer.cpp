@@ -128,6 +128,18 @@ namespace wavetablesynthesizer {
         _tracks[_activeTrackId]->setTremoloDepth(depth);
     }
 
+    void WavetableSynthesizer::setDelayTime(float seconds) {
+        _tracks[_activeTrackId]->setDelayTime(seconds);
+    }
+
+    void WavetableSynthesizer::setDelayFeedback(float feedback) {
+        _tracks[_activeTrackId]->setDelayFeedback(feedback);
+    }
+
+    void WavetableSynthesizer::setDelayWet(float wet) {
+        _tracks[_activeTrackId]->setDelayWet(wet);
+    }
+
     void WavetableSynthesizer::setMetronomeEnabled(bool enabled) {
         _metronome->setEnabled(enabled);
         if (enabled && !_isStreamOpen) {

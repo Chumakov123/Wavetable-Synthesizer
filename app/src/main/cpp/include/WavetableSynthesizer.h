@@ -39,6 +39,11 @@ namespace wavetablesynthesizer {
         void setLfoDepth(float depth);
         void setTremoloDepth(float depth);
 
+        // FX Delay
+        void setDelayTime(float seconds);
+        void setDelayFeedback(float feedback);
+        void setDelayWet(float wet);
+
         void setMetronomeEnabled(bool enabled);
         void setBpm(float bpm);
 

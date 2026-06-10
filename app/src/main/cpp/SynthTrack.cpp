@@ -2,7 +2,7 @@
 #include <cmath>
 
 namespace wavetablesynthesizer {
-    SynthTrack::SynthTrack(double sampleRate) : _sampleRate(sampleRate) {
+    SynthTrack::SynthTrack(double sampleRate) : _sampleRate(sampleRate), _delayLine(sampleRate) {
         for (int i = 0; i < MAX_VOICES; ++i) {
             _voices.push_back(std::make_shared<WavetableOscillator>(
                 _wavetableFactory.getWaveTable(_currentWavetable), static_cast<float>(sampleRate)));
@@ -11,11 +11,13 @@ namespace wavetablesynthesizer {
 
     float SynthTrack::getSample() {
         float sample = 0.0f;
-        std::lock_guard<std::mutex> lock(_mutex);
-        for (auto& voice : _voices) {
-            sample += voice->getSample();
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            for (auto& voice : _voices) {
+                sample += voice->getSample();
+            }
         }
-        return sample;
+        return _delayLine.process(sample);
     }
 
     void SynthTrack::onPlaybackStopped() {
@@ -115,6 +117,18 @@ namespace wavetablesynthesizer {
     void SynthTrack::setTremoloDepth(float depth) {
         std::lock_guard<std::mutex> lock(_mutex);
         for (auto& voice : _voices) voice->setTremoloDepth(depth);
+    }
+
+    void SynthTrack::setDelayTime(float seconds) {
+        _delayLine.setDelayTime(seconds);
+    }
+
+    void SynthTrack::setDelayFeedback(float feedback) {
+        _delayLine.setFeedback(feedback);
+    }
+
+    void SynthTrack::setDelayWet(float wet) {
+        _delayLine.setWetLevel(wet);
     }
 
     bool SynthTrack::isBusy() const {
