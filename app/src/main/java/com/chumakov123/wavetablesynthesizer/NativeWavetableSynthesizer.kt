@@ -25,6 +25,8 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun setLfoRate(synthesizerHandle: Long, rate: Float)
     private external fun setLfoDepth(synthesizerHandle: Long, depth: Float)
     private external fun setTremoloDepth(synthesizerHandle: Long, depth: Float)
+    private external fun setMetronomeEnabled(synthesizerHandle: Long, enabled: Boolean)
+    private external fun setBpm(synthesizerHandle: Long, bpm: Float)
 
     companion object {
         init {
@@ -164,6 +166,20 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             setTremoloDepth(synthesizerHandle, depth)
+        }
+    }
+
+    override suspend fun setMetronomeEnabled(enabled: Boolean) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setMetronomeEnabled(synthesizerHandle, enabled)
+        }
+    }
+
+    override suspend fun setBpm(bpm: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setBpm(synthesizerHandle, bpm)
         }
     }
 }

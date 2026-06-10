@@ -1,5 +1,7 @@
 package com.chumakov123.wavetablesynthesizer.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -9,13 +11,18 @@ import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.chumakov123.wavetablesynthesizer.R
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
 
@@ -95,5 +102,34 @@ fun VolumeControlContent(
             valueRange = valueRange
         )
         Icon(imageVector = Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, modifier = Modifier.size(20.dp))
+    }
+}
+
+@Composable
+fun MetronomeControl(viewModel: WavetableSynthesizerViewModel) {
+    val isEnabled by viewModel.isMetronomeEnabled.observeAsState(false)
+    val bpm by viewModel.bpm.observeAsState(120f)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("METRO", fontSize = 9.sp, color = Color.Gray)
+            Switch(
+                checked = isEnabled,
+                onCheckedChange = { viewModel.setMetronomeEnabled(it) },
+                modifier = Modifier.scale(0.6f)
+            )
+        }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("BPM: ${bpm.toInt()}", fontSize = 9.sp, color = Color.Gray)
+            Knob(
+                value = bpm,
+                onValueChange = { viewModel.setBpm(it) },
+                valueRange = 40f..240f,
+                modifier = Modifier.size(35.dp)
+            )
+        }
     }
 }

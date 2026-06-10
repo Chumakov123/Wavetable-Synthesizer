@@ -175,6 +175,22 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setTremoloD
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setTremoloDepth(static_cast<float>(depth));
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setMetronomeEnabled(JNIEnv *env, jobject thiz,
+                                                                                        jlong synthesizerHandle,
+                                                                                        jboolean enabled) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setMetronomeEnabled(static_cast<bool>(enabled));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setBpm(JNIEnv *env, jobject thiz,
+                                                                          jlong synthesizerHandle,
+                                                                          jfloat bpm) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setBpm(static_cast<float>(bpm));
+}
 }
 
 

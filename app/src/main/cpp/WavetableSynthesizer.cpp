@@ -23,6 +23,10 @@ namespace wavetablesynthesizer {
             _voices.push_back(voice);
             mixer->addSource(voice);
         }
+
+        _metronome = std::make_shared<Metronome>(sampleRate);
+        mixer->addSource(_metronome);
+
         _audioPlayer = std::make_unique<OboeAudioPlayer>(mixer, sampleRate);
     }
 
@@ -170,5 +174,13 @@ namespace wavetablesynthesizer {
         for (auto& voice : _voices) {
             voice->setTremoloDepth(depth);
         }
+    }
+
+    void WavetableSynthesizer::setMetronomeEnabled(bool enabled) {
+        _metronome->setEnabled(enabled);
+    }
+
+    void WavetableSynthesizer::setBpm(float bpm) {
+        _metronome->setBpm(bpm);
     }
 }

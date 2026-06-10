@@ -3,6 +3,7 @@
 #include <mutex>
 #include "Wavetable.h"
 #include "WavetableFactory.h"
+#include "Metronome.h"
 
 namespace wavetablesynthesizer {
     class WavetableOscillator;
@@ -32,6 +33,9 @@ namespace wavetablesynthesizer {
         void setLfoRate(float rate);
         void setLfoDepth(float depth);
         void setTremoloDepth(float depth);
+
+        void setMetronomeEnabled(bool enabled);
+        void setBpm(float bpm);
     private:
         std::atomic<bool> _isStreamOpen = false;
         std::atomic<bool> _isContinuousPlayActive = false;
@@ -50,6 +54,7 @@ namespace wavetablesynthesizer {
         float _tremoloDepth = 0.0f;
 
         std::vector<std::shared_ptr<WavetableOscillator>> _voices;
+        std::shared_ptr<Metronome> _metronome;
         std::unique_ptr<AudioPlayer> _audioPlayer;
     };
 }

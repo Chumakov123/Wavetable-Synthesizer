@@ -142,6 +142,12 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _tremoloDepth = MutableLiveData(0.0f)
     val tremoloDepth: LiveData<Float> = _tremoloDepth
 
+    private val _bpm = MutableLiveData(120f)
+    val bpm: LiveData<Float> = _bpm
+
+    private val _isMetronomeEnabled = MutableLiveData(false)
+    val isMetronomeEnabled: LiveData<Boolean> = _isMetronomeEnabled
+
     private val _activeNotes = MutableLiveData<Set<Float>>(emptySet())
     val activeNotes: LiveData<Set<Float>> = _activeNotes
 
@@ -219,6 +225,20 @@ class WavetableSynthesizerViewModel : ViewModel() {
         _tremoloDepth.value = depth
         viewModelScope.launch {
             wavetableSynthesizer?.setTremoloDepth(depth)
+        }
+    }
+
+    fun setBpm(bpm: Float) {
+        _bpm.value = bpm
+        viewModelScope.launch {
+            wavetableSynthesizer?.setBpm(bpm)
+        }
+    }
+
+    fun setMetronomeEnabled(enabled: Boolean) {
+        _isMetronomeEnabled.value = enabled
+        viewModelScope.launch {
+            wavetableSynthesizer?.setMetronomeEnabled(enabled)
         }
     }
 
@@ -328,6 +348,8 @@ class WavetableSynthesizerViewModel : ViewModel() {
             wavetableSynthesizer?.setLfoRate(lfoRate.value!!)
             wavetableSynthesizer?.setLfoDepth(lfoDepth.value!!)
             wavetableSynthesizer?.setTremoloDepth(tremoloDepth.value!!)
+            wavetableSynthesizer?.setBpm(bpm.value!!)
+            wavetableSynthesizer?.setMetronomeEnabled(isMetronomeEnabled.value!!)
             updatePlayLabel()
         }
     }
