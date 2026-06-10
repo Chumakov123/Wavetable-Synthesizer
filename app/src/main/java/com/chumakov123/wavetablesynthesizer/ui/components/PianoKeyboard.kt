@@ -38,14 +38,18 @@ fun PianoKeyboard(synthesizerViewModel: WavetableSynthesizerViewModel) {
     val baseWhiteNotes = remember {
         listOf(
             "C" to 261.63f, "D" to 293.66f, "E" to 329.63f, "F" to 349.23f,
-            "G" to 392.00f, "A" to 440.00f, "B" to 493.88f, "C2" to 523.25f
+            "G" to 392.00f, "A" to 440.00f, "B" to 493.88f,
+            "C2" to 523.25f, "D2" to 587.33f, "E2" to 659.25f, "F2" to 698.46f,
+            "G2" to 783.99f, "A2" to 880.00f, "B2" to 987.77f, "C3" to 1046.50f
         )
     }
 
     val baseBlackNotes = remember {
         listOf(
             ("C#" to 277.18f) to 0, ("D#" to 311.13f) to 1, ("F#" to 369.99f) to 3,
-            ("G#" to 415.30f) to 4, ("A#" to 466.16f) to 5
+            ("G#" to 415.30f) to 4, ("A#" to 466.16f) to 5,
+            ("C#2" to 554.37f) to 7, ("D#2" to 622.25f) to 8, ("F#2" to 739.99f) to 10,
+            ("G#2" to 830.61f) to 11, ("A#2" to 932.33f) to 12
         )
     }
 
@@ -203,8 +207,8 @@ private fun PianoKey(
         Text(
             text = name,
             color = textColor,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
+            fontSize = 10.sp,
+            modifier = Modifier.padding(bottom = 4.dp)
         )
     }
 }
