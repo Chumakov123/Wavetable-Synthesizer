@@ -13,6 +13,8 @@ import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FiberManualRecord
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
@@ -28,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -118,6 +121,7 @@ fun MetronomeControl(viewModel: WavetableSynthesizerViewModel) {
 fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
     val isRecording by viewModel.isRecording.observeAsState(false)
     val isPlaying by viewModel.isPlayingRecording.observeAsState(false)
+    val context = LocalContext.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -131,6 +135,12 @@ fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
         }
         IconButton(onClick = { viewModel.clearSequence() }, modifier = Modifier.size(30.dp)) {
             Icon(Icons.Default.Delete, null, Modifier.size(18.dp), tint = Color.Gray)
+        }
+        IconButton(onClick = { viewModel.saveProject(context) }, modifier = Modifier.size(30.dp)) {
+            Icon(Icons.Default.FileUpload, null, Modifier.size(18.dp), tint = Color.Cyan)
+        }
+        IconButton(onClick = { viewModel.loadProject(context) }, modifier = Modifier.size(30.dp)) {
+            Icon(Icons.Default.FileDownload, null, Modifier.size(18.dp), tint = Color.Magenta)
         }
         QuantizationSelector(viewModel)
     }

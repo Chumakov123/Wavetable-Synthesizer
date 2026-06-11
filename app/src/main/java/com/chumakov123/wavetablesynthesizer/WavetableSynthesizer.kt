@@ -2,7 +2,9 @@ package com.chumakov123.wavetablesynthesizer
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import kotlinx.serialization.Serializable
 
+@Serializable
 enum class Wavetable {
     SINE {
         override fun toResourceString(): Int = R.string.sine
@@ -70,6 +72,8 @@ interface WavetableSynthesizer {
     suspend fun setActivePattern(patternId: Int)
     suspend fun copyPattern(sourceId: Int, targetId: Int)
     suspend fun removePattern(patternId: Int)
+    suspend fun getPatternCount(): Int
+    suspend fun clearAllPatterns()
     suspend fun getCurrentPlaylistIndex(): Int
 
     suspend fun getEvents(patternId: Int): List<MidiEventData>
@@ -86,6 +90,7 @@ interface WavetableSynthesizer {
     suspend fun clearDrums()
 }
 
+@Serializable
 data class MidiEventData(
     val timestamp: Long,
     val frequency: Float,

@@ -60,6 +60,8 @@ namespace wavetablesynthesizer {
         int getActivePattern() const { return _activePatternId.load(); }
         void copyPattern(int sourceId, int targetId);
         void removePattern(int patternId);
+        int getPatternCount() const { return static_cast<int>(_patterns.size()); }
+        void clearAllPatterns();
 
         // Grid Editing
         int getEventCount(int patternId);

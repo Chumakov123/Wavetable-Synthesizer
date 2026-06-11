@@ -346,6 +346,21 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_removePatte
 }
 
 JNIEXPORT jint JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_getPatternCount(JNIEnv *env, jobject thiz,
+                                                                                   jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) return synthesizer->getPatternCount();
+    return 0;
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearAllPatterns(JNIEnv *env, jobject thiz,
+                                                                                    jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->clearAllPatterns();
+}
+
+JNIEXPORT jint JNICALL
 Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_getCurrentPlaylistIndex(JNIEnv *env, jobject thiz,
                                                                                            jlong synthesizerHandle) {
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);

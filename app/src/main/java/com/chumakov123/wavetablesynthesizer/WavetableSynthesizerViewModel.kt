@@ -4,9 +4,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
 import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.time.Duration.Companion.milliseconds
@@ -170,6 +179,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _selectedTrack = MutableLiveData(0)
     val selectedTrack: LiveData<Int> = _selectedTrack
 
+    @Serializable
     data class TrackState(
         var wavetable: Wavetable = Wavetable.SINE,
         var attack: Float = 0.01f,
@@ -183,6 +193,17 @@ class WavetableSynthesizerViewModel : ViewModel() {
         var delayFeedback: Float = 0.5f,
         var delayWet: Float = 0.0f,
         var volume: Float = -12f
+    )
+
+    @Serializable
+    data class ProjectData(
+        val bpm: Float,
+        val drumVolume: Float,
+        val isArrangementMode: Boolean,
+        val activePattern: Int,
+        val tracks: List<TrackState>,
+        val playlist: List<Int>,
+        val patterns: List<List<MidiEventData>>
     )
     
     private val trackStates = Array(4) { TrackState() }
@@ -697,6 +718,99 @@ class WavetableSynthesizerViewModel : ViewModel() {
             }
 
             updatePlayLabel()
+        }
+    }
+
+    fun saveProject(context: Context, fileName: String = "project.json") {
+        viewModelScope.launch {
+            val patterns = mutableListOf<List<MidiEventData>>()
+            val patternCount = wavetableSynthesizer?.getPatternCount() ?: 0
+            for (i in 0 until patternCount) {
+                patterns.add(wavetableSynthesizer?.getEvents(i) ?: emptyList())
+            }
+
+            val projectData = ProjectData(
+                bpm = _bpm.value ?: 120f,
+                drumVolume = _drumVolume.value ?: -12f,
+                isArrangementMode = _isArrangementMode.value ?: false,
+                activePattern = _activePattern.value ?: 0,
+                tracks = trackStates.toList(),
+                playlist = _playlist.value ?: emptyList(),
+                patterns = patterns
+            )
+
+            withContext(Dispatchers.IO) {
+                try {
+                    val jsonString = Json.encodeToString(projectData)
+                    val file = File(context.filesDir, fileName)
+                    file.writeText(jsonString)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Project Saved", Toast.LENGTH_SHORT).show()
+                    }
+                    Log.d("SynthVM", "Project saved to ${file.absolutePath}")
+                } catch (e: Exception) {
+                    Log.e("SynthVM", "Failed to save project", e)
+                }
+            }
+        }
+    }
+
+    fun loadProject(context: Context, fileName: String = "project.json") {
+        viewModelScope.launch {
+            val jsonString = withContext(Dispatchers.IO) {
+                try {
+                    val file = File(context.filesDir, fileName)
+                    if (file.exists()) file.readText() else null
+                } catch (e: Exception) {
+                    Log.e("SynthVM", "Failed to read project file", e)
+                    null
+                }
+            } ?: return@launch
+
+            try {
+                val projectData = Json.decodeFromString<ProjectData>(jsonString)
+                
+                // Clear native state first
+                wavetableSynthesizer?.clearAllPatterns()
+
+                _bpm.value = projectData.bpm
+                _drumVolume.value = projectData.drumVolume
+                _isArrangementMode.value = projectData.isArrangementMode
+                _activePattern.value = projectData.activePattern
+
+                projectData.tracks.forEachIndexed { i, state ->
+                    if (i < trackStates.size) {
+                        trackStates[i] = state
+                    }
+                }
+
+                _playlist.value = projectData.playlist
+
+                projectData.patterns.forEachIndexed { i, events ->
+                    for (event in events) {
+                        wavetableSynthesizer?.addEvent(
+                            i,
+                            event.timestamp,
+                            event.frequency,
+                            event.isNoteOn,
+                            event.trackId,
+                            event.isDrum
+                        )
+                    }
+                }
+
+                // Update UI state to match selected track
+                setSelectedTrack(_selectedTrack.value ?: 0)
+                applyParameters()
+                refreshEvents()
+                
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Project Loaded", Toast.LENGTH_SHORT).show()
+                }
+                Log.d("SynthVM", "Project loaded successfully")
+            } catch (e: Exception) {
+                Log.e("SynthVM", "Failed to parse project JSON", e)
+            }
         }
     }
 }

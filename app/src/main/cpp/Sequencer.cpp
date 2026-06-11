@@ -260,6 +260,16 @@ namespace wavetablesynthesizer {
         _patterns[patternId].events.clear();
     }
 
+    void Sequencer::clearAllPatterns() {
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+        _patterns.clear();
+        _patterns.emplace_back();
+        _activePatternId.store(0);
+        _playlist.clear();
+        _currentPlaylistIndex = 0;
+        _currentLoopSample = 0;
+    }
+
     int Sequencer::getEventCount(int patternId) {
         std::lock_guard<std::mutex> lock(_eventsMutex);
         if (patternId < 0 || patternId >= _patterns.size()) return 0;

@@ -62,6 +62,8 @@ namespace wavetablesynthesizer {
         void setActivePattern(int patternId) { _sequencer->setActivePattern(patternId); }
         void copyPattern(int sourceId, int targetId) { _sequencer->copyPattern(sourceId, targetId); }
         void removePattern(int patternId) { _sequencer->removePattern(patternId); }
+        int getPatternCount() { return _sequencer->getPatternCount(); }
+        void clearAllPatterns() { _sequencer->clearAllPatterns(); }
 
         // Grid Editing
         int getEventCount(int patternId) { return _sequencer->getEventCount(patternId); }

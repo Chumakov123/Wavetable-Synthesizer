@@ -42,8 +42,10 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun setActivePattern(synthesizerHandle: Long, patternId: Int)
     private external fun copyPattern(synthesizerHandle: Long, sourceId: Int, targetId: Int)
     private external fun removePattern(synthesizerHandle: Long, patternId: Int)
+    private external fun getPatternCount(synthesizerHandle: Long): Int
+    private external fun clearAllPatterns(synthesizerHandle: Long)
     private external fun getCurrentPlaylistIndex(synthesizerHandle: Long): Int
-    private external fun getEvents(synthesizerHandle: Long, patternId: Int): FloatArray
+    private external fun getEvents(synthesizerHandle: Long, patternId: Int): FloatArray?
     private external fun updateEventTimestamp(synthesizerHandle: Long, patternId: Int, index: Int, newTimestamp: Long)
     private external fun updateEventFrequency(synthesizerHandle: Long, patternId: Int, index: Int, newFrequency: Float)
     private external fun deleteEvent(synthesizerHandle: Long, patternId: Int, index: Int)
@@ -315,6 +317,20 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         }
     }
 
+    override suspend fun getPatternCount(): Int = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            return@withContext getPatternCount(synthesizerHandle)
+        }
+    }
+
+    override suspend fun clearAllPatterns() = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            clearAllPatterns(synthesizerHandle)
+        }
+    }
+
     override suspend fun getCurrentPlaylistIndex(): Int = withContext(Dispatchers.Default) {
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
@@ -325,7 +341,7 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     override suspend fun getEvents(patternId: Int): List<MidiEventData> = withContext(Dispatchers.Default) {
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
-            val raw = getEvents(synthesizerHandle, patternId)
+            val raw = getEvents(synthesizerHandle, patternId) ?: return@withContext emptyList<MidiEventData>()
             val events = mutableListOf<MidiEventData>()
             for (i in 0 until raw.size / 5) {
                 events.add(MidiEventData(
