@@ -20,7 +20,13 @@ namespace wavetablesynthesizer {
                 for (const auto& event : _events) {
                     if (event.timestamp == _currentLoopSample) {
                         if (_noteCallback) {
-                            _noteCallback(_receiver, event.trackId, event.frequency, event.isNoteOn);
+                            if (event.isDrum) {
+                                // Для барабанов используем специальное соглашение:
+                                // frequency используется как drumId
+                                _noteCallback(_receiver, -1, event.frequency, true);
+                            } else {
+                                _noteCallback(_receiver, event.trackId, event.frequency, event.isNoteOn);
+                            }
                         }
                     }
                 }
@@ -38,7 +44,7 @@ namespace wavetablesynthesizer {
 
         std::lock_guard<std::mutex> lock(_eventsMutex);
         uint64_t timestamp = getQuantizedTimestamp(_currentLoopSample);
-        _events.push_back({timestamp, frequency, true, trackId});
+        _events.push_back({timestamp, frequency, true, trackId, false});
     }
 
     void Sequencer::recordNoteOff(int trackId, float frequency) {
@@ -46,7 +52,16 @@ namespace wavetablesynthesizer {
 
         std::lock_guard<std::mutex> lock(_eventsMutex);
         uint64_t timestamp = getQuantizedTimestamp(_currentLoopSample);
-        _events.push_back({timestamp, frequency, false, trackId});
+        _events.push_back({timestamp, frequency, false, trackId, false});
+    }
+
+    void Sequencer::recordDrum(int drumId) {
+        if (!_isRecording.load()) return;
+
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+        uint64_t timestamp = getQuantizedTimestamp(_currentLoopSample);
+        // Используем frequency для хранения drumId, trackId = -1 для барабанов
+        _events.push_back({timestamp, static_cast<float>(drumId), true, -1, true});
     }
 
     void Sequencer::startRecording() {

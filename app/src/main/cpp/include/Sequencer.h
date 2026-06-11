@@ -12,6 +12,7 @@ namespace wavetablesynthesizer {
         float frequency;
         bool isNoteOn;
         int trackId;
+        bool isDrum;
     };
 
     enum class QuantizationMode {
@@ -29,6 +30,7 @@ namespace wavetablesynthesizer {
         // Запись событий
         void recordNoteOn(int trackId, float frequency);
         void recordNoteOff(int trackId, float frequency);
+        void recordDrum(int drumId);
 
         // Управление
         void startRecording();

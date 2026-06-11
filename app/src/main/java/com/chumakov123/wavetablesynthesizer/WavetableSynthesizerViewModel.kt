@@ -82,9 +82,16 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setVolume(volumeInDb: Float) {
         _volume.value = volumeInDb
-        trackStates[_selectedTrack.value!!].volume = volumeInDb
-        viewModelScope.launch {
-            wavetableSynthesizer?.setVolume(volumeInDb)
+        if (_isDrumsMode.value == true) {
+            _drumVolume.value = volumeInDb
+            viewModelScope.launch {
+                wavetableSynthesizer?.setDrumVolume(volumeInDb)
+            }
+        } else {
+            trackStates[_selectedTrack.value!!].volume = volumeInDb
+            viewModelScope.launch {
+                wavetableSynthesizer?.setVolume(volumeInDb)
+            }
         }
     }
 
@@ -104,6 +111,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     private val _isDrumsMode = MutableLiveData(false)
     val isDrumsMode: LiveData<Boolean> = _isDrumsMode
+
+    private val _drumVolume = MutableLiveData(-12f)
+    val drumVolume: LiveData<Float> = _drumVolume
 
     private val _presets = MutableLiveData(Preset.defaultPresets)
     val presets: LiveData<List<Preset>> = _presets
@@ -192,7 +202,10 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setDrumsMode(enabled: Boolean) {
         _isDrumsMode.value = enabled
-        if (enabled) _isKeyboardMode.value = false
+        if (enabled) {
+            _isKeyboardMode.value = false
+            _volume.value = _drumVolume.value
+        }
     }
 
     fun setControlPanelMode(mode: ControlPanelMode) {
@@ -313,6 +326,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setSelectedTrack(trackId: Int) {
         _selectedTrack.value = trackId
+        if (_isDrumsMode.value == true) return
 
         val state = trackStates[trackId]
         _wavetable.value = state.wavetable
@@ -414,7 +428,11 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun clearSequence() {
         viewModelScope.launch {
-            wavetableSynthesizer?.clearActiveTrack()
+            if (_isDrumsMode.value == true) {
+                wavetableSynthesizer?.clearDrums()
+            } else {
+                wavetableSynthesizer?.clearActiveTrack()
+            }
         }
     }
 
@@ -488,6 +506,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
             }
             
             wavetableSynthesizer?.setActiveTrack(currentSelected)
+            wavetableSynthesizer?.setDrumVolume(_drumVolume.value!!)
             
             wavetableSynthesizer?.setBpm(bpm.value!!)
             wavetableSynthesizer?.setMetronomeEnabled(isMetronomeEnabled.value!!)

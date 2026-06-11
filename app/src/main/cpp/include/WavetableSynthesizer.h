@@ -59,6 +59,8 @@ namespace wavetablesynthesizer {
         void triggerKick();
         void triggerSnare();
         void triggerHat();
+        void setDrumVolume(float volumeInDb);
+        void clearDrums();
 
     private:
         std::atomic<bool> _isStreamOpen = false;

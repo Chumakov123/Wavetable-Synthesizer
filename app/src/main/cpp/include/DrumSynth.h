@@ -82,9 +82,12 @@ namespace wavetablesynthesizer {
          void triggerSnare();
          void triggerHat();
 
+         void setVolume(float volumeInDb);
+
     private:
          KickDrum _kick;
          SnareDrum _snare;
          HiHat _hat;
+         std::atomic<float> _gain{1.0f};
     };
 }

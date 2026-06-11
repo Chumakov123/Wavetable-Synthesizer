@@ -188,6 +188,7 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableSynthesizer::triggerKick() {
+        _sequencer->recordDrum(0); // 0 = Kick
         if (!_isStreamOpen) {
             _audioPlayer->play();
             _isStreamOpen = true;
@@ -196,6 +197,7 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableSynthesizer::triggerSnare() {
+        _sequencer->recordDrum(1); // 1 = Snare
         if (!_isStreamOpen) {
             _audioPlayer->play();
             _isStreamOpen = true;
@@ -204,6 +206,7 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableSynthesizer::triggerHat() {
+        _sequencer->recordDrum(2); // 2 = Hat
         if (!_isStreamOpen) {
             _audioPlayer->play();
             _isStreamOpen = true;
@@ -211,9 +214,24 @@ namespace wavetablesynthesizer {
         _drumTrack->triggerHat();
     }
 
+    void WavetableSynthesizer::setDrumVolume(float volumeInDb) {
+        _drumTrack->setVolume(volumeInDb);
+    }
+
+    void WavetableSynthesizer::clearDrums() {
+        _sequencer->clearTrack(-1);
+    }
+
     void WavetableSynthesizer::sequencerCallback(void* receiver, int trackId, float frequency, bool isNoteOn) {
         auto* synth = static_cast<WavetableSynthesizer*>(receiver);
-        if (isNoteOn) synth->internalNoteOn(trackId, frequency);
-        else synth->internalNoteOff(trackId, frequency);
+        if (trackId == -1) {
+            int drumId = static_cast<int>(frequency);
+            if (drumId == 0) synth->_drumTrack->triggerKick();
+            else if (drumId == 1) synth->_drumTrack->triggerSnare();
+            else if (drumId == 2) synth->_drumTrack->triggerHat();
+        } else {
+            if (isNoteOn) synth->internalNoteOn(trackId, frequency);
+            else synth->internalNoteOff(trackId, frequency);
+        }
     }
 }

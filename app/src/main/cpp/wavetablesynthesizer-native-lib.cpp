@@ -282,6 +282,21 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_triggerHat(
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->triggerHat();
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setDrumVolume(JNIEnv *env, jobject thiz,
+                                                                                 jlong synthesizerHandle,
+                                                                                 jfloat volumeInDb) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setDrumVolume(static_cast<float>(volumeInDb));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearDrums(JNIEnv *env, jobject thiz,
+                                                                              jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->clearDrums();
+}
 }
 
 

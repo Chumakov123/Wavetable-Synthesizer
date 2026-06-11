@@ -39,6 +39,8 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun triggerKick(synthesizerHandle: Long)
     private external fun triggerSnare(synthesizerHandle: Long)
     private external fun triggerHat(synthesizerHandle: Long)
+    private external fun setDrumVolume(synthesizerHandle: Long, volumeInDb: Float)
+    private external fun clearDrums(synthesizerHandle: Long)
 
     companion object {
         init {
@@ -276,6 +278,20 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             triggerHat(synthesizerHandle)
+        }
+    }
+
+    override suspend fun setDrumVolume(volumeInDb: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setDrumVolume(synthesizerHandle, volumeInDb)
+        }
+    }
+
+    override suspend fun clearDrums() = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            clearDrums(synthesizerHandle)
         }
     }
 }

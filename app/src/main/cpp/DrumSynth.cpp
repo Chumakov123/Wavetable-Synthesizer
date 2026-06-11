@@ -96,7 +96,7 @@ namespace wavetablesynthesizer {
     DrumTrack::DrumTrack(double sampleRate) : _kick(sampleRate), _snare(sampleRate), _hat(sampleRate) {}
 
     float DrumTrack::getSample() {
-        return _kick.getSample() + _snare.getSample() + _hat.getSample();
+        return (_kick.getSample() + _snare.getSample() + _hat.getSample()) * _gain.load();
     }
 
     void DrumTrack::onPlaybackStopped() {
@@ -113,5 +113,9 @@ namespace wavetablesynthesizer {
 
     void DrumTrack::triggerHat() {
         _hat.trigger();
+    }
+
+    void DrumTrack::setVolume(float volumeInDb) {
+        _gain.store(std::pow(10.0f, volumeInDb / 20.0f));
     }
 }

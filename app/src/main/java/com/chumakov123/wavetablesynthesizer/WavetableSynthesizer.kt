@@ -66,4 +66,6 @@ interface WavetableSynthesizer {
     suspend fun triggerKick()
     suspend fun triggerSnare()
     suspend fun triggerHat()
+    suspend fun setDrumVolume(volumeInDb: Float)
+    suspend fun clearDrums()
 }
