@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
 import com.chumakov123.wavetablesynthesizer.ui.components.AdsrControls
+import com.chumakov123.wavetablesynthesizer.ui.components.ArrangementControls
 import com.chumakov123.wavetablesynthesizer.ui.components.DrumSection
 import com.chumakov123.wavetablesynthesizer.ui.components.FxControls
 import com.chumakov123.wavetablesynthesizer.ui.components.LfoControls
@@ -89,6 +90,9 @@ fun WavetableSynthesizerApp(
                 TransportControls(synthesizerViewModel)
             }
         }
+
+        // Arrangement Controls
+        ArrangementControls(synthesizerViewModel)
 
         // Ряд 2: Параметры звука (Presets + Mode + Content)
         Row(

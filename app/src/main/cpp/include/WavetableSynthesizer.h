@@ -55,6 +55,14 @@ namespace wavetablesynthesizer {
         void clearActiveTrack();
         void setQuantizationMode(int mode);
 
+        // Arrangement Mode
+        void setArrangementMode(bool enabled) { _sequencer->setArrangementMode(enabled); }
+        void addPatternToPlaylist(int patternId) { _sequencer->addPatternToPlaylist(patternId); }
+        void clearPlaylist() { _sequencer->clearPlaylist(); }
+        void setActivePattern(int patternId) { _sequencer->setActivePattern(patternId); }
+        void copyPattern(int sourceId, int targetId) { _sequencer->copyPattern(sourceId, targetId); }
+        void removePattern(int patternId) { _sequencer->removePattern(patternId); }
+
         // Drums
         void triggerKick();
         void triggerSnare();

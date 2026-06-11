@@ -21,6 +21,10 @@ namespace wavetablesynthesizer {
         Beat_1_32
     };
 
+    struct Pattern {
+        std::vector<MidiEvent> events;
+    };
+
     class Sequencer {
     public:
         Sequencer(double sampleRate);
@@ -47,6 +51,15 @@ namespace wavetablesynthesizer {
         bool isRecording() const { return _isRecording.load(); }
         bool isPlaying() const { return _isPlaying.load(); }
 
+        // Arrangement Mode
+        void setArrangementMode(bool enabled);
+        void addPatternToPlaylist(int patternId);
+        void clearPlaylist();
+        void setActivePattern(int patternId);
+        int getActivePattern() const { return _activePatternId; }
+        void copyPattern(int sourceId, int targetId);
+        void removePattern(int patternId);
+
         // Callback для синтезатора
         using NoteCallback = void(*)(void* receiver, int trackId, float frequency, bool isNoteOn);
         void setNoteCallback(NoteCallback callback, void* receiver) {
@@ -62,7 +75,13 @@ namespace wavetablesynthesizer {
         std::atomic<bool> _isRecording{false};
         std::atomic<bool> _isPlaying{false};
 
-        std::vector<MidiEvent> _events;
+        std::vector<Pattern> _patterns;
+        std::vector<int> _playlist;
+        std::atomic<int> _activePatternId{0};
+        std::atomic<bool> _isArrangementMode{false};
+
+        int _currentPlaylistIndex = 0;
+
         std::mutex _eventsMutex;
 
         uint64_t _currentLoopSample = 0;
@@ -75,5 +94,6 @@ namespace wavetablesynthesizer {
 
         void updateLoopLength();
         uint64_t getQuantizedTimestamp(uint64_t timestamp);
+        void playEventsAt(int patternId, uint64_t timestamp);
     };
 }

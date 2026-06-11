@@ -63,6 +63,14 @@ interface WavetableSynthesizer {
     suspend fun setQuantizationMode(mode: Int)
     suspend fun setActiveTrack(trackId: Int)
 
+    // Arrangement Mode
+    suspend fun setArrangementMode(enabled: Boolean)
+    suspend fun addPatternToPlaylist(patternId: Int)
+    suspend fun clearPlaylist()
+    suspend fun setActivePattern(patternId: Int)
+    suspend fun copyPattern(sourceId: Int, targetId: Int)
+    suspend fun removePattern(patternId: Int)
+
     suspend fun triggerKick()
     suspend fun triggerSnare()
     suspend fun triggerHat()

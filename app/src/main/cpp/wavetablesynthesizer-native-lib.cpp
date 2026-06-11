@@ -297,6 +297,53 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearDrums(
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->clearDrums();
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setArrangementMode(JNIEnv *env, jobject thiz,
+                                                                                      jlong synthesizerHandle,
+                                                                                      jboolean enabled) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setArrangementMode(static_cast<bool>(enabled));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_addPatternToPlaylist(JNIEnv *env, jobject thiz,
+                                                                                        jlong synthesizerHandle,
+                                                                                        jint patternId) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->addPatternToPlaylist(static_cast<int>(patternId));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearPlaylist(JNIEnv *env, jobject thiz,
+                                                                                  jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->clearPlaylist();
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setActivePattern(JNIEnv *env, jobject thiz,
+                                                                                    jlong synthesizerHandle,
+                                                                                    jint patternId) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setActivePattern(static_cast<int>(patternId));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_copyPattern(JNIEnv *env, jobject thiz,
+                                                                               jlong synthesizerHandle,
+                                                                               jint sourceId, jint targetId) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->copyPattern(static_cast<int>(sourceId), static_cast<int>(targetId));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_removePattern(JNIEnv *env, jobject thiz,
+                                                                                 jlong synthesizerHandle,
+                                                                                 jint patternId) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->removePattern(static_cast<int>(patternId));
+}
 }
 
 

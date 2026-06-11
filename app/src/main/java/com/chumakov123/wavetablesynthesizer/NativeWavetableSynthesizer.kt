@@ -36,6 +36,12 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun clearActiveTrack(synthesizerHandle: Long)
     private external fun setQuantizationMode(synthesizerHandle: Long, mode: Int)
     private external fun setActiveTrack(synthesizerHandle: Long, trackId: Int)
+    private external fun setArrangementMode(synthesizerHandle: Long, enabled: Boolean)
+    private external fun addPatternToPlaylist(synthesizerHandle: Long, patternId: Int)
+    private external fun clearPlaylist(synthesizerHandle: Long)
+    private external fun setActivePattern(synthesizerHandle: Long, patternId: Int)
+    private external fun copyPattern(synthesizerHandle: Long, sourceId: Int, targetId: Int)
+    private external fun removePattern(synthesizerHandle: Long, patternId: Int)
     private external fun triggerKick(synthesizerHandle: Long)
     private external fun triggerSnare(synthesizerHandle: Long)
     private external fun triggerHat(synthesizerHandle: Long)
@@ -56,8 +62,8 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         }
     }
 
-    override fun onPause(owner: LifecycleOwner) {
-        super.onPause(owner)
+    override fun onDestroy(owner: LifecycleOwner) {
+        super.onDestroy(owner)
 
         synchronized(synthesizerMutex) {
             if (synthesizerHandle == 0L) {
@@ -257,6 +263,48 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             setActiveTrack(synthesizerHandle, trackId)
+        }
+    }
+
+    override suspend fun setArrangementMode(enabled: Boolean) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setArrangementMode(synthesizerHandle, enabled)
+        }
+    }
+
+    override suspend fun addPatternToPlaylist(patternId: Int) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            addPatternToPlaylist(synthesizerHandle, patternId)
+        }
+    }
+
+    override suspend fun clearPlaylist() = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            clearPlaylist(synthesizerHandle)
+        }
+    }
+
+    override suspend fun setActivePattern(patternId: Int) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setActivePattern(synthesizerHandle, patternId)
+        }
+    }
+
+    override suspend fun copyPattern(sourceId: Int, targetId: Int) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            copyPattern(synthesizerHandle, sourceId, targetId)
+        }
+    }
+
+    override suspend fun removePattern(patternId: Int) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            removePattern(synthesizerHandle, patternId)
         }
     }
 

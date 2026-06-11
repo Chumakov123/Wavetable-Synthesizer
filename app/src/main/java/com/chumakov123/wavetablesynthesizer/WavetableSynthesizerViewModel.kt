@@ -195,6 +195,15 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _activeNotes = MutableLiveData<Set<Float>>(emptySet())
     val activeNotes: LiveData<Set<Float>> = _activeNotes
 
+    private val _isArrangementMode = MutableLiveData(false)
+    val isArrangementMode: LiveData<Boolean> = _isArrangementMode
+
+    private val _activePattern = MutableLiveData(0)
+    val activePattern: LiveData<Int> = _activePattern
+
+    private val _playlist = MutableLiveData<List<Int>>(emptyList())
+    val playlist: LiveData<List<Int>> = _playlist
+
     fun setKeyboardMode(enabled: Boolean) {
         _isKeyboardMode.value = enabled
         if (enabled) _isDrumsMode.value = false
@@ -383,6 +392,50 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
+    fun toggleArrangementMode() {
+        val newState = !(_isArrangementMode.value ?: false)
+        _isArrangementMode.value = newState
+        viewModelScope.launch {
+            wavetableSynthesizer?.setArrangementMode(newState)
+        }
+    }
+
+    fun setActivePattern(patternId: Int) {
+        _activePattern.value = patternId
+        viewModelScope.launch {
+            wavetableSynthesizer?.setActivePattern(patternId)
+        }
+    }
+
+    fun copyActivePatternTo(targetId: Int) {
+        val sourceId = _activePattern.value ?: 0
+        viewModelScope.launch {
+            wavetableSynthesizer?.copyPattern(sourceId, targetId)
+        }
+    }
+
+    fun removePattern(patternId: Int) {
+        viewModelScope.launch {
+            wavetableSynthesizer?.removePattern(patternId)
+        }
+    }
+
+    fun addPatternToPlaylist(patternId: Int) {
+        val currentPlaylist = _playlist.value?.toMutableList() ?: mutableListOf()
+        currentPlaylist.add(patternId)
+        _playlist.value = currentPlaylist
+        viewModelScope.launch {
+            wavetableSynthesizer?.addPatternToPlaylist(patternId)
+        }
+    }
+
+    fun clearPlaylist() {
+        _playlist.value = emptyList()
+        viewModelScope.launch {
+            wavetableSynthesizer?.clearPlaylist()
+        }
+    }
+
     fun noteOn(frequencyInHz: Float) {
         _activeNotes.value = _activeNotes.value?.plus(frequencyInHz)
         viewModelScope.launch {
@@ -511,6 +564,15 @@ class WavetableSynthesizerViewModel : ViewModel() {
             wavetableSynthesizer?.setBpm(bpm.value!!)
             wavetableSynthesizer?.setMetronomeEnabled(isMetronomeEnabled.value!!)
             wavetableSynthesizer?.setQuantizationMode(quantization.value!!.ordinal)
+
+            // Arrangement
+            wavetableSynthesizer?.setArrangementMode(_isArrangementMode.value!!)
+            wavetableSynthesizer?.setActivePattern(_activePattern.value!!)
+            wavetableSynthesizer?.clearPlaylist()
+            _playlist.value?.forEach { patternId ->
+                wavetableSynthesizer?.addPatternToPlaylist(patternId)
+            }
+
             updatePlayLabel()
         }
     }
