@@ -45,7 +45,9 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun getCurrentPlaylistIndex(synthesizerHandle: Long): Int
     private external fun getEvents(synthesizerHandle: Long, patternId: Int): FloatArray
     private external fun updateEventTimestamp(synthesizerHandle: Long, patternId: Int, index: Int, newTimestamp: Long)
+    private external fun updateEventFrequency(synthesizerHandle: Long, patternId: Int, index: Int, newFrequency: Float)
     private external fun deleteEvent(synthesizerHandle: Long, patternId: Int, index: Int)
+    private external fun addEvent(synthesizerHandle: Long, patternId: Int, timestamp: Long, frequency: Float, isNoteOn: Boolean, trackId: Int, isDrum: Boolean): Int
     private external fun quantizePattern(synthesizerHandle: Long, patternId: Int, mode: Int)
     private external fun triggerKick(synthesizerHandle: Long)
     private external fun triggerSnare(synthesizerHandle: Long)
@@ -345,10 +347,24 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         }
     }
 
+    override suspend fun updateEventFrequency(patternId: Int, eventIndex: Int, newFrequency: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            updateEventFrequency(synthesizerHandle, patternId, eventIndex, newFrequency)
+        }
+    }
+
     override suspend fun deleteEvent(patternId: Int, eventIndex: Int) = withContext(Dispatchers.Default) {
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             deleteEvent(synthesizerHandle, patternId, eventIndex)
+        }
+    }
+
+    override suspend fun addEvent(patternId: Int, timestamp: Long, frequency: Float, isNoteOn: Boolean, trackId: Int, isDrum: Boolean): Int = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            return@withContext addEvent(synthesizerHandle, patternId, timestamp, frequency, isNoteOn, trackId, isDrum)
         }
     }
 

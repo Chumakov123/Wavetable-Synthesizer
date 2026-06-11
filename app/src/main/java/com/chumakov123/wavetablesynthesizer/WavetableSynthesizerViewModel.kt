@@ -220,7 +220,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _patternEvents = MutableLiveData<List<MidiEventData>>(emptyList())
     val patternEvents: LiveData<List<MidiEventData>> = _patternEvents
 
-    enum class GridEditMode { DRAG, STRETCH }
+    enum class GridEditMode { DRAG, STRETCH, PAINT }
     private val _gridEditMode = MutableLiveData(GridEditMode.DRAG)
     val gridEditMode: LiveData<GridEditMode> = _gridEditMode
 
@@ -475,6 +475,29 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
+    fun updateEventFrequency(index: Int, newFrequency: Float) {
+        viewModelScope.launch {
+            wavetableSynthesizer?.updateEventFrequency(_activePattern.value ?: 0, index, newFrequency)
+            refreshEvents()
+        }
+    }
+
+    fun addNote(timestamp: Long, frequency: Float, duration: Long) {
+        viewModelScope.launch {
+            val patternId = _activePattern.value ?: 0
+            val isDrum = _isDrumsMode.value ?: false
+            val trackId = if (isDrum) -1 else (_selectedTrack.value ?: 0)
+            
+            // Добавляем Note On
+            wavetableSynthesizer?.addEvent(patternId, timestamp, frequency, true, trackId, isDrum)
+            // Добавляем Note Off
+            if (!isDrum) {
+                wavetableSynthesizer?.addEvent(patternId, timestamp + duration, frequency, false, trackId, isDrum)
+            }
+            refreshEvents()
+        }
+    }
+
     fun moveNote(noteOnIndex: Int, noteOffIndex: Int, newNoteOnTimestamp: Long, newNoteOffTimestamp: Long) {
         viewModelScope.launch {
             val patternId = _activePattern.value ?: 0
@@ -521,6 +544,14 @@ class WavetableSynthesizerViewModel : ViewModel() {
     fun noteOff(frequencyInHz: Float) {
         _activeNotes.value = _activeNotes.value?.minus(frequencyInHz)
         viewModelScope.launch {
+            wavetableSynthesizer?.noteOff(frequencyInHz)
+        }
+    }
+
+    fun playPreviewNote(frequencyInHz: Float) {
+        viewModelScope.launch {
+            wavetableSynthesizer?.noteOn(frequencyInHz)
+            delay(200.milliseconds)
             wavetableSynthesizer?.noteOff(frequencyInHz)
         }
     }

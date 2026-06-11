@@ -388,11 +388,33 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_updateEvent
 }
 
 JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_updateEventFrequency(JNIEnv *env, jobject thiz,
+                                                                                          jlong synthesizerHandle,
+                                                                                          jint patternId, jint index,
+                                                                                          jfloat newFrequency) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->updateEventFrequency(patternId, index, static_cast<float>(newFrequency));
+}
+
+JNIEXPORT void JNICALL
 Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_deleteEvent(JNIEnv *env, jobject thiz,
                                                                                 jlong synthesizerHandle,
                                                                                 jint patternId, jint index) {
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->deleteEvent(patternId, index);
+}
+
+JNIEXPORT jint JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_addEvent(JNIEnv *env, jobject thiz,
+                                                                              jlong synthesizerHandle,
+                                                                              jint patternId, jlong timestamp,
+                                                                              jfloat frequency, jboolean isNoteOn,
+                                                                              jint trackId, jboolean isDrum) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) {
+        return synthesizer->addEvent(patternId, static_cast<uint64_t>(timestamp), frequency, isNoteOn, trackId, isDrum);
+    }
+    return -1;
 }
 
 JNIEXPORT void JNICALL

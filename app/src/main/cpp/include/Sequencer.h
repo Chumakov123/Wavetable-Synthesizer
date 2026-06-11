@@ -65,7 +65,9 @@ namespace wavetablesynthesizer {
         int getEventCount(int patternId);
         MidiEvent getEvent(int patternId, int eventIndex);
         void updateEventTimestamp(int patternId, int eventIndex, uint64_t newTimestamp);
+        void updateEventFrequency(int patternId, int eventIndex, float newFrequency);
         void deleteEvent(int patternId, int eventIndex);
+        int addEvent(int patternId, uint64_t timestamp, float frequency, bool isNoteOn, int trackId, bool isDrum);
         void quantizePattern(int patternId, QuantizationMode mode);
 
         int getCurrentPlaylistIndex() const { return _currentPlaylistIndex; }

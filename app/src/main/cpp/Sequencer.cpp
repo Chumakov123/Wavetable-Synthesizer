@@ -282,12 +282,29 @@ namespace wavetablesynthesizer {
         events[eventIndex].timestamp = newTimestamp % _loopLengthSamples;
     }
 
+    void Sequencer::updateEventFrequency(int patternId, int eventIndex, float newFrequency) {
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+        if (patternId < 0 || patternId >= _patterns.size()) return;
+        auto& events = _patterns[patternId].events;
+        if (eventIndex < 0 || eventIndex >= events.size()) return;
+        events[eventIndex].frequency = newFrequency;
+    }
+
     void Sequencer::deleteEvent(int patternId, int eventIndex) {
         std::lock_guard<std::mutex> lock(_eventsMutex);
         if (patternId < 0 || patternId >= _patterns.size()) return;
         auto& events = _patterns[patternId].events;
         if (eventIndex < 0 || eventIndex >= events.size()) return;
         events.erase(events.begin() + eventIndex);
+    }
+
+    int Sequencer::addEvent(int patternId, uint64_t timestamp, float frequency, bool isNoteOn, int trackId, bool isDrum) {
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+        while (_patterns.size() <= patternId) {
+            _patterns.emplace_back();
+        }
+        _patterns[patternId].events.push_back({timestamp % _loopLengthSamples, frequency, isNoteOn, trackId, isDrum});
+        return static_cast<int>(_patterns[patternId].events.size() - 1);
     }
 
     void Sequencer::quantizePattern(int patternId, QuantizationMode mode) {

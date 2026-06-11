@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
+import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.*
@@ -23,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chumakov123.wavetablesynthesizer.MidiEventData
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
-import kotlin.math.roundToLong
+import kotlin.math.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +33,7 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
     val bpm by viewModel.bpm.observeAsState(120f)
     val isDrumsMode by viewModel.isDrumsMode.observeAsState(false)
     val selectedTrack by viewModel.selectedTrack.observeAsState(0)
+    val octave by viewModel.octave.observeAsState(0)
     val editMode by viewModel.gridEditMode.observeAsState(WavetableSynthesizerViewModel.GridEditMode.DRAG)
 
     val filteredEventsWithIndices = allEvents.mapIndexed { index, event -> index to event }
@@ -40,16 +42,13 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
             else !event.isDrum && event.trackId == selectedTrack
         }
 
-    val freqRange = remember(filteredEventsWithIndices) {
-        if (isDrumsMode || filteredEventsWithIndices.isEmpty()) {
-            0f..2000f
+    val freqRange = remember(filteredEventsWithIndices, octave, isDrumsMode) {
+        if (isDrumsMode) {
+            -0.5f..2.5f // 3 барабана: 0, 1, 2
         } else {
-            val freqs = filteredEventsWithIndices.map { it.second.frequency }
-            val min = freqs.minOrNull() ?: 200f
-            val max = freqs.maxOrNull() ?: 1000f
-
-            val padding = (max - min) * 0.1f
-            (min - padding)..(max + padding)
+            val multiplier = 2f.pow(octave)
+            val centerFreq = 440f * multiplier
+            (centerFreq / 2f)..(centerFreq * 2f)
         }
     }
 
@@ -77,7 +76,7 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onLongPress = { offset ->
-                            val dragInfo = findEventAt(
+                            val info = findEventAt(
                                 offset,
                                 currentFilteredWithIndices,
                                 currentEvents,
@@ -88,14 +87,50 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
                                 currentSamplesPer16th,
                                 currentEditMode
                             )
-                            if (dragInfo != null) {
-                                viewModel.deleteEvent(dragInfo.noteOnIndex)
+                            if (info != null) {
+                                viewModel.deleteEvent(info.noteOnIndex)
+                            }
+                        },
+                        onTap = { offset ->
+                            if (currentEditMode == WavetableSynthesizerViewModel.GridEditMode.PAINT) {
+                                val info = findEventAt(
+                                    offset,
+                                    currentFilteredWithIndices,
+                                    currentEvents,
+                                    size,
+                                    currentTotalSamples,
+                                    currentFreqRange,
+                                    currentIsDrumsMode,
+                                    currentSamplesPer16th,
+                                    currentEditMode
+                                )
+                                if (info != null) {
+                                    viewModel.deleteEvent(info.noteOnIndex)
+                                } else {
+                                    val timestamp = (offset.x / size.width * currentTotalSamples).roundToLong()
+                                    val quantizedTimestamp = (timestamp / currentSamplesPer16th.toLong()) * currentSamplesPer16th.toLong()
+                                    val frequency = getFrequencyFromY(offset.y, size, currentFreqRange, currentIsDrumsMode)
+                                    val duration = currentSamplesPer16th.toLong() * 2 // 1/8 note
+                                    viewModel.addNote(quantizedTimestamp, frequency, duration)
+
+                                    if (currentIsDrumsMode) {
+                                        when (frequency.toInt()) {
+                                            0 -> viewModel.triggerKick()
+                                            1 -> viewModel.triggerSnare()
+                                            2 -> viewModel.triggerHat()
+                                        }
+                                    } else {
+                                        viewModel.playPreviewNote(frequency)
+                                    }
+                                }
                             }
                         }
                     )
                 }
                 .pointerInput(Unit) {
                     var dragInfo: DragInfo? = null
+                    var lastPlayedFreq = -1f
+                    
                     detectDragGestures(
                         onDragStart = { offset ->
                             dragInfo = findEventAt(
@@ -109,31 +144,136 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
                                 currentSamplesPer16th,
                                 currentEditMode
                             )
+                            
+                            if (currentEditMode == WavetableSynthesizerViewModel.GridEditMode.PAINT && dragInfo == null) {
+                                val timestamp = (offset.x / size.width * currentTotalSamples).roundToLong()
+                                val quantizedTimestamp = (timestamp / currentSamplesPer16th.toLong()) * currentSamplesPer16th.toLong()
+                                val frequency = getFrequencyFromY(offset.y, size, currentFreqRange, currentIsDrumsMode)
+                                
+                                val duration = currentSamplesPer16th.toLong() * 2 // 1/8 note
+                                viewModel.addNote(quantizedTimestamp, frequency, duration)
+
+                                if (currentIsDrumsMode) {
+                                    when (frequency.toInt()) {
+                                        0 -> viewModel.triggerKick()
+                                        1 -> viewModel.triggerSnare()
+                                        2 -> viewModel.triggerHat()
+                                    }
+                                } else {
+                                    viewModel.noteOn(frequency)
+                                }
+                                lastPlayedFreq = frequency
+                                
+                                dragInfo = DragInfo(
+                                    noteOnIndex = -1,
+                                    noteOffIndex = -1,
+                                    initialNoteOnTimestamp = quantizedTimestamp,
+                                    initialNoteOffTimestamp = quantizedTimestamp + duration,
+                                    targetIndex = -1,
+                                    isStretching = false,
+                                    isNewNote = true,
+                                    initialFrequency = frequency
+                                )
+                            }
                         },
                         onDrag = { change, _ ->
                             dragInfo?.let { info ->
                                 val newX = (change.position.x).coerceIn(0f, size.width.toFloat())
                                 val newNoteOnTimestamp = (newX / size.width * currentTotalSamples).roundToLong()
-
                                 val quantizedNoteOn = (newNoteOnTimestamp / currentSamplesPer16th.toLong()) * currentSamplesPer16th.toLong()
+                                
+                                val newFreq = getFrequencyFromY(change.position.y, size, currentFreqRange, currentIsDrumsMode)
 
-                                if (info.isStretching) {
-                                    viewModel.updateEventTimestamp(info.targetIndex, quantizedNoteOn)
+                                var activeInfo = info
+                                if (info.isNewNote) {
+                                    val found = currentFilteredWithIndices.find { (_, event) ->
+                                        event.isNoteOn && 
+                                        event.frequency == info.initialFrequency && 
+                                        event.timestamp == info.initialNoteOnTimestamp
+                                    }
+                                    if (found != null) {
+                                        var offIdx = -1
+                                        for (i in found.first + 1 until currentEvents.size) {
+                                            val e = currentEvents[i]
+                                            if (e.frequency == found.second.frequency && !e.isNoteOn) {
+                                                offIdx = i
+                                                break
+                                            }
+                                        }
+                                        activeInfo = info.copy(
+                                            isNewNote = false, 
+                                            noteOnIndex = found.first, 
+                                            noteOffIndex = offIdx,
+                                            targetIndex = found.first
+                                        )
+                                        dragInfo = activeInfo
+                                    }
+                                }
+
+                                if (!activeInfo.isNewNote) {
+                                    if (activeInfo.isStretching) {
+                                        viewModel.updateEventTimestamp(activeInfo.targetIndex, quantizedNoteOn)
+                                    } else {
+                                        val delta = quantizedNoteOn - activeInfo.initialNoteOnTimestamp
+                                        val newNoteOff = if (activeInfo.noteOffIndex != -1) activeInfo.initialNoteOffTimestamp + delta else -1L
+                                        
+                                        viewModel.moveNote(
+                                            activeInfo.noteOnIndex,
+                                            activeInfo.noteOffIndex,
+                                            quantizedNoteOn,
+                                            newNoteOff
+                                        )
+                                        
+                                        if (currentEditMode == WavetableSynthesizerViewModel.GridEditMode.PAINT || currentEditMode == WavetableSynthesizerViewModel.GridEditMode.DRAG) {
+                                            viewModel.updateEventFrequency(activeInfo.noteOnIndex, newFreq)
+                                            if (activeInfo.noteOffIndex != -1) viewModel.updateEventFrequency(activeInfo.noteOffIndex, newFreq)
+                                            
+                                            if (newFreq != lastPlayedFreq) {
+                                                if (currentIsDrumsMode) {
+                                                    when (newFreq.toInt()) {
+                                                        0 -> viewModel.triggerKick()
+                                                        1 -> viewModel.triggerSnare()
+                                                        2 -> viewModel.triggerHat()
+                                                    }
+                                                } else {
+                                                    viewModel.noteOff(lastPlayedFreq)
+                                                    viewModel.noteOn(newFreq)
+                                                }
+                                                lastPlayedFreq = newFreq
+                                            }
+                                        }
+                                    }
                                 } else {
-                                    val delta = quantizedNoteOn - info.initialNoteOnTimestamp
-                                    val newNoteOff = if (info.noteOffIndex != -1) info.initialNoteOffTimestamp + delta else -1L
-
-                                    viewModel.moveNote(
-                                        info.noteOnIndex,
-                                        info.noteOffIndex,
-                                        quantizedNoteOn,
-                                        newNoteOff
-                                    )
+                                    if (newFreq != lastPlayedFreq) {
+                                        if (currentIsDrumsMode) {
+                                            when (newFreq.toInt()) {
+                                                0 -> viewModel.triggerKick()
+                                                1 -> viewModel.triggerSnare()
+                                                2 -> viewModel.triggerHat()
+                                            }
+                                        } else {
+                                            viewModel.noteOff(lastPlayedFreq)
+                                            viewModel.noteOn(newFreq)
+                                        }
+                                        lastPlayedFreq = newFreq
+                                    }
                                 }
                             }
                         },
-                        onDragEnd = { dragInfo = null },
-                        onDragCancel = { dragInfo = null }
+                        onDragEnd = { 
+                            dragInfo = null
+                            if (lastPlayedFreq != -1f) {
+                                viewModel.noteOff(lastPlayedFreq)
+                                lastPlayedFreq = -1f
+                            }
+                        },
+                        onDragCancel = { 
+                            dragInfo = null
+                            if (lastPlayedFreq != -1f) {
+                                viewModel.noteOff(lastPlayedFreq)
+                                lastPlayedFreq = -1f
+                            }
+                        }
                     )
                 }
         ) {
@@ -190,6 +330,19 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            // Режим Paint
+            IconButton(
+                onClick = { viewModel.setGridEditMode(WavetableSynthesizerViewModel.GridEditMode.PAINT) },
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    Icons.Default.Brush,
+                    contentDescription = "Paint",
+                    tint = if (editMode == WavetableSynthesizerViewModel.GridEditMode.PAINT) Color(0xFFE91E63) else Color.White.copy(alpha = 0.6f),
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            
             // Режим Drag
             IconButton(
                 onClick = { viewModel.setGridEditMode(WavetableSynthesizerViewModel.GridEditMode.DRAG) },
@@ -230,8 +383,8 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
             }
         }
 
-        if (filteredEventsWithIndices.isEmpty()) {
-            Text("No notes. REC to start.", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.align(Alignment.Center))
+        if (filteredEventsWithIndices.isEmpty() && editMode != WavetableSynthesizerViewModel.GridEditMode.PAINT) {
+            Text("No notes. Use PAINT mode to add.", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.align(Alignment.Center))
         }
     }
 }
@@ -242,8 +395,33 @@ private data class DragInfo(
     val initialNoteOnTimestamp: Long,
     val initialNoteOffTimestamp: Long,
     val targetIndex: Int, // Либо NoteOn, либо NoteOff для растягивания
-    val isStretching: Boolean
+    val isStretching: Boolean,
+    val isNewNote: Boolean = false,
+    val initialFrequency: Float = 0f
 )
+
+private fun snapToMusicalNote(frequency: Float): Float {
+    if (frequency <= 0) return frequency
+    // n = 69 + 12 * log2(f / 440)
+    val midiNote = 69 + 12 * log2((frequency / 440f).toDouble())
+    val snappedMidiNote = midiNote.roundToInt()
+    return (440f * 2.0.pow((snappedMidiNote - 69) / 12.0)).toFloat()
+}
+
+private fun getFrequencyFromY(y: Float, size: androidx.compose.ui.unit.IntSize, range: ClosedFloatingPointRange<Float>, isDrumsMode: Boolean): Float {
+    val height = size.height.toFloat()
+    return if (isDrumsMode) {
+        when {
+            y > height * 0.65f -> 0f // Kick
+            y > height * 0.35f -> 1f // Snare
+            else -> 2f // Hat
+        }
+    } else {
+        val pos = (height - y) / height
+        val freq = range.start + pos.coerceIn(0f, 1f) * (range.endInclusive - range.start)
+        snapToMusicalNote(freq)
+    }
+}
 
 private fun findEventAt(
     offset: Offset, 
@@ -296,7 +474,7 @@ private fun findEventAt(
             }
             
             if (offset.y in (y - 40f)..(y + 40f)) {
-                if (editMode == WavetableSynthesizerViewModel.GridEditMode.DRAG) {
+                if (editMode == WavetableSynthesizerViewModel.GridEditMode.DRAG || editMode == WavetableSynthesizerViewModel.GridEditMode.PAINT) {
                     if (offset.x in (x - 30f)..(xEnd + 30f)) {
                         return DragInfo(index, noteOffIndex, event.timestamp, noteOffTimestamp, index, false)
                     }

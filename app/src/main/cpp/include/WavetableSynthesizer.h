@@ -69,7 +69,13 @@ namespace wavetablesynthesizer {
         void updateEventTimestamp(int patternId, int index, uint64_t timestamp) {
             _sequencer->updateEventTimestamp(patternId, index, timestamp);
         }
+        void updateEventFrequency(int patternId, int index, float frequency) {
+            _sequencer->updateEventFrequency(patternId, index, frequency);
+        }
         void deleteEvent(int patternId, int index) { _sequencer->deleteEvent(patternId, index); }
+        int addEvent(int patternId, uint64_t timestamp, float frequency, bool isNoteOn, int trackId, bool isDrum) {
+            return _sequencer->addEvent(patternId, timestamp, frequency, isNoteOn, trackId, isDrum);
+        }
         void quantizePattern(int patternId, int mode) {
             _sequencer->quantizePattern(patternId, static_cast<QuantizationMode>(mode));
         }

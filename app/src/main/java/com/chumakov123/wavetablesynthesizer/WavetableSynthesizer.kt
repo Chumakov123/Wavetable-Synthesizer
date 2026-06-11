@@ -74,7 +74,9 @@ interface WavetableSynthesizer {
 
     suspend fun getEvents(patternId: Int): List<MidiEventData>
     suspend fun updateEventTimestamp(patternId: Int, eventIndex: Int, newTimestamp: Long)
+    suspend fun updateEventFrequency(patternId: Int, eventIndex: Int, newFrequency: Float)
     suspend fun deleteEvent(patternId: Int, eventIndex: Int)
+    suspend fun addEvent(patternId: Int, timestamp: Long, frequency: Float, isNoteOn: Boolean, trackId: Int, isDrum: Boolean): Int
     suspend fun quantizePattern(patternId: Int, mode: Int)
 
     suspend fun triggerKick()
