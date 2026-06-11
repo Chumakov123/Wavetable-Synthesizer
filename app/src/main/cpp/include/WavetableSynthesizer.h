@@ -92,6 +92,7 @@ namespace wavetablesynthesizer {
     private:
         std::atomic<bool> _isStreamOpen = false;
         std::atomic<bool> _isContinuousPlayActive = false;
+        float _lastSliderFrequency = 440.0f;
         std::mutex _mutex;
 
         int _activeTrackId = 0;

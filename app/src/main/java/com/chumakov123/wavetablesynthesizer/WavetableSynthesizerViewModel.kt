@@ -681,6 +681,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
             }
             
             wavetableSynthesizer?.setActiveTrack(currentSelected)
+            wavetableSynthesizer?.setFrequency(frequency.value!!)
             wavetableSynthesizer?.setDrumVolume(_drumVolume.value!!)
             
             wavetableSynthesizer?.setBpm(bpm.value!!)

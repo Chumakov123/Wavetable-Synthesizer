@@ -17,6 +17,7 @@ namespace wavetablesynthesizer {
 
         void noteOn(float frequencyInHz);
         void noteOff(float frequencyInHz);
+        void setFrequency(float frequencyInHz);
         void stopAllNotes();
 
         void setWavetable(Wavetable wavetable);

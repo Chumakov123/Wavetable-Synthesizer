@@ -54,6 +54,15 @@ namespace wavetablesynthesizer {
         }
     }
 
+    void SynthTrack::setFrequency(float frequencyInHz) {
+        std::lock_guard<std::mutex> lock(_mutex);
+        for (auto& voice : _voices) {
+            if (voice->isBusy()) {
+                voice->setFrequency(frequencyInHz);
+            }
+        }
+    }
+
     void SynthTrack::stopAllNotes() {
         std::lock_guard<std::mutex> lock(_mutex);
         for (auto& voice : _voices) {

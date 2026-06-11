@@ -33,6 +33,9 @@ namespace wavetablesynthesizer {
     void WavetableSynthesizer::play() {
         std::lock_guard<std::mutex> lock(_mutex);
         _isContinuousPlayActive = true;
+
+        internalNoteOn(_activeTrackId, _lastSliderFrequency);
+
         if (_isStreamOpen) return;
 
         LOGD("play() called.");
@@ -68,7 +71,11 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableSynthesizer::setFrequency(float frequencyInHz) {
-        // First voice of active track for slider mode
+        std::lock_guard<std::mutex> lock(_mutex);
+        _lastSliderFrequency = frequencyInHz;
+        if (_isContinuousPlayActive) {
+            _tracks[_activeTrackId]->setFrequency(frequencyInHz);
+        }
     }
 
     void WavetableSynthesizer::setVolume(float volumeInDb) {
