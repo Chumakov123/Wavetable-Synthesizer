@@ -66,6 +66,7 @@ namespace wavetablesynthesizer {
         MidiEvent getEvent(int patternId, int eventIndex);
         void updateEventTimestamp(int patternId, int eventIndex, uint64_t newTimestamp);
         void deleteEvent(int patternId, int eventIndex);
+        void quantizePattern(int patternId, QuantizationMode mode);
 
         int getCurrentPlaylistIndex() const { return _currentPlaylistIndex; }
         bool isArrangementMode() const { return _isArrangementMode.load(); }

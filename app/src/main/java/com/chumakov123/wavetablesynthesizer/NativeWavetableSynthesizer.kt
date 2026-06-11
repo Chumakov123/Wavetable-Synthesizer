@@ -46,6 +46,7 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun getEvents(synthesizerHandle: Long, patternId: Int): FloatArray
     private external fun updateEventTimestamp(synthesizerHandle: Long, patternId: Int, index: Int, newTimestamp: Long)
     private external fun deleteEvent(synthesizerHandle: Long, patternId: Int, index: Int)
+    private external fun quantizePattern(synthesizerHandle: Long, patternId: Int, mode: Int)
     private external fun triggerKick(synthesizerHandle: Long)
     private external fun triggerSnare(synthesizerHandle: Long)
     private external fun triggerHat(synthesizerHandle: Long)
@@ -348,6 +349,13 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             deleteEvent(synthesizerHandle, patternId, eventIndex)
+        }
+    }
+
+    override suspend fun quantizePattern(patternId: Int, mode: Int) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            quantizePattern(synthesizerHandle, patternId, mode)
         }
     }
 

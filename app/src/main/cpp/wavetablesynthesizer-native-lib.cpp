@@ -394,6 +394,14 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_deleteEvent
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->deleteEvent(patternId, index);
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_quantizePattern(JNIEnv *env, jobject thiz,
+                                                                                     jlong synthesizerHandle,
+                                                                                     jint patternId, jint mode) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->quantizePattern(patternId, mode);
+}
 }
 
 

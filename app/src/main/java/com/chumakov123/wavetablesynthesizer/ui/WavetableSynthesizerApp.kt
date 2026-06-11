@@ -11,12 +11,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.GridOn
+import androidx.compose.material.icons.filled.ViewHeadline
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -32,12 +41,12 @@ import com.chumakov123.wavetablesynthesizer.ui.components.GridEditor
 import com.chumakov123.wavetablesynthesizer.ui.components.LfoControls
 import com.chumakov123.wavetablesynthesizer.ui.components.MetronomeControl
 import com.chumakov123.wavetablesynthesizer.ui.components.OctaveControl
-import com.chumakov123.wavetablesynthesizer.ui.components.TransportControls
+import com.chumakov123.wavetablesynthesizer.ui.components.PianoKeyboard
 import com.chumakov123.wavetablesynthesizer.ui.components.PitchControl
 import com.chumakov123.wavetablesynthesizer.ui.components.PlayControl
-import com.chumakov123.wavetablesynthesizer.ui.components.PianoKeyboard
 import com.chumakov123.wavetablesynthesizer.ui.components.PresetSelector
 import com.chumakov123.wavetablesynthesizer.ui.components.TrackSelector
+import com.chumakov123.wavetablesynthesizer.ui.components.TransportControls
 import com.chumakov123.wavetablesynthesizer.ui.components.VolumeControl
 import com.chumakov123.wavetablesynthesizer.ui.components.WavetableSelectionPanel
 
@@ -49,6 +58,10 @@ fun WavetableSynthesizerApp(
     val isKeyboardMode by synthesizerViewModel.isKeyboardMode.observeAsState(true)
     val isDrumsMode by synthesizerViewModel.isDrumsMode.observeAsState(false)
     val panelMode by synthesizerViewModel.controlPanelMode.observeAsState(WavetableSynthesizerViewModel.ControlPanelMode.WAVE)
+    val isArrangementExpanded by synthesizerViewModel.isArrangementExpanded.observeAsState(false)
+
+    // Чтобы сетка не закрывалась при переключении панелей, вынесем её состояние из panelMode
+    var showGrid by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -59,7 +72,7 @@ fun WavetableSynthesizerApp(
     ) {
         // Ряд 1: Глобальное управление (Studio + Synth Settings)
         Row(
-            modifier = Modifier.fillMaxWidth().background(Color(0xFF222222), RoundedCornerShape(4.dp)).padding(2.dp),
+            modifier = Modifier.fillMaxWidth().background(Color(0xFF222222), RoundedCornerShape(4.dp)).padding(horizontal = 4.dp, vertical = 2.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -85,6 +98,33 @@ fun WavetableSynthesizerApp(
                 VolumeControl(synthesizerViewModel)
             }
 
+            // Центр: ARRANGE и GRID
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(
+                    onClick = { synthesizerViewModel.toggleArrangementExpanded() },
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        Icons.Default.ViewHeadline, 
+                        contentDescription = "Arrange", 
+                        tint = if (isArrangementExpanded) Color(0xFF4CAF50) else Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = { showGrid = !showGrid },
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        Icons.Default.GridOn, 
+                        contentDescription = "Grid", 
+                        tint = if (showGrid) Color(0xFF2196F3) else Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
             // Группа справа: Метроном, Транспорт
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 MetronomeControl(synthesizerViewModel)
@@ -92,8 +132,10 @@ fun WavetableSynthesizerApp(
             }
         }
 
-        // Arrangement Controls
-        ArrangementControls(synthesizerViewModel)
+        // Arrangement Controls (Collapsible)
+        if (isArrangementExpanded) {
+            ArrangementControls(synthesizerViewModel)
+        }
 
         // Ряд 2: Параметры звука (Presets + Mode + Content)
         Row(
@@ -123,7 +165,8 @@ fun WavetableSynthesizerApp(
                     WavetableSynthesizerViewModel.ControlPanelMode.LFO -> LfoControls(synthesizerViewModel)
                     WavetableSynthesizerViewModel.ControlPanelMode.FX -> FxControls(synthesizerViewModel)
                     WavetableSynthesizerViewModel.ControlPanelMode.GRID -> {
-                        Text("Grid Editor Active (See Below)", color = Color.Gray, fontSize = 10.sp)
+                        // Режим GRID больше не используется в panelMode
+                        WavetableSelectionPanel(synthesizerViewModel)
                     }
                 }
             }
@@ -137,7 +180,7 @@ fun WavetableSynthesizerApp(
             contentAlignment = Alignment.Center
         ) {
             when {
-                panelMode == WavetableSynthesizerViewModel.ControlPanelMode.GRID -> GridEditor(synthesizerViewModel)
+                showGrid -> GridEditor(synthesizerViewModel)
                 isDrumsMode -> DrumSection(synthesizerViewModel)
                 isKeyboardMode -> PianoKeyboard(synthesizerViewModel)
                 else -> {
@@ -162,23 +205,25 @@ private fun ModeSelector(
             .padding(1.dp),
         horizontalArrangement = Arrangement.spacedBy(1.dp)
     ) {
-        WavetableSynthesizerViewModel.ControlPanelMode.entries.forEach { mode ->
-            val isSelected = currentMode == mode
-            Box(
-                modifier = Modifier
-                    .background(
-                        if (isSelected) Color.Gray else Color.Transparent,
-                        RoundedCornerShape(2.dp)
+        WavetableSynthesizerViewModel.ControlPanelMode.entries
+            .filter { it != WavetableSynthesizerViewModel.ControlPanelMode.GRID }
+            .forEach { mode ->
+                val isSelected = currentMode == mode
+                Box(
+                    modifier = Modifier
+                        .background(
+                            if (isSelected) Color.Gray else Color.Transparent,
+                            RoundedCornerShape(2.dp)
+                        )
+                        .clickable { onModeSelected(mode) }
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = mode.name,
+                        fontSize = 8.sp,
+                        color = if (isSelected) Color.White else Color.LightGray
                     )
-                    .clickable { onModeSelected(mode) }
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
-            ) {
-                Text(
-                    text = mode.name,
-                    fontSize = 8.sp,
-                    color = if (isSelected) Color.White else Color.LightGray
-                )
+                }
             }
-        }
     }
 }

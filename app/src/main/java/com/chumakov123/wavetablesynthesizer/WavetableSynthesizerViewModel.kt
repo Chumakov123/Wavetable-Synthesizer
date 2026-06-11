@@ -198,6 +198,13 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _activeNotes = MutableLiveData<Set<Float>>(emptySet())
     val activeNotes: LiveData<Set<Float>> = _activeNotes
 
+    private val _isArrangementExpanded = MutableLiveData(false)
+    val isArrangementExpanded: LiveData<Boolean> = _isArrangementExpanded
+
+    fun toggleArrangementExpanded() {
+        _isArrangementExpanded.value = !(_isArrangementExpanded.value ?: false)
+    }
+
     private val _isArrangementMode = MutableLiveData(false)
     val isArrangementMode: LiveData<Boolean> = _isArrangementMode
 
@@ -212,6 +219,14 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     private val _patternEvents = MutableLiveData<List<MidiEventData>>(emptyList())
     val patternEvents: LiveData<List<MidiEventData>> = _patternEvents
+
+    enum class GridEditMode { DRAG, STRETCH }
+    private val _gridEditMode = MutableLiveData(GridEditMode.DRAG)
+    val gridEditMode: LiveData<GridEditMode> = _gridEditMode
+
+    fun setGridEditMode(mode: GridEditMode) {
+        _gridEditMode.value = mode
+    }
 
     fun setKeyboardMode(enabled: Boolean) {
         _isKeyboardMode.value = enabled
@@ -460,9 +475,38 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
+    fun moveNote(noteOnIndex: Int, noteOffIndex: Int, newNoteOnTimestamp: Long, newNoteOffTimestamp: Long) {
+        viewModelScope.launch {
+            val patternId = _activePattern.value ?: 0
+            val currentEvents = _patternEvents.value ?: return@launch
+            val oldNoteOnTimestamp = currentEvents.getOrNull(noteOnIndex)?.timestamp ?: 0
+            
+            if (newNoteOnTimestamp > oldNoteOnTimestamp) {
+                if (noteOffIndex != -1) wavetableSynthesizer?.updateEventTimestamp(patternId, noteOffIndex, newNoteOffTimestamp)
+                wavetableSynthesizer?.updateEventTimestamp(patternId, noteOnIndex, newNoteOnTimestamp)
+            } else {
+                wavetableSynthesizer?.updateEventTimestamp(patternId, noteOnIndex, newNoteOnTimestamp)
+                if (noteOffIndex != -1) wavetableSynthesizer?.updateEventTimestamp(patternId, noteOffIndex, newNoteOffTimestamp)
+            }
+            refreshEvents()
+        }
+    }
+
     fun deleteEvent(index: Int) {
         viewModelScope.launch {
             wavetableSynthesizer?.deleteEvent(_activePattern.value ?: 0, index)
+            refreshEvents()
+        }
+    }
+
+    fun quantizeActivePattern() {
+        viewModelScope.launch {
+            val mode = if (_quantization.value == Quantization.OFF) {
+                Quantization.GRID_1_16.ordinal
+            } else {
+                _quantization.value!!.ordinal
+            }
+            wavetableSynthesizer?.quantizePattern(_activePattern.value ?: 0, mode)
             refreshEvents()
         }
     }

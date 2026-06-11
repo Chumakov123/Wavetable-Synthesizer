@@ -70,6 +70,9 @@ namespace wavetablesynthesizer {
             _sequencer->updateEventTimestamp(patternId, index, timestamp);
         }
         void deleteEvent(int patternId, int index) { _sequencer->deleteEvent(patternId, index); }
+        void quantizePattern(int patternId, int mode) {
+            _sequencer->quantizePattern(patternId, static_cast<QuantizationMode>(mode));
+        }
 
         int getCurrentPlaylistIndex() const { return _sequencer->getCurrentPlaylistIndex(); }
 

@@ -290,6 +290,23 @@ namespace wavetablesynthesizer {
         events.erase(events.begin() + eventIndex);
     }
 
+    void Sequencer::quantizePattern(int patternId, QuantizationMode mode) {
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+        if (patternId < 0 || patternId >= _patterns.size()) return;
+        if (mode == QuantizationMode::None) return;
+
+        auto& events = _patterns[patternId].events;
+
+        float bpm = _bpm.load();
+        float samplesPerBeat = static_cast<float>(_sampleRate) * 60.0f / bpm;
+        float samplesPerGrid = (mode == QuantizationMode::Beat_1_16) ? (samplesPerBeat / 4.0f) : (samplesPerBeat / 8.0f);
+
+        for (auto& event : events) {
+            auto quantized = static_cast<uint64_t>(std::round(static_cast<float>(event.timestamp) / samplesPerGrid) * samplesPerGrid);
+            event.timestamp = quantized % _loopLengthSamples;
+        }
+    }
+
     uint64_t Sequencer::getQuantizedTimestamp(uint64_t timestamp) {
         QuantizationMode mode = _quantizationMode.load();
         if (mode == QuantizationMode::None) return timestamp;
