@@ -165,8 +165,15 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableSynthesizer::setPlayback(bool enabled) {
-        if (enabled) _sequencer->startPlayback();
-        else _sequencer->stopPlayback();
+        if (enabled) {
+            _sequencer->startPlayback();
+        } else {
+            _sequencer->stopPlayback();
+            std::lock_guard<std::mutex> lock(_mutex);
+            for (auto& track : _tracks) {
+                track->stopAllNotes();
+            }
+        }
     }
 
     void WavetableSynthesizer::clearSequence() {
