@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import java.util.Locale
 
 @Composable
 fun AdsrControls(
@@ -129,6 +130,9 @@ private fun AdsrKnob(
             modifier = Modifier.size(40.dp).padding(2.dp),
             valueRange = valueRange
         )
-        Text(text = String.format("%.1f", value), fontSize = 9.sp)
+        Text(
+            text = String.format(Locale.US, "%.1f", value),
+            fontSize = 9.sp
+        )
     }
 }

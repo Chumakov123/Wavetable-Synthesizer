@@ -4,7 +4,7 @@
 namespace wavetablesynthesizer {
 
     Sequencer::Sequencer(double sampleRate) : _sampleRate(sampleRate) {
-        _patterns.push_back(Pattern());
+        _patterns.emplace_back();
         updateLoopLength();
     }
 
@@ -82,7 +82,7 @@ namespace wavetablesynthesizer {
 
         // Smart Wrap: если мы нажали ноту в самом конце лупа (антиципация)
         // Притягиваем её к началу (0), если до конца осталось меньше 50мс
-        uint64_t thresholdSamples = static_cast<uint64_t>(0.05 * _sampleRate);
+        auto thresholdSamples = static_cast<uint64_t>(0.05 * _sampleRate);
         if (timestamp > (_loopLengthSamples - thresholdSamples)) {
             timestamp = 0;
         } else {
@@ -114,7 +114,7 @@ namespace wavetablesynthesizer {
         uint64_t timestamp = _currentLoopSample;
 
         // Smart Wrap для барабанов
-        uint64_t thresholdSamples = static_cast<uint64_t>(0.05 * _sampleRate);
+        auto thresholdSamples = static_cast<uint64_t>(0.05 * _sampleRate);
         if (timestamp > (_loopLengthSamples - thresholdSamples)) {
             timestamp = 0;
         } else {
@@ -249,7 +249,7 @@ namespace wavetablesynthesizer {
         if (sourceId < 0 || sourceId >= _patterns.size()) return;
 
         while (_patterns.size() <= targetId) {
-            _patterns.push_back(Pattern());
+            _patterns.emplace_back();
         }
         _patterns[targetId] = _patterns[sourceId];
     }

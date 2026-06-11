@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import java.util.Locale
 
 @Composable
 fun LfoControls(
@@ -71,6 +72,9 @@ private fun LfoKnob(
             modifier = Modifier.size(50.dp).padding(4.dp),
             valueRange = valueRange
         )
-        Text(text = String.format("%.1f%s", value, unit), fontSize = 9.sp)
+        Text(
+            text = String.format(Locale.US, "%.1f%s", value, unit),
+            fontSize = 9.sp
+        )
     }
 }

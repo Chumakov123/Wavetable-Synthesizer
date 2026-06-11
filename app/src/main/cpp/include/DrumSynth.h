@@ -20,7 +20,7 @@ namespace wavetablesynthesizer {
         KickDrum(double sampleRate);
         void trigger();
         float getSample();
-        bool isPlaying() const { return _amplitude > 0.0001f; }
+        [[nodiscard]] bool isPlaying() const { return _amplitude > 0.0001f; }
 
         void setPitchDecay(float value) { _pitchDecay = value; }
         void setAmpDecay(float value) { _ampDecay = value; }
