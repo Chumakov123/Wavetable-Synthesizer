@@ -12,24 +12,19 @@ namespace wavetablesynthesizer {
         float getSample() override;
         void onPlaybackStopped() override;
 
-        void setBpm(float bpm);
+        void triggerClick(bool accented); // Ручной триггер клика
         void setEnabled(bool enabled);
         bool isEnabled() const { return _isEnabled.load(); }
 
     private:
         double _sampleRate;
-        std::atomic<float> _bpm{120.0f};
         std::atomic<bool> _isEnabled{false};
-
-        uint64_t _totalSamples = 0;
-        uint64_t _samplesPerBeat = 0;
 
         // Параметры "щелчка"
         float _clickPhase = 0.0f;
         float _clickAmplitude = 0.0f;
+        float _currentClickFrequency = 1000.0f;
         const float _clickFrequency = 1000.0f;
-        const float _clickDecay = 0.995f; // Быстрое затухание
-
-        void updateSamplesPerBeat();
+        const float _clickDecay = 0.995f;
     };
 }

@@ -42,6 +42,10 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun setActivePattern(synthesizerHandle: Long, patternId: Int)
     private external fun copyPattern(synthesizerHandle: Long, sourceId: Int, targetId: Int)
     private external fun removePattern(synthesizerHandle: Long, patternId: Int)
+    private external fun getCurrentPlaylistIndex(synthesizerHandle: Long): Int
+    private external fun getEvents(synthesizerHandle: Long, patternId: Int): FloatArray
+    private external fun updateEventTimestamp(synthesizerHandle: Long, patternId: Int, index: Int, newTimestamp: Long)
+    private external fun deleteEvent(synthesizerHandle: Long, patternId: Int, index: Int)
     private external fun triggerKick(synthesizerHandle: Long)
     private external fun triggerSnare(synthesizerHandle: Long)
     private external fun triggerHat(synthesizerHandle: Long)
@@ -305,6 +309,45 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             removePattern(synthesizerHandle, patternId)
+        }
+    }
+
+    override suspend fun getCurrentPlaylistIndex(): Int = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            return@withContext getCurrentPlaylistIndex(synthesizerHandle)
+        }
+    }
+
+    override suspend fun getEvents(patternId: Int): List<MidiEventData> = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            val raw = getEvents(synthesizerHandle, patternId)
+            val events = mutableListOf<MidiEventData>()
+            for (i in 0 until raw.size / 5) {
+                events.add(MidiEventData(
+                    timestamp = raw[i * 5 + 0].toLong(),
+                    frequency = raw[i * 5 + 1],
+                    isNoteOn = raw[i * 5 + 2] > 0.5f,
+                    trackId = raw[i * 5 + 3].toInt(),
+                    isDrum = raw[i * 5 + 4] > 0.5f
+                ))
+            }
+            return@withContext events
+        }
+    }
+
+    override suspend fun updateEventTimestamp(patternId: Int, eventIndex: Int, newTimestamp: Long) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            updateEventTimestamp(synthesizerHandle, patternId, eventIndex, newTimestamp)
+        }
+    }
+
+    override suspend fun deleteEvent(patternId: Int, eventIndex: Int) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            deleteEvent(synthesizerHandle, patternId, eventIndex)
         }
     }
 

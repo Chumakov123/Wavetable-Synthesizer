@@ -344,6 +344,56 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_removePatte
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->removePattern(static_cast<int>(patternId));
 }
+
+JNIEXPORT jint JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_getCurrentPlaylistIndex(JNIEnv *env, jobject thiz,
+                                                                                           jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) return synthesizer->getCurrentPlaylistIndex();
+    return 0;
+}
+
+JNIEXPORT jfloatArray JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_getEvents(JNIEnv *env, jobject thiz,
+                                                                               jlong synthesizerHandle,
+                                                                               jint patternId) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (!synthesizer) return nullptr;
+
+    int count = synthesizer->getEventCount(patternId);
+    // Для каждого события передаем 5 параметров: timestamp, frequency, isNoteOn, trackId, isDrum
+    jfloatArray result = env->NewFloatArray(count * 5);
+    jfloat* elements = env->GetFloatArrayElements(result, nullptr);
+
+    for (int i = 0; i < count; ++i) {
+        auto event = synthesizer->getEvent(patternId, i);
+        elements[i * 5 + 0] = static_cast<float>(event.timestamp);
+        elements[i * 5 + 1] = event.frequency;
+        elements[i * 5 + 2] = event.isNoteOn ? 1.0f : 0.0f;
+        elements[i * 5 + 3] = static_cast<float>(event.trackId);
+        elements[i * 5 + 4] = event.isDrum ? 1.0f : 0.0f;
+    }
+
+    env->ReleaseFloatArrayElements(result, elements, 0);
+    return result;
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_updateEventTimestamp(JNIEnv *env, jobject thiz,
+                                                                                          jlong synthesizerHandle,
+                                                                                          jint patternId, jint index,
+                                                                                          jlong newTimestamp) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->updateEventTimestamp(patternId, index, static_cast<uint64_t>(newTimestamp));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_deleteEvent(JNIEnv *env, jobject thiz,
+                                                                                jlong synthesizerHandle,
+                                                                                jint patternId, jint index) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->deleteEvent(patternId, index);
+}
 }
 
 

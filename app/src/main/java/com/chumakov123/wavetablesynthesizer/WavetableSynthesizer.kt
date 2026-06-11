@@ -70,6 +70,11 @@ interface WavetableSynthesizer {
     suspend fun setActivePattern(patternId: Int)
     suspend fun copyPattern(sourceId: Int, targetId: Int)
     suspend fun removePattern(patternId: Int)
+    suspend fun getCurrentPlaylistIndex(): Int
+
+    suspend fun getEvents(patternId: Int): List<MidiEventData>
+    suspend fun updateEventTimestamp(patternId: Int, eventIndex: Int, newTimestamp: Long)
+    suspend fun deleteEvent(patternId: Int, eventIndex: Int)
 
     suspend fun triggerKick()
     suspend fun triggerSnare()
@@ -77,3 +82,11 @@ interface WavetableSynthesizer {
     suspend fun setDrumVolume(volumeInDb: Float)
     suspend fun clearDrums()
 }
+
+data class MidiEventData(
+    val timestamp: Long,
+    val frequency: Float,
+    val isNoteOn: Boolean,
+    val trackId: Int,
+    val isDrum: Boolean
+)

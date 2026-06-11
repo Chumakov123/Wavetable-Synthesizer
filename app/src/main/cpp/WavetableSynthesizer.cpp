@@ -22,6 +22,7 @@ namespace wavetablesynthesizer {
 
         _sequencer = std::make_shared<Sequencer>(sampleRate);
         _sequencer->setNoteCallback(sequencerCallback, this);
+        _sequencer->setMetronome(_metronome); // Передаем метроном в секвенсор
         mixer->setSequencer(_sequencer);
 
         _audioPlayer = std::make_unique<OboeAudioPlayer>(mixer, sampleRate);
@@ -155,7 +156,6 @@ namespace wavetablesynthesizer {
     }
 
     void WavetableSynthesizer::setBpm(float bpm) {
-        _metronome->setBpm(bpm);
         _sequencer->setBpm(bpm);
     }
 
@@ -236,6 +236,10 @@ namespace wavetablesynthesizer {
             if (drumId == 0) synth->_drumTrack->triggerKick();
             else if (drumId == 1) synth->_drumTrack->triggerSnare();
             else if (drumId == 2) synth->_drumTrack->triggerHat();
+        } else if (trackId == -2) {
+            for (auto& track : synth->_tracks) {
+                track->stopAllNotes();
+            }
         } else {
             if (isNoteOn) synth->internalNoteOn(trackId, frequency);
             else synth->internalNoteOff(trackId, frequency);

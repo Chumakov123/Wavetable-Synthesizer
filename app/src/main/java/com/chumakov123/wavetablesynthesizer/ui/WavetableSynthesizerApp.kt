@@ -28,6 +28,7 @@ import com.chumakov123.wavetablesynthesizer.ui.components.AdsrControls
 import com.chumakov123.wavetablesynthesizer.ui.components.ArrangementControls
 import com.chumakov123.wavetablesynthesizer.ui.components.DrumSection
 import com.chumakov123.wavetablesynthesizer.ui.components.FxControls
+import com.chumakov123.wavetablesynthesizer.ui.components.GridEditor
 import com.chumakov123.wavetablesynthesizer.ui.components.LfoControls
 import com.chumakov123.wavetablesynthesizer.ui.components.MetronomeControl
 import com.chumakov123.wavetablesynthesizer.ui.components.OctaveControl
@@ -121,6 +122,9 @@ fun WavetableSynthesizerApp(
                     WavetableSynthesizerViewModel.ControlPanelMode.ADSR -> AdsrControls(synthesizerViewModel)
                     WavetableSynthesizerViewModel.ControlPanelMode.LFO -> LfoControls(synthesizerViewModel)
                     WavetableSynthesizerViewModel.ControlPanelMode.FX -> FxControls(synthesizerViewModel)
+                    WavetableSynthesizerViewModel.ControlPanelMode.GRID -> {
+                        Text("Grid Editor Active (See Below)", color = Color.Gray, fontSize = 10.sp)
+                    }
                 }
             }
         }
@@ -133,6 +137,7 @@ fun WavetableSynthesizerApp(
             contentAlignment = Alignment.Center
         ) {
             when {
+                panelMode == WavetableSynthesizerViewModel.ControlPanelMode.GRID -> GridEditor(synthesizerViewModel)
                 isDrumsMode -> DrumSection(synthesizerViewModel)
                 isKeyboardMode -> PianoKeyboard(synthesizerViewModel)
                 else -> {

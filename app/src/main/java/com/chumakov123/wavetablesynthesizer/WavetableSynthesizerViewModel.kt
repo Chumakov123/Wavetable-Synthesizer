@@ -4,9 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.exp
 import kotlin.math.ln
+import kotlin.time.Duration.Companion.milliseconds
 
 class WavetableSynthesizerViewModel : ViewModel() {
     var wavetableSynthesizer: WavetableSynthesizer? = null
@@ -121,7 +124,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _selectedPresetIndex = MutableLiveData(0)
     val selectedPresetIndex: LiveData<Int> = _selectedPresetIndex
 
-    enum class ControlPanelMode { WAVE, ADSR, LFO, FX }
+    enum class ControlPanelMode { WAVE, ADSR, LFO, FX, GRID }
     private val _controlPanelMode = MutableLiveData(ControlPanelMode.WAVE)
     val controlPanelMode: LiveData<ControlPanelMode> = _controlPanelMode
 
@@ -203,6 +206,12 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     private val _playlist = MutableLiveData<List<Int>>(emptyList())
     val playlist: LiveData<List<Int>> = _playlist
+
+    private val _currentPlaylistIndex = MutableLiveData(0)
+    val currentPlaylistIndex: LiveData<Int> = _currentPlaylistIndex
+
+    private val _patternEvents = MutableLiveData<List<MidiEventData>>(emptyList())
+    val patternEvents: LiveData<List<MidiEventData>> = _patternEvents
 
     fun setKeyboardMode(enabled: Boolean) {
         _isKeyboardMode.value = enabled
@@ -404,6 +413,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
         _activePattern.value = patternId
         viewModelScope.launch {
             wavetableSynthesizer?.setActivePattern(patternId)
+            refreshEvents()
         }
     }
 
@@ -436,6 +446,27 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
+    fun refreshEvents() {
+        viewModelScope.launch {
+            val events = wavetableSynthesizer?.getEvents(_activePattern.value ?: 0) ?: emptyList()
+            _patternEvents.postValue(events)
+        }
+    }
+
+    fun updateEventTimestamp(index: Int, newTimestamp: Long) {
+        viewModelScope.launch {
+            wavetableSynthesizer?.updateEventTimestamp(_activePattern.value ?: 0, index, newTimestamp)
+            refreshEvents()
+        }
+    }
+
+    fun deleteEvent(index: Int) {
+        viewModelScope.launch {
+            wavetableSynthesizer?.deleteEvent(_activePattern.value ?: 0, index)
+            refreshEvents()
+        }
+    }
+
     fun noteOn(frequencyInHz: Float) {
         _activeNotes.value = _activeNotes.value?.plus(frequencyInHz)
         viewModelScope.launch {
@@ -465,6 +496,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
         
         viewModelScope.launch {
             wavetableSynthesizer?.setRecording(nextRecordingState)
+            if (!nextRecordingState) {
+                refreshEvents() // Обновляем список нот после окончания записи
+            }
         }
     }
 
@@ -476,6 +510,18 @@ class WavetableSynthesizerViewModel : ViewModel() {
         _isPlayingRecording.value = newState
         viewModelScope.launch {
             wavetableSynthesizer?.setPlayback(newState)
+            
+            if (newState) {
+                while (isActive && _isPlayingRecording.value == true) {
+                    val index = wavetableSynthesizer?.getCurrentPlaylistIndex() ?: 0
+                    if (_currentPlaylistIndex.value != index) {
+                        _currentPlaylistIndex.postValue(index)
+                    }
+                    delay(100.milliseconds)
+                }
+            } else {
+                _currentPlaylistIndex.value = 0
+            }
         }
     }
 
@@ -486,6 +532,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
             } else {
                 wavetableSynthesizer?.clearActiveTrack()
             }
+            refreshEvents()
         }
     }
 

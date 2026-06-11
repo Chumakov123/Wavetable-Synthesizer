@@ -30,6 +30,7 @@ fun ArrangementControls(viewModel: WavetableSynthesizerViewModel) {
     val isArrangementMode by viewModel.isArrangementMode.observeAsState(false)
     val activePattern by viewModel.activePattern.observeAsState(0)
     val playlist by viewModel.playlist.observeAsState(emptyList())
+    val currentPlaylistIndex by viewModel.currentPlaylistIndex.observeAsState(0)
 
     Column(
         modifier = Modifier
@@ -68,9 +69,14 @@ fun ArrangementControls(viewModel: WavetableSynthesizerViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 itemsIndexed(playlist) { index, patternId ->
+                    val isPlaying = isArrangementMode && index == currentPlaylistIndex
                     Box(
                         modifier = Modifier
-                            .background(Color.DarkGray, RoundedCornerShape(4.dp))
+                            .background(
+                                if (isPlaying) Color(0xFF4CAF50) else Color.DarkGray,
+                                RoundedCornerShape(4.dp)
+                            )
+                            .border(1.dp, if (isPlaying) Color.White else Color.Transparent, RoundedCornerShape(4.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text("P$patternId", color = Color.White, fontSize = 10.sp)

@@ -63,6 +63,16 @@ namespace wavetablesynthesizer {
         void copyPattern(int sourceId, int targetId) { _sequencer->copyPattern(sourceId, targetId); }
         void removePattern(int patternId) { _sequencer->removePattern(patternId); }
 
+        // Grid Editing
+        int getEventCount(int patternId) { return _sequencer->getEventCount(patternId); }
+        MidiEvent getEvent(int patternId, int index) { return _sequencer->getEvent(patternId, index); }
+        void updateEventTimestamp(int patternId, int index, uint64_t timestamp) {
+            _sequencer->updateEventTimestamp(patternId, index, timestamp);
+        }
+        void deleteEvent(int patternId, int index) { _sequencer->deleteEvent(patternId, index); }
+
+        int getCurrentPlaylistIndex() const { return _sequencer->getCurrentPlaylistIndex(); }
+
         // Drums
         void triggerKick();
         void triggerSnare();

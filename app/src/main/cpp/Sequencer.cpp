@@ -9,12 +9,22 @@ namespace wavetablesynthesizer {
     }
 
     void Sequencer::process(uint64_t currentFrame, uint32_t numFrames) {
-        if (!_isPlaying.load(std::memory_order_relaxed) && !_isRecording.load(std::memory_order_relaxed)) {
+        if (!_isPlaying.load(std::memory_order_relaxed) &&
+            !_isRecording.load(std::memory_order_relaxed)) {
             return;
         }
 
         std::lock_guard<std::mutex> lock(_eventsMutex);
         for (uint32_t i = 0; i < numFrames; ++i) {
+
+            // Логика метронома (работает и при Play/Rec)
+            if (_metronome && _metronome->isEnabled()) {
+                if (_currentLoopSample % _samplesPerBeat == 0) {
+                    bool accented = (_currentLoopSample % (_samplesPerBeat * 4) == 0);
+                    _metronome->triggerClick(accented);
+                }
+            }
+
             if (_isPlaying.load(std::memory_order_relaxed)) {
                 if (_isArrangementMode.load()) {
                     if (!_playlist.empty() && _currentPlaylistIndex < _playlist.size()) {
@@ -34,6 +44,12 @@ namespace wavetablesynthesizer {
                     _currentPlaylistIndex++;
                     if (_currentPlaylistIndex >= _playlist.size()) {
                         _currentPlaylistIndex = 0; // Зацикливаем весь плейлист
+                    }
+
+                    if (_noteCallback) {
+                        for (int t = 0; t < 4; ++t) {
+                            _noteCallback(_receiver, -2, 0.0f, false);
+                        }
                     }
                 }
             }
@@ -61,7 +77,18 @@ namespace wavetablesynthesizer {
         if (!_isRecording.load()) return;
 
         std::lock_guard<std::mutex> lock(_eventsMutex);
-        uint64_t timestamp = getQuantizedTimestamp(_currentLoopSample);
+
+        uint64_t timestamp = _currentLoopSample;
+
+        // Smart Wrap: если мы нажали ноту в самом конце лупа (антиципация)
+        // Притягиваем её к началу (0), если до конца осталось меньше 50мс
+        uint64_t thresholdSamples = static_cast<uint64_t>(0.05 * _sampleRate);
+        if (timestamp > (_loopLengthSamples - thresholdSamples)) {
+            timestamp = 0;
+        } else {
+            timestamp = getQuantizedTimestamp(timestamp);
+        }
+
         int activePattern = _activePatternId.load();
         if (activePattern >= 0 && activePattern < _patterns.size()) {
             _patterns[activePattern].events.push_back({timestamp, frequency, true, trackId, false});
@@ -83,7 +110,17 @@ namespace wavetablesynthesizer {
         if (!_isRecording.load()) return;
 
         std::lock_guard<std::mutex> lock(_eventsMutex);
-        uint64_t timestamp = getQuantizedTimestamp(_currentLoopSample);
+
+        uint64_t timestamp = _currentLoopSample;
+
+        // Smart Wrap для барабанов
+        uint64_t thresholdSamples = static_cast<uint64_t>(0.05 * _sampleRate);
+        if (timestamp > (_loopLengthSamples - thresholdSamples)) {
+            timestamp = 0;
+        } else {
+            timestamp = getQuantizedTimestamp(timestamp);
+        }
+
         int activePattern = _activePatternId.load();
         if (activePattern >= 0 && activePattern < _patterns.size()) {
             _patterns[activePattern].events.push_back({timestamp, static_cast<float>(drumId), true, -1, true});
@@ -91,6 +128,14 @@ namespace wavetablesynthesizer {
     }
 
     void Sequencer::startRecording() {
+        // Гасим все ноты перед стартом записи, чтобы избежать залипаний
+        if (_noteCallback) {
+            for (int t = 0; t < 4; ++t) {
+                _noteCallback(_receiver, -2, 0.0f, false);
+            }
+        }
+
+        _currentLoopSample = 0;
         _isRecording.store(true);
         _isPlaying.store(true);
     }
@@ -105,6 +150,13 @@ namespace wavetablesynthesizer {
 
     void Sequencer::stopPlayback() {
         _isPlaying.store(false);
+
+        if (_noteCallback) {
+            for (int t = 0; t < 4; ++t) {
+                _noteCallback(_receiver, -2, 0.0f, false);
+            }
+        }
+
         _currentLoopSample = 0;
         _currentPlaylistIndex = 0;
     }
@@ -144,6 +196,16 @@ namespace wavetablesynthesizer {
     }
 
     void Sequencer::setArrangementMode(bool enabled) {
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+
+        if (_isArrangementMode.load() == enabled) return;
+
+        if (_noteCallback) {
+            for (int t = 0; t < 4; ++t) {
+                _noteCallback(_receiver, -2, 0.0f, false);
+            }
+        }
+
         _isArrangementMode.store(enabled);
         _currentPlaylistIndex = 0;
         _currentLoopSample = 0;
@@ -162,8 +224,22 @@ namespace wavetablesynthesizer {
 
     void Sequencer::setActivePattern(int patternId) {
         std::lock_guard<std::mutex> lock(_eventsMutex);
+
+        if (_activePatternId.load() == patternId) return;
+
+        // Если мы НЕ в режиме аранжировки, то переключение паттерна
+        // должно сбрасывать ноты и начинать луп заново.
+        if (!_isArrangementMode.load()) {
+            if (_noteCallback) {
+                for (int t = 0; t < 4; ++t) {
+                    _noteCallback(_receiver, -2, 0.0f, false);
+                }
+            }
+            _currentLoopSample = 0;
+        }
+
         while (_patterns.size() <= patternId) {
-            _patterns.push_back(Pattern());
+            _patterns.emplace_back();
         }
         _activePatternId.store(patternId);
     }
@@ -182,6 +258,36 @@ namespace wavetablesynthesizer {
         std::lock_guard<std::mutex> lock(_eventsMutex);
         if (patternId < 0 || patternId >= _patterns.size()) return;
         _patterns[patternId].events.clear();
+    }
+
+    int Sequencer::getEventCount(int patternId) {
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+        if (patternId < 0 || patternId >= _patterns.size()) return 0;
+        return static_cast<int>(_patterns[patternId].events.size());
+    }
+
+    MidiEvent Sequencer::getEvent(int patternId, int eventIndex) {
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+        if (patternId < 0 || patternId >= _patterns.size()) return {};
+        const auto& events = _patterns[patternId].events;
+        if (eventIndex < 0 || eventIndex >= events.size()) return {};
+        return events[eventIndex];
+    }
+
+    void Sequencer::updateEventTimestamp(int patternId, int eventIndex, uint64_t newTimestamp) {
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+        if (patternId < 0 || patternId >= _patterns.size()) return;
+        auto& events = _patterns[patternId].events;
+        if (eventIndex < 0 || eventIndex >= events.size()) return;
+        events[eventIndex].timestamp = newTimestamp % _loopLengthSamples;
+    }
+
+    void Sequencer::deleteEvent(int patternId, int eventIndex) {
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+        if (patternId < 0 || patternId >= _patterns.size()) return;
+        auto& events = _patterns[patternId].events;
+        if (eventIndex < 0 || eventIndex >= events.size()) return;
+        events.erase(events.begin() + eventIndex);
     }
 
     uint64_t Sequencer::getQuantizedTimestamp(uint64_t timestamp) {
@@ -205,7 +311,9 @@ namespace wavetablesynthesizer {
     }
 
     void Sequencer::updateLoopLength() {
-        float secondsPerBeat = 60.0f / _bpm.load();
+        float bpm = _bpm.load();
+        float secondsPerBeat = 60.0f / bpm;
+        _samplesPerBeat = static_cast<uint64_t>(secondsPerBeat * _sampleRate);
         _loopLengthSamples = static_cast<uint64_t>(secondsPerBeat * 4.0f * static_cast<float>(_loopLengthBars.load()) * _sampleRate);
     }
 }
