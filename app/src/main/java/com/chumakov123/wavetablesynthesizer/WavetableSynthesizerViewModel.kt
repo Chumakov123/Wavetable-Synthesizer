@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -19,6 +20,8 @@ import java.io.File
 import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.time.Duration.Companion.milliseconds
+import androidx.core.content.edit
+import androidx.core.net.toUri
 
 class WavetableSynthesizerViewModel : ViewModel() {
     var wavetableSynthesizer: WavetableSynthesizer? = null
@@ -37,6 +40,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     fun setFrequencySliderPosition(frequencySliderPosition: Float) {
         val frequencyInHz = frequencyInHzFromSliderPosition(frequencySliderPosition)
         _frequency.value = frequencyInHz
+        markDirty()
         viewModelScope.launch {
             wavetableSynthesizer?.setFrequency(frequencyInHz)
         }
@@ -94,6 +98,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setVolume(volumeInDb: Float) {
         _volume.value = volumeInDb
+        markDirty()
         if (_isDrumsMode.value == true) {
             _drumVolume.value = volumeInDb
             viewModelScope.launch {
@@ -112,6 +117,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setWavetable(newWavetable: Wavetable) {
         _wavetable.value = newWavetable
+        markDirty()
         trackStates[_selectedTrack.value!!].wavetable = newWavetable
         viewModelScope.launch {
             wavetableSynthesizer?.setWavetable(newWavetable)
@@ -269,6 +275,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     fun loadPreset(index: Int) {
         val preset = _presets.value?.getOrNull(index) ?: return
         _selectedPresetIndex.value = index
+        markDirty()
 
         val currentTrack = _selectedTrack.value!!
         trackStates[currentTrack].apply {
@@ -300,6 +307,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setAttack(time: Float) {
         _attack.value = time
+        markDirty()
         trackStates[_selectedTrack.value!!].attack = time
         viewModelScope.launch {
             wavetableSynthesizer?.setAttackTime(time)
@@ -308,6 +316,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setDecay(time: Float) {
         _decay.value = time
+        markDirty()
         trackStates[_selectedTrack.value!!].decay = time
         viewModelScope.launch {
             wavetableSynthesizer?.setDecayTime(time)
@@ -316,6 +325,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setSustain(level: Float) {
         _sustain.value = level
+        markDirty()
         trackStates[_selectedTrack.value!!].sustain = level
         viewModelScope.launch {
             wavetableSynthesizer?.setSustainLevel(level)
@@ -324,6 +334,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setRelease(time: Float) {
         _release.value = time
+        markDirty()
         trackStates[_selectedTrack.value!!].release = time
         viewModelScope.launch {
             wavetableSynthesizer?.setReleaseTime(time)
@@ -332,6 +343,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setLfoRate(rate: Float) {
         _lfoRate.value = rate
+        markDirty()
         trackStates[_selectedTrack.value!!].lfoRate = rate
         viewModelScope.launch {
             wavetableSynthesizer?.setLfoRate(rate)
@@ -340,6 +352,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setLfoDepth(depth: Float) {
         _lfoDepth.value = depth
+        markDirty()
         trackStates[_selectedTrack.value!!].lfoDepth = depth
         viewModelScope.launch {
             wavetableSynthesizer?.setLfoDepth(depth)
@@ -348,6 +361,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setTremoloDepth(depth: Float) {
         _tremoloDepth.value = depth
+        markDirty()
         trackStates[_selectedTrack.value!!].tremoloDepth = depth
         viewModelScope.launch {
             wavetableSynthesizer?.setTremoloDepth(depth)
@@ -356,6 +370,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setDelayTime(seconds: Float) {
         _delayTime.value = seconds
+        markDirty()
         trackStates[_selectedTrack.value!!].delayTime = seconds
         viewModelScope.launch {
             wavetableSynthesizer?.setDelayTime(seconds)
@@ -364,6 +379,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setDelayFeedback(feedback: Float) {
         _delayFeedback.value = feedback
+        markDirty()
         trackStates[_selectedTrack.value!!].delayFeedback = feedback
         viewModelScope.launch {
             wavetableSynthesizer?.setDelayFeedback(feedback)
@@ -372,6 +388,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setDelayWet(wet: Float) {
         _delayWet.value = wet
+        markDirty()
         trackStates[_selectedTrack.value!!].delayWet = wet
         viewModelScope.launch {
             wavetableSynthesizer?.setDelayWet(wet)
@@ -418,6 +435,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setBpm(bpm: Float) {
         _bpm.value = bpm
+        markDirty()
         viewModelScope.launch {
             wavetableSynthesizer?.setBpm(bpm)
         }
@@ -432,6 +450,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setQuantization(mode: Quantization) {
         _quantization.value = mode
+        markDirty()
         viewModelScope.launch {
             wavetableSynthesizer?.setQuantizationMode(mode.ordinal)
         }
@@ -440,6 +459,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     fun toggleArrangementMode() {
         val newState = !(_isArrangementMode.value ?: false)
         _isArrangementMode.value = newState
+        markDirty()
         viewModelScope.launch {
             wavetableSynthesizer?.setArrangementMode(newState)
         }
@@ -455,12 +475,14 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun copyActivePatternTo(targetId: Int) {
         val sourceId = _activePattern.value ?: 0
+        markDirty()
         viewModelScope.launch {
             wavetableSynthesizer?.copyPattern(sourceId, targetId)
         }
     }
 
     fun removePattern(patternId: Int) {
+        markDirty()
         viewModelScope.launch {
             wavetableSynthesizer?.removePattern(patternId)
         }
@@ -470,6 +492,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
         val currentPlaylist = _playlist.value?.toMutableList() ?: mutableListOf()
         currentPlaylist.add(patternId)
         _playlist.value = currentPlaylist
+        markDirty()
         viewModelScope.launch {
             wavetableSynthesizer?.addPatternToPlaylist(patternId)
         }
@@ -477,6 +500,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun clearPlaylist() {
         _playlist.value = emptyList()
+        markDirty()
         viewModelScope.launch {
             wavetableSynthesizer?.clearPlaylist()
         }
@@ -490,6 +514,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     }
 
     fun updateEventTimestamp(index: Int, newTimestamp: Long) {
+        markDirty()
         viewModelScope.launch {
             wavetableSynthesizer?.updateEventTimestamp(_activePattern.value ?: 0, index, newTimestamp)
             refreshEvents()
@@ -497,6 +522,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     }
 
     fun updateEventFrequency(index: Int, newFrequency: Float) {
+        markDirty()
         viewModelScope.launch {
             wavetableSynthesizer?.updateEventFrequency(_activePattern.value ?: 0, index, newFrequency)
             refreshEvents()
@@ -504,6 +530,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     }
 
     fun addNote(timestamp: Long, frequency: Float, duration: Long) {
+        markDirty()
         viewModelScope.launch {
             val patternId = _activePattern.value ?: 0
             val isDrum = _isDrumsMode.value ?: false
@@ -520,6 +547,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     }
 
     fun moveNote(noteOnIndex: Int, noteOffIndex: Int, newNoteOnTimestamp: Long, newNoteOffTimestamp: Long) {
+        markDirty()
         viewModelScope.launch {
             val patternId = _activePattern.value ?: 0
             val currentEvents = _patternEvents.value ?: return@launch
@@ -537,6 +565,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     }
 
     fun deleteEvent(index: Int) {
+        markDirty()
         viewModelScope.launch {
             wavetableSynthesizer?.deleteEvent(_activePattern.value ?: 0, index)
             refreshEvents()
@@ -544,6 +573,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     }
 
     fun quantizeActivePattern() {
+        markDirty()
         viewModelScope.launch {
             val mode = if (_quantization.value == Quantization.OFF) {
                 Quantization.GRID_1_16.ordinal
@@ -593,6 +623,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
         viewModelScope.launch {
             wavetableSynthesizer?.setRecording(nextRecordingState)
             if (!nextRecordingState) {
+                markDirty()
                 refreshEvents() // Обновляем список нот после окончания записи
             }
         }
@@ -622,6 +653,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     }
 
     fun clearSequence() {
+        markDirty()
         viewModelScope.launch {
             if (_isDrumsMode.value == true) {
                 wavetableSynthesizer?.clearDrums()
@@ -652,6 +684,183 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     private val _playButtonLabel = MutableLiveData(R.string.play)
     val playButtonLabel: LiveData<Int> = _playButtonLabel
+
+    private val _projectName = MutableLiveData("untitled")
+    val projectName: LiveData<String> = _projectName
+
+    private val _isDirty = MutableLiveData(false)
+    val isDirty: LiveData<Boolean> = _isDirty
+
+    enum class DialogType { NONE, SAVE_CONFIRMATION, PROJECT_NAME, PROJECT_LIST, MIGRATION_REQUIRED }
+    private val _activeDialog = MutableLiveData(DialogType.NONE)
+    val activeDialog: LiveData<DialogType> = _activeDialog
+
+    private var pendingProjectToLoad: String? = null
+    private var isExitPending = false
+
+    fun showDialog(type: DialogType) {
+        if (type == DialogType.SAVE_CONFIRMATION && pendingProjectToLoad == null) {
+            isExitPending = true
+        }
+        _activeDialog.value = type
+    }
+
+    fun dismissDialog() {
+        _activeDialog.value = DialogType.NONE
+        pendingProjectToLoad = null
+        isExitPending = false
+    }
+    
+    fun isExitPending() = isExitPending
+
+    fun createNewProject() {
+        _projectName.value = "untitled"
+        _isDirty.value = false
+        _selectedTrack.value = 0
+        for (i in 0 until 4) {
+            trackStates[i] = TrackState()
+        }
+        _bpm.value = 120f
+        _drumVolume.value = -12f
+        _isArrangementMode.value = false
+        _activePattern.value = 0
+        _playlist.value = emptyList()
+        _currentPlaylistIndex.value = 0
+        
+        viewModelScope.launch {
+            wavetableSynthesizer?.clearAllPatterns()
+            setSelectedTrack(0)
+            applyParameters()
+            refreshEvents()
+        }
+    }
+
+    fun onProjectSelected(name: String) {
+        if (_isDirty.value == true) {
+            pendingProjectToLoad = name
+            _activeDialog.value = DialogType.SAVE_CONFIRMATION
+        } else {
+            // Need to call loadProject, but it needs Context
+            // The UI will handle this
+        }
+    }
+    
+    fun getPendingProjectName() = pendingProjectToLoad
+
+    private val _projectList = MutableLiveData<List<String>>(emptyList())
+    val projectList: LiveData<List<String>> = _projectList
+
+    private val _projectsFolderUri = MutableLiveData<String?>(null)
+    val projectsFolderUri: LiveData<String?> = _projectsFolderUri
+
+    fun setProjectsFolderUri(uri: String?, context: Context) {
+        _projectsFolderUri.value = uri
+        val prefs = context.getSharedPreferences("synth_prefs", Context.MODE_PRIVATE)
+        prefs.edit { putString("projects_folder_uri", uri) }
+        if (uri != null) {
+            refreshProjectList(context)
+        }
+    }
+
+    private fun markDirty() {
+        if (_isDirty.value == false) {
+            _isDirty.value = true
+        }
+    }
+
+    private fun getNextUntitledName(): String {
+        val list = _projectList.value ?: emptyList()
+        var i = 1
+        while (list.contains("untitled-$i")) {
+            i++
+        }
+        return "untitled-$i"
+    }
+    
+    fun showProjectNameDialog() {
+        if (_projectName.value == "untitled") {
+            _projectName.value = getNextUntitledName()
+        }
+        _activeDialog.value = DialogType.PROJECT_NAME
+    }
+
+    fun refreshProjectList(context: Context) {
+        viewModelScope.launch {
+            val list = mutableListOf<String>()
+            val uriStr = _projectsFolderUri.value
+            
+            if (uriStr != null) {
+                // List from External (SAF)
+                withContext(Dispatchers.IO) {
+                    try {
+                        val treeUri = uriStr.toUri()
+                        val treeFile = DocumentFile.fromTreeUri(context, treeUri)
+                        treeFile?.listFiles()?.forEach { file ->
+                            if (file.name?.endsWith(".udw") == true) {
+                                list.add(file.name!!.removeSuffix(".udw"))
+                            } else if (file.name == "project.json") {
+                                list.add("project")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("SynthVM", "Failed to list external projects", e)
+                    }
+                }
+            }
+            
+            // Also include internal ones for migration
+            val internalFiles = context.filesDir.listFiles { _, name -> name.endsWith(".udw") || name == "project.json" }
+            internalFiles?.forEach { file ->
+                val name = if (file.name == "project.json") "project" else file.name.removeSuffix(".udw")
+                if (!list.contains(name)) list.add(name)
+            }
+            
+            _projectList.postValue(list.sorted())
+        }
+    }
+
+    fun initStorage(context: Context) {
+        val prefs = context.getSharedPreferences("synth_prefs", Context.MODE_PRIVATE)
+        val uri = prefs.getString("projects_folder_uri", null)
+        _projectsFolderUri.value = uri
+        
+        refreshProjectList(context)
+        
+        // Check for migration
+        val internalFiles = context.filesDir.listFiles { _, name -> name.endsWith(".udw") }
+        if (internalFiles != null && internalFiles.isNotEmpty() && uri == null) {
+            _activeDialog.value = DialogType.MIGRATION_REQUIRED
+        } else if (internalFiles != null && internalFiles.isNotEmpty()) {
+            migrateProjectsToExternal(context)
+        }
+    }
+
+    private fun migrateProjectsToExternal(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val uriStr = _projectsFolderUri.value ?: return@launch
+            val treeUri = uriStr.toUri()
+            val treeFile = DocumentFile.fromTreeUri(context, treeUri) ?: return@launch
+            
+            val internalFiles = context.filesDir.listFiles { _, name -> name.endsWith(".udw") || name == "project.json" } ?: return@launch
+            
+            for (file in internalFiles) {
+                try {
+                    val content = file.readText()
+                    val targetName = if (file.name == "project.json") "project.udw" else file.name
+                    val newFile = treeFile.createFile("application/octet-stream", targetName)
+                    newFile?.uri?.let { destUri ->
+                        context.contentResolver.openOutputStream(destUri)?.use { out ->
+                            out.write(content.toByteArray())
+                        }
+                        file.delete()
+                    }
+                } catch (e: Exception) {
+                    Log.e("SynthVM", "Migration failed for ${file.name}", e)
+                }
+            }
+            refreshProjectList(context)
+        }
+    }
 
     fun playClicked() {
         viewModelScope.launch {
@@ -721,7 +930,13 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
-    fun saveProject(context: Context, fileName: String = "project.json") {
+    fun saveProject(context: Context, name: String? = null) {
+        val finalName = name ?: _projectName.value ?: "untitled"
+        if (_isDirty.value == false && name == null) {
+            Log.d("SynthVM", "No changes to save")
+            return
+        }
+
         viewModelScope.launch {
             val patterns = mutableListOf<List<MidiEventData>>()
             val patternCount = wavetableSynthesizer?.getPatternCount() ?: 0
@@ -739,15 +954,37 @@ class WavetableSynthesizerViewModel : ViewModel() {
                 patterns = patterns
             )
 
+            val jsonString = Json.encodeToString(projectData)
+            val fileName = "$finalName.udw"
+
             withContext(Dispatchers.IO) {
                 try {
-                    val jsonString = Json.encodeToString(projectData)
-                    val file = File(context.filesDir, fileName)
-                    file.writeText(jsonString)
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Project Saved", Toast.LENGTH_SHORT).show()
+                    val uriStr = _projectsFolderUri.value
+                    if (uriStr != null) {
+                        val treeUri = uriStr.toUri()
+                        val treeFile = DocumentFile.fromTreeUri(context, treeUri)
+                        var file = treeFile?.findFile(fileName)
+                        if (file == null) {
+                            file = treeFile?.createFile("application/octet-stream", fileName)
+                        }
+                        
+                        file?.uri?.let { destUri ->
+                            context.contentResolver.openOutputStream(destUri)?.use { out ->
+                                out.write(jsonString.toByteArray())
+                            }
+                        }
+                    } else {
+                        // Fallback to internal
+                        val file = File(context.filesDir, fileName)
+                        file.writeText(jsonString)
                     }
-                    Log.d("SynthVM", "Project saved to ${file.absolutePath}")
+
+                    withContext(Dispatchers.Main) {
+                        _projectName.value = finalName
+                        _isDirty.value = false
+                        refreshProjectList(context)
+                        Toast.makeText(context, "Project Saved: $finalName", Toast.LENGTH_SHORT).show()
+                    }
                 } catch (e: Exception) {
                     Log.e("SynthVM", "Failed to save project", e)
                 }
@@ -755,12 +992,32 @@ class WavetableSynthesizerViewModel : ViewModel() {
         }
     }
 
-    fun loadProject(context: Context, fileName: String = "project.json") {
+    fun loadProject(context: Context, name: String) {
         viewModelScope.launch {
             val jsonString = withContext(Dispatchers.IO) {
                 try {
-                    val file = File(context.filesDir, fileName)
-                    if (file.exists()) file.readText() else null
+                    val uriStr = _projectsFolderUri.value
+                    if (uriStr != null) {
+                        val treeUri = uriStr.toUri()
+                        val treeFile = DocumentFile.fromTreeUri(context, treeUri)
+                        // Try .udw then .json
+                        var file = treeFile?.findFile("$name.udw")
+                        if (file == null && name == "project") {
+                            file = treeFile?.findFile("project.json")
+                        }
+                        
+                        file?.uri?.let { srcUri ->
+                            context.contentResolver.openInputStream(srcUri)?.use { input ->
+                                input.bufferedReader().readText()
+                            }
+                        }
+                    } else {
+                        var file = File(context.filesDir, "$name.udw")
+                        if (!file.exists() && name == "project") {
+                            file = File(context.filesDir, "project.json")
+                        }
+                        if (file.exists()) file.readText() else null
+                    }
                 } catch (e: Exception) {
                     Log.e("SynthVM", "Failed to read project file", e)
                     null
@@ -804,10 +1061,12 @@ class WavetableSynthesizerViewModel : ViewModel() {
                 applyParameters()
                 refreshEvents()
                 
+                _projectName.value = name
+                _isDirty.value = false
+                
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Project Loaded", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Project Loaded: $name", Toast.LENGTH_SHORT).show()
                 }
-                Log.d("SynthVM", "Project loaded successfully")
             } catch (e: Exception) {
                 Log.e("SynthVM", "Failed to parse project JSON", e)
             }

@@ -5,8 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeMute
@@ -17,15 +21,22 @@ import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -34,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.chumakov123.wavetablesynthesizer.MainActivity
 import com.chumakov123.wavetablesynthesizer.R
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
 
@@ -118,6 +130,21 @@ fun MetronomeControl(viewModel: WavetableSynthesizerViewModel) {
 }
 
 @Composable
+fun ProjectStatus(viewModel: WavetableSynthesizerViewModel) {
+    val name by viewModel.projectName.observeAsState("untitled")
+    val isDirty by viewModel.isDirty.observeAsState(false)
+    
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = "$name${if (isDirty) "*" else ""}",
+            color = if (isDirty) Color(0xFFFFCC00) else Color.LightGray,
+            fontSize = 11.sp,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
+    }
+}
+
+@Composable
 fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
     val isRecording by viewModel.isRecording.observeAsState(false)
     val isPlaying by viewModel.isPlayingRecording.observeAsState(false)
@@ -136,10 +163,16 @@ fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
         IconButton(onClick = { viewModel.clearSequence() }, modifier = Modifier.size(30.dp)) {
             Icon(Icons.Default.Delete, null, Modifier.size(18.dp), tint = Color.Gray)
         }
-        IconButton(onClick = { viewModel.saveProject(context) }, modifier = Modifier.size(30.dp)) {
+        IconButton(onClick = { 
+            if (viewModel.projectName.value?.startsWith("untitled") == true) {
+                viewModel.showProjectNameDialog()
+            } else {
+                viewModel.saveProject(context)
+            }
+        }, modifier = Modifier.size(30.dp)) {
             Icon(Icons.Default.FileUpload, null, Modifier.size(18.dp), tint = Color.Cyan)
         }
-        IconButton(onClick = { viewModel.loadProject(context) }, modifier = Modifier.size(30.dp)) {
+        IconButton(onClick = { viewModel.showDialog(WavetableSynthesizerViewModel.DialogType.PROJECT_LIST) }, modifier = Modifier.size(30.dp)) {
             Icon(Icons.Default.FileDownload, null, Modifier.size(18.dp), tint = Color.Magenta)
         }
         QuantizationSelector(viewModel)
@@ -189,5 +222,177 @@ fun TrackSelector(viewModel: WavetableSynthesizerViewModel) {
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SynthDialogs(viewModel: WavetableSynthesizerViewModel) {
+    val activeDialog by viewModel.activeDialog.observeAsState(WavetableSynthesizerViewModel.DialogType.NONE)
+    val context = LocalContext.current
+
+    when (activeDialog) {
+        WavetableSynthesizerViewModel.DialogType.PROJECT_NAME -> {
+            var name by remember { mutableStateOf(viewModel.projectName.value ?: "") }
+            AlertDialog(
+                onDismissRequest = { viewModel.dismissDialog() },
+                title = { Text("Save Project As") },
+                text = {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Project Name") },
+                        singleLine = true
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        if (name.isNotBlank()) {
+                            viewModel.saveProject(context, name)
+                            
+                            val pending = viewModel.getPendingProjectName()
+                            val isExit = viewModel.isExitPending()
+                            
+                            if (pending != null) {
+                                if (pending == "NEW_PROJECT_ACTION") {
+                                    viewModel.createNewProject()
+                                } else {
+                                    viewModel.loadProject(context, pending)
+                                }
+                            } else if (isExit) {
+                                (context as? MainActivity)?.finish()
+                            }
+                            
+                            viewModel.dismissDialog()
+                        }
+                    }) { Text("Save") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { viewModel.dismissDialog() }) { Text("Cancel") }
+                }
+            )
+        }
+        WavetableSynthesizerViewModel.DialogType.SAVE_CONFIRMATION -> {
+            AlertDialog(
+                onDismissRequest = { viewModel.dismissDialog() },
+                title = { Text("Unsaved Changes") },
+                text = { Text("Do you want to save changes to ${viewModel.projectName.value}?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        if (viewModel.projectName.value == "untitled") {
+                            viewModel.showProjectNameDialog()
+                        } else {
+                            viewModel.saveProject(context)
+                            val pending = viewModel.getPendingProjectName()
+                            val isExit = viewModel.isExitPending()
+                            if (pending != null) {
+                                if (pending == "NEW_PROJECT_ACTION") {
+                                    viewModel.createNewProject()
+                                } else {
+                                    viewModel.loadProject(context, pending)
+                                }
+                            } else if (isExit) {
+                                (context as? MainActivity)?.finish()
+                            }
+                            viewModel.dismissDialog()
+                        }
+                    }) { Text("Save") }
+                },
+                dismissButton = {
+                    Row {
+                        TextButton(onClick = {
+                            val pending = viewModel.getPendingProjectName()
+                            val isExit = viewModel.isExitPending()
+                            viewModel.dismissDialog()
+                            
+                            if (pending != null) {
+                                if (pending == "NEW_PROJECT_ACTION") {
+                                    viewModel.createNewProject()
+                                } else {
+                                    viewModel.loadProject(context, pending)
+                                }
+                            } else if (isExit) {
+                                (context as? MainActivity)?.finish()
+                            }
+                        }) { Text("Don't Save") }
+                        TextButton(onClick = { viewModel.dismissDialog() }) { Text("Cancel") }
+                    }
+                }
+            )
+        }
+        WavetableSynthesizerViewModel.DialogType.PROJECT_LIST -> {
+            val list by viewModel.projectList.observeAsState(emptyList())
+            AlertDialog(
+                onDismissRequest = { viewModel.dismissDialog() },
+                title = { Text("Projects") },
+                text = {
+                    LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
+                        item {
+                            Text(
+                                text = "+ Create New Project",
+                                color = Color.Green,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        if (viewModel.isDirty.value == true) {
+                                            viewModel.onProjectSelected("NEW_PROJECT_ACTION")
+                                        } else {
+                                            viewModel.createNewProject()
+                                            viewModel.dismissDialog()
+                                        }
+                                    }
+                                    .padding(16.dp),
+                                fontSize = 16.sp
+                            )
+                            HorizontalDivider(color = Color.DarkGray)
+                        }
+                        if (list.isEmpty()) {
+                            item {
+                                Text("No saved projects.", modifier = Modifier.padding(16.dp), color = Color.Gray)
+                            }
+                        } else {
+                            items(list) { item ->
+                                Text(
+                                    text = item,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            if (viewModel.isDirty.value == true) {
+                                                viewModel.onProjectSelected(item)
+                                            } else {
+                                                viewModel.loadProject(context, item)
+                                                viewModel.dismissDialog()
+                                            }
+                                        }
+                                        .padding(16.dp),
+                                    fontSize = 16.sp
+                                )
+                                HorizontalDivider(color = Color.DarkGray)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = { viewModel.dismissDialog() }) { Text("Close") }
+                }
+            )
+        }
+        WavetableSynthesizerViewModel.DialogType.MIGRATION_REQUIRED -> {
+            AlertDialog(
+                onDismissRequest = { viewModel.dismissDialog() },
+                title = { Text("Storage Migration") },
+                text = { Text("You have projects in internal storage. Would you like to select an external folder (U-DAW/Projects) and move them there?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        (context as? MainActivity)?.requestProjectsFolder()
+                        viewModel.dismissDialog()
+                    }) { Text("Select Folder") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { viewModel.dismissDialog() }) { Text("Later") }
+                }
+            )
+        }
+        else -> {}
     }
 }
