@@ -37,12 +37,14 @@ namespace wavetablesynthesizer {
             float sample = 0.f;
             {
                 std::lock_guard<std::mutex> lock(_mutex);
+                int64_t pos = _sequencer ? _sequencer->getGlobalSamplePosition() : 0;
                 for (auto& source : _sources) {
+                    source->setPosition(pos);
                     sample += source->getSample();
                 }
             }
             // Нормализуем громкость
-            return sample * 0.25f;
+            return sample * 0.2f;
         }
 
         void onPlaybackStopped() override {

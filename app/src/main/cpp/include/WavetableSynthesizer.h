@@ -11,6 +11,8 @@
 #include "SynthTrack.h"
 #include "DrumSynth.h"
 #include "Mixer.h"
+#include "AudioRecorder.h"
+#include "AudioTrack.h"
 
 namespace wavetablesynthesizer {
     class AudioPlayer;
@@ -99,6 +101,17 @@ namespace wavetablesynthesizer {
         void setDrumVolume(float volumeInDb);
         void clearDrums();
 
+        // Microphone Recording
+        bool startMicRecording(const char* path);
+        void stopMicRecording();
+        bool isMicRecording() const;
+
+        // Audio Track (Recorded Vocals)
+        void loadAudioTrack(const char* path);
+        void setAudioTrackEnabled(bool enabled);
+        void setAudioTrackOffset(float seconds);
+        void setAudioTrackVolume(float volumeInDb);
+
     private:
         std::atomic<bool> _isStreamOpen = false;
         std::atomic<bool> _isContinuousPlayActive = false;
@@ -115,6 +128,8 @@ namespace wavetablesynthesizer {
         std::shared_ptr<DrumTrack> _drumTrack;
         std::shared_ptr<Mixer> _mixer;
         std::unique_ptr<AudioPlayer> _audioPlayer;
+        std::unique_ptr<AudioRecorder> _audioRecorder;
+        std::shared_ptr<AudioTrack> _vocalTrack;
 
         // Внутренний метод для нот (чтобы избежать рекурсии при записи)
         void internalNoteOn(int trackId, float frequencyInHz);

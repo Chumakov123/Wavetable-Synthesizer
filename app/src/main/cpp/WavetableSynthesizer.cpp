@@ -4,6 +4,7 @@
 #include "WavetableSynthesizer.h"
 #include "OboeAudioPlayer.h"
 #include "Mixer.h"
+#include "AudioTrack.h"
 
 namespace wavetablesynthesizer {
     WavetableSynthesizer::WavetableSynthesizer() {
@@ -27,6 +28,10 @@ namespace wavetablesynthesizer {
         _mixer->setSequencer(_sequencer);
 
         _audioPlayer = std::make_unique<OboeAudioPlayer>(_mixer, sampleRate);
+        _audioRecorder = std::make_unique<AudioRecorder>();
+
+        _vocalTrack = std::make_shared<AudioTrack>(sampleRate);
+        _mixer->addSource(_vocalTrack);
     }
 
     WavetableSynthesizer::~WavetableSynthesizer() = default;
@@ -314,6 +319,35 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::clearDrums() {
         _sequencer->clearTrack(-1);
+    }
+
+    bool WavetableSynthesizer::startMicRecording(const char* path) {
+        return _audioRecorder->startRecording(path);
+    }
+
+    void WavetableSynthesizer::stopMicRecording() {
+        _audioRecorder->stopRecording();
+    }
+
+    bool WavetableSynthesizer::isMicRecording() const {
+        return _audioRecorder->isRecording();
+    }
+
+    void WavetableSynthesizer::loadAudioTrack(const char* path) {
+        _vocalTrack->loadFile(path);
+    }
+
+    void WavetableSynthesizer::setAudioTrackEnabled(bool enabled) {
+        _vocalTrack->setEnabled(enabled);
+    }
+
+    void WavetableSynthesizer::setAudioTrackOffset(float seconds) {
+        _vocalTrack->setOffsetSamples(static_cast<int64_t>(seconds * sampleRate));
+    }
+
+    void WavetableSynthesizer::setAudioTrackVolume(float volumeInDb) {
+        float volume = std::pow(10.0f, volumeInDb / 20.0f);
+        _vocalTrack->setVolume(volume);
     }
 
     void WavetableSynthesizer::sequencerCallback(void* receiver, int trackId, float frequency, bool isNoteOn) {

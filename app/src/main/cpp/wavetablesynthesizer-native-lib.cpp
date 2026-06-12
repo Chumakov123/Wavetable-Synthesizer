@@ -452,6 +452,71 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_renderArran
     }
 }
 
+JNIEXPORT jboolean JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_startMicRecording(JNIEnv *env, jobject thiz,
+                                                                                       jlong synthesizerHandle,
+                                                                                       jstring path) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) {
+        const char* nativePath = env->GetStringUTFChars(path, nullptr);
+        bool result = synthesizer->startMicRecording(nativePath);
+        env->ReleaseStringUTFChars(path, nativePath);
+        return result;
+    }
+    return false;
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_stopMicRecording(JNIEnv *env, jobject thiz,
+                                                                                      jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->stopMicRecording();
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_isMicRecording(JNIEnv *env, jobject thiz,
+                                                                                    jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) return synthesizer->isMicRecording();
+    return false;
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_loadAudioTrack(JNIEnv *env, jobject thiz,
+                                                                                  jlong synthesizerHandle,
+                                                                                  jstring path) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) {
+        const char* nativePath = env->GetStringUTFChars(path, nullptr);
+        synthesizer->loadAudioTrack(nativePath);
+        env->ReleaseStringUTFChars(path, nativePath);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setAudioTrackEnabled(JNIEnv *env, jobject thiz,
+                                                                                        jlong synthesizerHandle,
+                                                                                        jboolean enabled) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setAudioTrackEnabled(static_cast<bool>(enabled));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setAudioTrackOffset(JNIEnv *env, jobject thiz,
+                                                                                       jlong synthesizerHandle,
+                                                                                       jfloat seconds) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setAudioTrackOffset(static_cast<float>(seconds));
+}
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setAudioTrackVolume(JNIEnv *env, jobject thiz,
+                                                                                       jlong synthesizerHandle,
+                                                                                       jfloat volumeInDb) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) synthesizer->setAudioTrackVolume(static_cast<float>(volumeInDb));
+}
+
 JNIEXPORT jfloat JNICALL
 Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_getRenderingProgress(JNIEnv *env, jobject thiz,
                                                                                          jlong synthesizerHandle) {

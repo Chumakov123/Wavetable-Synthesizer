@@ -37,6 +37,8 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         SynthTrack.cpp
         DelayLine.cpp
         DrumSynth.cpp
+        AudioRecorder.cpp
+        AudioTrack.cpp
         wavetablesynthesizer-native-lib.cpp)
 
 find_package(oboe REQUIRED CONFIG)

@@ -91,6 +91,17 @@ interface WavetableSynthesizer {
     suspend fun triggerHat()
     suspend fun setDrumVolume(volumeInDb: Float)
     suspend fun clearDrums()
+
+    // Microphone Recording
+    suspend fun startMicRecording(path: String): Boolean
+    suspend fun stopMicRecording()
+    suspend fun isMicRecording(): Boolean
+
+    // Audio Track (Vocals)
+    suspend fun loadAudioTrack(path: String)
+    suspend fun setAudioTrackEnabled(enabled: Boolean)
+    suspend fun setAudioTrackOffset(seconds: Float)
+    suspend fun setAudioTrackVolume(volumeInDb: Float)
 }
 
 @Serializable

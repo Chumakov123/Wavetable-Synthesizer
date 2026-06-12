@@ -76,6 +76,7 @@ namespace wavetablesynthesizer {
         void resetForRendering();
 
         int getCurrentPlaylistIndex() const { return _currentPlaylistIndex; }
+        uint64_t getGlobalSamplePosition() const;
         bool isArrangementMode() const { return _isArrangementMode.load(); }
 
         // Callback для синтезатора

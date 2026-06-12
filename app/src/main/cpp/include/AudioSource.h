@@ -12,6 +12,8 @@ namespace wavetablesynthesizer {
 
         virtual void process(int32_t framesCount) {}
 
+        virtual void setPosition(int64_t samplePosition) {}
+
         virtual bool isRendering() { return false; }
     };
 }

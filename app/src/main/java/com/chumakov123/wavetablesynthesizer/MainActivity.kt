@@ -43,6 +43,22 @@ class MainActivity : ComponentActivity() {
         outputDirLauncher.launch(null)
     }
 
+    private val recordAudioPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) {
+            synthesizerViewModel.toggleMicRecording(this)
+        } else {
+            // Permission denied
+        }
+    }
+
+    fun toggleMicRecording() {
+        if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            synthesizerViewModel.toggleMicRecording(this)
+        } else {
+            recordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

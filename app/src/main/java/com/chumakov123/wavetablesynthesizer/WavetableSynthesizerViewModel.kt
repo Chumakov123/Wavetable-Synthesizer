@@ -205,7 +205,11 @@ class WavetableSynthesizerViewModel : ViewModel() {
         val activePattern: Int,
         val tracks: List<TrackState>,
         val playlist: List<Int>,
-        val patterns: List<List<MidiEventData>>
+        val patterns: List<List<MidiEventData>>,
+        val vocalTrackPath: String? = null,
+        val isVocalTrackEnabled: Boolean = true,
+        val vocalTrackOffset: Float = 0f,
+        val vocalTrackVolume: Float = 0f
     )
     
     private val trackStates = Array(4) { TrackState() }
@@ -606,6 +610,21 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isRecording = MutableLiveData(false)
     val isRecording: LiveData<Boolean> = _isRecording
 
+    private val _isMicRecording = MutableLiveData(false)
+    val isMicRecording: LiveData<Boolean> = _isMicRecording
+
+    private val _vocalTrackPath = MutableLiveData<String?>(null)
+    val vocalTrackPath: LiveData<String?> = _vocalTrackPath
+
+    private val _isVocalTrackEnabled = MutableLiveData(true)
+    val isVocalTrackEnabled: LiveData<Boolean> = _isVocalTrackEnabled
+
+    private val _vocalTrackOffset = MutableLiveData(0f)
+    val vocalTrackOffset: LiveData<Float> = _vocalTrackOffset
+
+    private val _vocalTrackVolume = MutableLiveData(0f)
+    val vocalTrackVolume: LiveData<Float> = _vocalTrackVolume
+
     private val _isRendering = MutableLiveData(false)
     val isRendering: LiveData<Boolean> = _isRendering
 
@@ -628,6 +647,128 @@ class WavetableSynthesizerViewModel : ViewModel() {
                 markDirty()
                 refreshEvents() // Обновляем список нот после окончания записи
             }
+        }
+    }
+
+    fun toggleMicRecording(context: Context) {
+        val isCurrentlyRecording = _isMicRecording.value ?: false
+        val nextRecordingState = !isCurrentlyRecording
+
+        viewModelScope.launch {
+            if (nextRecordingState) {
+                val projectsUriStr = _projectsFolderUri.value
+                if (projectsUriStr != null) {
+                    // Создаем подкаталог Vocals в папке проектов
+                    val treeUri = projectsUriStr.toUri()
+                    val treeFile = DocumentFile.fromTreeUri(context, treeUri)
+                    var vocalsDir = treeFile?.findFile("Vocals")
+                    if (vocalsDir == null) {
+                        vocalsDir = treeFile?.createDirectory("Vocals")
+                    }
+
+                    val tempFile = File(context.cacheDir, "temp_mic.wav")
+                    val started = wavetableSynthesizer?.startMicRecording(tempFile.absolutePath) ?: false
+                    if (started) {
+                        _isMicRecording.value = true
+                        
+                        // Запоминаем позицию начала записи (если будем поддерживать запись не с 0)
+                        // Сейчас просто сбрасываем offset в 0, так как togglePlayback сбросит на 0
+                        _vocalTrackOffset.value = 0f
+                        wavetableSynthesizer?.setAudioTrackOffset(0f)
+
+                        // Автоматически запускаем воспроизведение аранжировки
+                        if (_isPlayingRecording.value != true) {
+                            togglePlayback()
+                        }
+                    } else {
+                        Toast.makeText(context, "Failed to start microphone recording", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(context, "Please set projects folder first", Toast.LENGTH_SHORT).show()
+                    _activeDialog.value = DialogType.MIGRATION_REQUIRED
+                }
+            } else {
+                wavetableSynthesizer?.stopMicRecording()
+                _isMicRecording.value = false
+                
+                if (_isPlayingRecording.value == true) {
+                    togglePlayback()
+                }
+
+                val tempFile = File(context.cacheDir, "temp_mic.wav")
+                if (tempFile.exists()) {
+                    val name = _projectName.value ?: "untitled"
+                    val timestamp = System.currentTimeMillis()
+                    val fileName = "${name}_mic_${timestamp}.wav"
+                    
+                    val projectsUriStr = _projectsFolderUri.value
+                    if (projectsUriStr != null) {
+                        withContext(Dispatchers.IO) {
+                            try {
+                                val treeUri = projectsUriStr.toUri()
+                                val treeFile = DocumentFile.fromTreeUri(context, treeUri)
+                                var vocalsDir = treeFile?.findFile("Vocals")
+                                if (vocalsDir == null) {
+                                    vocalsDir = treeFile?.createDirectory("Vocals")
+                                }
+
+                                val wavFile = vocalsDir?.createFile("audio/wav", fileName)
+                                wavFile?.uri?.let { destUri ->
+                                    context.contentResolver.openOutputStream(destUri)?.use { out ->
+                                        tempFile.inputStream().use { input ->
+                                            input.copyTo(out)
+                                        }
+                                    }
+                                    
+                                    // Сохраняем локальную копию для движка (Oboe)
+                                    val vocalsLocalDir = File(context.filesDir, "Vocals")
+                                    if (!vocalsLocalDir.exists()) vocalsLocalDir.mkdirs()
+                                    
+                                    val permanentFile = File(vocalsLocalDir, fileName)
+                                    tempFile.copyTo(permanentFile, overwrite = true)
+                                    
+                                    withContext(Dispatchers.Main) {
+                                        _vocalTrackPath.value = permanentFile.absolutePath
+                                        wavetableSynthesizer?.loadAudioTrack(permanentFile.absolutePath)
+                                        wavetableSynthesizer?.setAudioTrackEnabled(true)
+                                        _isVocalTrackEnabled.value = true
+                                        markDirty()
+                                        Toast.makeText(context, "Saved to Vocals/$fileName", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                Log.e("SynthVM", "Mic recording copy failed", e)
+                            } finally {
+                                tempFile.delete()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun setVocalTrackEnabled(enabled: Boolean) {
+        _isVocalTrackEnabled.value = enabled
+        markDirty()
+        viewModelScope.launch {
+            wavetableSynthesizer?.setAudioTrackEnabled(enabled)
+        }
+    }
+
+    fun setVocalTrackOffset(seconds: Float) {
+        _vocalTrackOffset.value = seconds
+        markDirty()
+        viewModelScope.launch {
+            wavetableSynthesizer?.setAudioTrackOffset(seconds)
+        }
+    }
+
+    fun setVocalTrackVolume(volumeInDb: Float) {
+        _vocalTrackVolume.value = volumeInDb
+        markDirty()
+        viewModelScope.launch {
+            wavetableSynthesizer?.setAudioTrackVolume(volumeInDb)
         }
     }
 
@@ -934,6 +1075,14 @@ class WavetableSynthesizerViewModel : ViewModel() {
             wavetableSynthesizer?.setMetronomeEnabled(isMetronomeEnabled.value!!)
             wavetableSynthesizer?.setQuantizationMode(quantization.value!!.ordinal)
 
+            // Vocal Track
+            _vocalTrackPath.value?.let { path ->
+                wavetableSynthesizer?.loadAudioTrack(path)
+                wavetableSynthesizer?.setAudioTrackEnabled(_isVocalTrackEnabled.value!!)
+                wavetableSynthesizer?.setAudioTrackOffset(_vocalTrackOffset.value!!)
+                wavetableSynthesizer?.setAudioTrackVolume(_vocalTrackVolume.value!!)
+            }
+
             // Arrangement
             wavetableSynthesizer?.setArrangementMode(_isArrangementMode.value!!)
             wavetableSynthesizer?.setActivePattern(_activePattern.value!!)
@@ -967,7 +1116,11 @@ class WavetableSynthesizerViewModel : ViewModel() {
                 activePattern = _activePattern.value ?: 0,
                 tracks = trackStates.toList(),
                 playlist = _playlist.value ?: emptyList(),
-                patterns = patterns
+                patterns = patterns,
+                vocalTrackPath = _vocalTrackPath.value,
+                isVocalTrackEnabled = _isVocalTrackEnabled.value ?: true,
+                vocalTrackOffset = _vocalTrackOffset.value ?: 0f,
+                vocalTrackVolume = _vocalTrackVolume.value ?: 0f
             )
 
             val jsonString = Json.encodeToString(projectData)
@@ -1050,6 +1203,10 @@ class WavetableSynthesizerViewModel : ViewModel() {
                 _drumVolume.value = projectData.drumVolume
                 _isArrangementMode.value = projectData.isArrangementMode
                 _activePattern.value = projectData.activePattern
+                _vocalTrackPath.value = projectData.vocalTrackPath
+                _isVocalTrackEnabled.value = projectData.isVocalTrackEnabled
+                _vocalTrackOffset.value = projectData.vocalTrackOffset
+                _vocalTrackVolume.value = projectData.vocalTrackVolume
 
                 projectData.tracks.forEachIndexed { i, state ->
                     if (i < trackStates.size) {

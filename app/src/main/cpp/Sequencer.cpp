@@ -338,6 +338,14 @@ namespace wavetablesynthesizer {
         return _playlist.size() * _loopLengthSamples;
     }
 
+    uint64_t Sequencer::getGlobalSamplePosition() const {
+        if (_isArrangementMode.load()) {
+            return _currentPlaylistIndex * _loopLengthSamples + _currentLoopSample;
+        } else {
+            return _currentLoopSample;
+        }
+    }
+
     void Sequencer::resetForRendering() {
         std::lock_guard<std::mutex> lock(_eventsMutex);
         _currentLoopSample = 0;

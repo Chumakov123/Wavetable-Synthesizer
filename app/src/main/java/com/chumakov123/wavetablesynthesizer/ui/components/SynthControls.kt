@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.AlertDialog
@@ -150,12 +151,13 @@ fun ProjectStatus(viewModel: WavetableSynthesizerViewModel) {
 @Composable
 fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
     val isRecording by viewModel.isRecording.observeAsState(false)
+    val isMicRecording by viewModel.isMicRecording.observeAsState(false)
     val isPlaying by viewModel.isPlayingRecording.observeAsState(false)
     val context = LocalContext.current
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-            // Upper row: Save, Load, Render
+            // Upper row: Save, Load, Render, Mic
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(0.dp)
@@ -174,6 +176,11 @@ fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
                 }
                 IconButton(onClick = { viewModel.renderToWav(context) }, modifier = Modifier.size(30.dp)) {
                     Icon(Icons.Default.AudioFile, null, Modifier.size(18.dp), tint = Color.Yellow)
+                }
+                IconButton(onClick = {
+                    (context as? MainActivity)?.toggleMicRecording()
+                }, modifier = Modifier.size(30.dp)) {
+                    Icon(Icons.Default.Mic, null, Modifier.size(18.dp), tint = if (isMicRecording) Color.Red else Color.Gray)
                 }
             }
             

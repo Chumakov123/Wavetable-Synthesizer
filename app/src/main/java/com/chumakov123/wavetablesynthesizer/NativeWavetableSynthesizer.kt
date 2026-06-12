@@ -58,6 +58,13 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun triggerHat(synthesizerHandle: Long)
     private external fun setDrumVolume(synthesizerHandle: Long, volumeInDb: Float)
     private external fun clearDrums(synthesizerHandle: Long)
+    private external fun startMicRecording(synthesizerHandle: Long, path: String): Boolean
+    private external fun stopMicRecording(synthesizerHandle: Long)
+    private external fun isMicRecording(synthesizerHandle: Long): Boolean
+    private external fun loadAudioTrack(synthesizerHandle: Long, path: String)
+    private external fun setAudioTrackEnabled(synthesizerHandle: Long, enabled: Boolean)
+    private external fun setAudioTrackOffset(synthesizerHandle: Long, seconds: Float)
+    private external fun setAudioTrackVolume(synthesizerHandle: Long, volumeInDb: Float)
 
     companion object {
         init {
@@ -440,6 +447,55 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
         synchronized(synthesizerMutex) {
             createNativeHandleIfNotExists()
             clearDrums(synthesizerHandle)
+        }
+    }
+
+    override suspend fun startMicRecording(path: String): Boolean = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            return@withContext startMicRecording(synthesizerHandle, path)
+        }
+    }
+
+    override suspend fun stopMicRecording() = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            stopMicRecording(synthesizerHandle)
+        }
+    }
+
+    override suspend fun isMicRecording(): Boolean = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            return@withContext isMicRecording(synthesizerHandle)
+        }
+    }
+
+    override suspend fun loadAudioTrack(path: String) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            loadAudioTrack(synthesizerHandle, path)
+        }
+    }
+
+    override suspend fun setAudioTrackEnabled(enabled: Boolean) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setAudioTrackEnabled(synthesizerHandle, enabled)
+        }
+    }
+
+    override suspend fun setAudioTrackOffset(seconds: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setAudioTrackOffset(synthesizerHandle, seconds)
+        }
+    }
+
+    override suspend fun setAudioTrackVolume(volumeInDb: Float) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            setAudioTrackVolume(synthesizerHandle, volumeInDb)
         }
     }
 }
