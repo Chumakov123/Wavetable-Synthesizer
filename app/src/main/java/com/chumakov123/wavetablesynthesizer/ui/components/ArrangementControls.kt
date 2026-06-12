@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
@@ -21,8 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.chumakov123.wavetablesynthesizer.MainActivity
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
 
 @Composable
@@ -31,6 +34,13 @@ fun ArrangementControls(viewModel: WavetableSynthesizerViewModel) {
     val activePattern by viewModel.activePattern.observeAsState(0)
     val playlist by viewModel.playlist.observeAsState(emptyList())
     val currentPlaylistIndex by viewModel.currentPlaylistIndex.observeAsState(0)
+    
+    val isVocalEnabled by viewModel.isVocalTrackEnabled.observeAsState(true)
+    val vocalOffset by viewModel.vocalTrackOffset.observeAsState(0f)
+    val vocalVolume by viewModel.vocalTrackVolume.observeAsState(0f)
+    val vocalPath by viewModel.vocalTrackPath.observeAsState(null)
+    val isMicRecording by viewModel.isMicRecording.observeAsState(false)
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -51,6 +61,52 @@ fun ArrangementControls(viewModel: WavetableSynthesizerViewModel) {
                     onCheckedChange = { viewModel.toggleArrangementMode() },
                     modifier = Modifier.scale(0.6f)
                 )
+
+                Spacer(Modifier.width(8.dp))
+
+                // Mic recording button
+                IconButton(
+                    onClick = { (context as? MainActivity)?.toggleMicRecording() },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Mic,
+                        contentDescription = "Mic",
+                        tint = if (isMicRecording) Color.Red else Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+
+                if (vocalPath != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(start = 4.dp)
+                    ) {
+                        Text("VOC", fontSize = 8.sp, color = Color.Yellow)
+                        Switch(
+                            checked = isVocalEnabled,
+                            onCheckedChange = { viewModel.setVocalTrackEnabled(it) },
+                            modifier = Modifier.scale(0.5f).size(30.dp, 20.dp)
+                        )
+                        
+                        Text("OFS", fontSize = 7.sp, color = Color.Gray)
+                        Knob(
+                            value = vocalOffset,
+                            onValueChange = { viewModel.setVocalTrackOffset(it) },
+                            valueRange = -1f..1f,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        
+                        Text("VOL", fontSize = 7.sp, color = Color.Gray)
+                        Knob(
+                            value = vocalVolume,
+                            onValueChange = { viewModel.setVocalTrackVolume(it) },
+                            valueRange = -60f..12f,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -56,7 +56,6 @@ import com.chumakov123.wavetablesynthesizer.ui.components.ProjectStatus
 import com.chumakov123.wavetablesynthesizer.ui.components.SynthDialogs
 import com.chumakov123.wavetablesynthesizer.ui.components.TrackSelector
 import com.chumakov123.wavetablesynthesizer.ui.components.TransportControls
-import com.chumakov123.wavetablesynthesizer.ui.components.VocalTrackControls
 import com.chumakov123.wavetablesynthesizer.ui.components.VolumeControl
 import com.chumakov123.wavetablesynthesizer.ui.components.WavetableSelectionPanel
 
@@ -148,10 +147,7 @@ fun WavetableSynthesizerApp(
 
             // Arrangement Controls (Collapsible)
             if (isArrangementExpanded) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    ArrangementControls(synthesizerViewModel)
-                    VocalTrackControls(synthesizerViewModel)
-                }
+                ArrangementControls(synthesizerViewModel)
             }
 
             // Ряд 2: Параметры звука (Presets + Mode + Content)
