@@ -31,8 +31,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.geometry.Offset
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
 import com.chumakov123.wavetablesynthesizer.ui.components.AdsrControls
 import com.chumakov123.wavetablesynthesizer.ui.components.ArrangementControls
@@ -175,6 +181,36 @@ fun WavetableSynthesizerApp(
                             WavetableSelectionPanel(synthesizerViewModel)
                         }
                     }
+                }
+
+                // Logo U-DAW
+                Column(
+                    modifier = Modifier.padding(end = 12.dp),
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "U-DAW",
+                        style = TextStyle(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color(0xFFFFBB00), Color(0xFFFF6600))
+                            ),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            fontStyle = FontStyle.Italic,
+                            shadow = Shadow(
+                                color = Color.Black.copy(alpha = 0.5f),
+                                offset = Offset(2f, 2f),
+                                blurRadius = 4f
+                            )
+                        )
+                    )
+                    Text(
+                        text = "Synthesizer",
+                        color = Color.Gray,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Light,
+                        letterSpacing = 2.sp
+                    )
                 }
             }
 

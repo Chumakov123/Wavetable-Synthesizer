@@ -153,33 +153,45 @@ fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
     val isPlaying by viewModel.isPlayingRecording.observeAsState(false)
     val context = LocalContext.current
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(0.dp)
-    ) {
-        IconButton(onClick = { viewModel.toggleRecording() }, modifier = Modifier.size(30.dp)) {
-            Icon(Icons.Default.FiberManualRecord, null, Modifier.size(18.dp), tint = if (isRecording) Color.Red else Color.Gray)
-        }
-        IconButton(onClick = { viewModel.togglePlayback() }, modifier = Modifier.size(30.dp)) {
-            Icon(if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow, null, Modifier.size(18.dp), tint = if (isPlaying) Color.Green else Color.Gray)
-        }
-        IconButton(onClick = { viewModel.clearSequence() }, modifier = Modifier.size(30.dp)) {
-            Icon(Icons.Default.Delete, null, Modifier.size(18.dp), tint = Color.Gray)
-        }
-        IconButton(onClick = { 
-            if (viewModel.projectName.value?.startsWith("untitled") == true) {
-                viewModel.showProjectNameDialog()
-            } else {
-                viewModel.saveProject(context)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+            // Upper row: Save, Load, Render
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                IconButton(onClick = {
+                    if (viewModel.projectName.value?.startsWith("untitled") == true) {
+                        viewModel.showProjectNameDialog()
+                    } else {
+                        viewModel.saveProject(context)
+                    }
+                }, modifier = Modifier.size(30.dp)) {
+                    Icon(Icons.Default.FileUpload, null, Modifier.size(18.dp), tint = Color.Cyan)
+                }
+                IconButton(onClick = { viewModel.showDialog(WavetableSynthesizerViewModel.DialogType.PROJECT_LIST) }, modifier = Modifier.size(30.dp)) {
+                    Icon(Icons.Default.FileDownload, null, Modifier.size(18.dp), tint = Color.Magenta)
+                }
+                IconButton(onClick = { viewModel.renderToWav(context) }, modifier = Modifier.size(30.dp)) {
+                    Icon(Icons.Default.AudioFile, null, Modifier.size(18.dp), tint = Color.Yellow)
+                }
             }
-        }, modifier = Modifier.size(30.dp)) {
-            Icon(Icons.Default.FileUpload, null, Modifier.size(18.dp), tint = Color.Cyan)
-        }
-        IconButton(onClick = { viewModel.showDialog(WavetableSynthesizerViewModel.DialogType.PROJECT_LIST) }, modifier = Modifier.size(30.dp)) {
-            Icon(Icons.Default.FileDownload, null, Modifier.size(18.dp), tint = Color.Magenta)
-        }
-        IconButton(onClick = { viewModel.renderToWav(context) }, modifier = Modifier.size(30.dp)) {
-            Icon(Icons.Default.AudioFile, null, Modifier.size(18.dp), tint = Color.Yellow)
+            
+            // Lower row: Record, Play/Stop, Delete
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                IconButton(onClick = { viewModel.toggleRecording() }, modifier = Modifier.size(30.dp)) {
+                    Icon(Icons.Default.FiberManualRecord, null, Modifier.size(18.dp), tint = if (isRecording) Color.Red else Color.Gray)
+                }
+                IconButton(onClick = { viewModel.togglePlayback() }, modifier = Modifier.size(30.dp)) {
+                    Icon(if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow, null, Modifier.size(18.dp), tint = if (isPlaying) Color.Green else Color.Gray)
+                }
+                IconButton(onClick = { viewModel.clearSequence() }, modifier = Modifier.size(30.dp)) {
+                    Icon(Icons.Default.Delete, null, Modifier.size(18.dp), tint = Color.Gray)
+                }
+            }
         }
         QuantizationSelector(viewModel)
     }
