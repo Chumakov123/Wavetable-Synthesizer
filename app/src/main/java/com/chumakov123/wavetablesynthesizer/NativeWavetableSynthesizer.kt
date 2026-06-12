@@ -51,6 +51,8 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
     private external fun deleteEvent(synthesizerHandle: Long, patternId: Int, index: Int)
     private external fun addEvent(synthesizerHandle: Long, patternId: Int, timestamp: Long, frequency: Float, isNoteOn: Boolean, trackId: Int, isDrum: Boolean): Int
     private external fun quantizePattern(synthesizerHandle: Long, patternId: Int, mode: Int)
+    private external fun renderArrangement(synthesizerHandle: Long, path: String)
+    private external fun getRenderingProgress(synthesizerHandle: Long): Float
     private external fun triggerKick(synthesizerHandle: Long)
     private external fun triggerSnare(synthesizerHandle: Long)
     private external fun triggerHat(synthesizerHandle: Long)
@@ -389,6 +391,21 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
             createNativeHandleIfNotExists()
             quantizePattern(synthesizerHandle, patternId, mode)
         }
+    }
+
+    override suspend fun renderArrangement(path: String) = withContext(Dispatchers.Default) {
+        synchronized(synthesizerMutex) {
+            createNativeHandleIfNotExists()
+            renderArrangement(synthesizerHandle, path)
+        }
+    }
+
+    override suspend fun getRenderingProgress(): Float = withContext(Dispatchers.Default) {
+        val handle = synthesizerHandle
+        if (handle != 0L) {
+            return@withContext getRenderingProgress(handle)
+        }
+        return@withContext 1.0f
     }
 
     override suspend fun triggerKick() = withContext(Dispatchers.Default) {

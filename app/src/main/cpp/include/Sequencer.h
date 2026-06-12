@@ -72,6 +72,9 @@ namespace wavetablesynthesizer {
         int addEvent(int patternId, uint64_t timestamp, float frequency, bool isNoteOn, int trackId, bool isDrum);
         void quantizePattern(int patternId, QuantizationMode mode);
 
+        uint64_t getTotalArrangementSamples() const;
+        void resetForRendering();
+
         int getCurrentPlaylistIndex() const { return _currentPlaylistIndex; }
         bool isArrangementMode() const { return _isArrangementMode.load(); }
 

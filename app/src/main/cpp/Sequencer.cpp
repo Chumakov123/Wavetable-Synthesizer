@@ -334,6 +334,19 @@ namespace wavetablesynthesizer {
         }
     }
 
+    uint64_t Sequencer::getTotalArrangementSamples() const {
+        return _playlist.size() * _loopLengthSamples;
+    }
+
+    void Sequencer::resetForRendering() {
+        std::lock_guard<std::mutex> lock(_eventsMutex);
+        _currentLoopSample = 0;
+        _currentPlaylistIndex = 0;
+        _isPlaying.store(true);
+        _isArrangementMode.store(true);
+        _isRecording.store(false);
+    }
+
     uint64_t Sequencer::getQuantizedTimestamp(uint64_t timestamp) {
         QuantizationMode mode = _quantizationMode.load();
         if (mode == QuantizationMode::None) return timestamp;

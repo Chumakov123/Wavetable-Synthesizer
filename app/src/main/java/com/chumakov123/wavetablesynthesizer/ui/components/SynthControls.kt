@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.AudioFile
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.FileDownload
@@ -30,6 +31,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -174,6 +177,9 @@ fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
         }
         IconButton(onClick = { viewModel.showDialog(WavetableSynthesizerViewModel.DialogType.PROJECT_LIST) }, modifier = Modifier.size(30.dp)) {
             Icon(Icons.Default.FileDownload, null, Modifier.size(18.dp), tint = Color.Magenta)
+        }
+        IconButton(onClick = { viewModel.renderToWav(context) }, modifier = Modifier.size(30.dp)) {
+            Icon(Icons.Default.AudioFile, null, Modifier.size(18.dp), tint = Color.Yellow)
         }
         QuantizationSelector(viewModel)
     }
@@ -391,6 +397,39 @@ fun SynthDialogs(viewModel: WavetableSynthesizerViewModel) {
                 dismissButton = {
                     TextButton(onClick = { viewModel.dismissDialog() }) { Text("Later") }
                 }
+            )
+        }
+        WavetableSynthesizerViewModel.DialogType.EXPORT_SETUP -> {
+            AlertDialog(
+                onDismissRequest = { viewModel.dismissDialog() },
+                title = { Text("Export Setup") },
+                text = { Text("Please select an output folder for your WAV files (e.g., U-DAW/Output).") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        (context as? MainActivity)?.requestOutputFolder()
+                        viewModel.dismissDialog()
+                    }) { Text("Select Folder") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { viewModel.dismissDialog() }) { Text("Cancel") }
+                }
+            )
+        }
+        WavetableSynthesizerViewModel.DialogType.RENDERING -> {
+            val progress by viewModel.renderingProgress.observeAsState(0f)
+            AlertDialog(
+                onDismissRequest = { }, // Force wait
+                title = { Text("Rendering...") },
+                text = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                        )
+                        Text("${(progress * 100).toInt()}%")
+                    }
+                },
+                confirmButton = {}
             )
         }
         else -> {}

@@ -439,6 +439,28 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_quantizePat
     auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->quantizePattern(patternId, mode);
 }
+
+JNIEXPORT void JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_renderArrangement(JNIEnv *env, jobject thiz,
+                                                                                      jlong synthesizerHandle,
+                                                                                      jstring path) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) {
+        const char* nativePath = env->GetStringUTFChars(path, nullptr);
+        synthesizer->renderArrangement(nativePath);
+        env->ReleaseStringUTFChars(path, nativePath);
+    }
+}
+
+JNIEXPORT jfloat JNICALL
+Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_getRenderingProgress(JNIEnv *env, jobject thiz,
+                                                                                         jlong synthesizerHandle) {
+    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    if (synthesizer) {
+        return synthesizer->getRenderingProgress();
+    }
+    return 1.0f;
+}
 }
 
 

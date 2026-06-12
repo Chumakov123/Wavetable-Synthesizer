@@ -13,6 +13,12 @@ namespace wavetablesynthesizer {
     }
 
     int32_t OboeAudioPlayer::play() {
+        if (_stream) {
+            _stream->stop();
+            _stream->close();
+            _stream.reset();
+        }
+
         AudioStreamBuilder builder;
         const auto result =
                 builder.setPerformanceMode(PerformanceMode::LowLatency)
@@ -48,7 +54,15 @@ namespace wavetablesynthesizer {
                                   int32_t framesCount) {
         auto* floatData = reinterpret_cast<float*>(audioData);
 
+        if (_source->isRendering()) {
+            for (auto i = 0; i < framesCount * channelCount; ++i) {
+                floatData[i] = 0.0f;
+            }
+            return oboe::DataCallbackResult::Continue;
+        }
+
         for (auto frame = 0; frame < framesCount; ++frame) {
+            _source->process(1);
             const auto sample = _source->getSample();
 
             for (auto channel = 0; channel < channelCount; ++channel) {

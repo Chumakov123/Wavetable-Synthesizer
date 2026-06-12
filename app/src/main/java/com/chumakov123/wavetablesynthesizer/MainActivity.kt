@@ -32,6 +32,17 @@ class MainActivity : ComponentActivity() {
         projectsDirLauncher.launch(null)
     }
 
+    private val outputDirLauncher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        uri?.let {
+            contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            synthesizerViewModel.setOutputFolderUri(it.toString(), this)
+        }
+    }
+
+    fun requestOutputFolder() {
+        outputDirLauncher.launch(null)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

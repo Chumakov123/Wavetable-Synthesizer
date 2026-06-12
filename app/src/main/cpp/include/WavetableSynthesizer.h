@@ -1,12 +1,16 @@
 #pragma once
 #include <memory>
 #include <mutex>
+#include <atomic>
+#include <vector>
+#include <cstdint>
 #include "Wavetable.h"
 #include "WavetableFactory.h"
 #include "Metronome.h"
 #include "Sequencer.h"
 #include "SynthTrack.h"
 #include "DrumSynth.h"
+#include "Mixer.h"
 
 namespace wavetablesynthesizer {
     class AudioPlayer;
@@ -84,6 +88,10 @@ namespace wavetablesynthesizer {
 
         int getCurrentPlaylistIndex() const { return _sequencer->getCurrentPlaylistIndex(); }
 
+        // Rendering
+        void renderArrangement(const char* path);
+        float getRenderingProgress() const { return _renderingProgress.load(); }
+
         // Drums
         void triggerKick();
         void triggerSnare();
@@ -94,6 +102,8 @@ namespace wavetablesynthesizer {
     private:
         std::atomic<bool> _isStreamOpen = false;
         std::atomic<bool> _isContinuousPlayActive = false;
+        std::atomic<bool> _isRendering = false;
+        std::atomic<float> _renderingProgress{0.0f};
         float _lastSliderFrequency = 440.0f;
         std::mutex _mutex;
 
@@ -103,6 +113,7 @@ namespace wavetablesynthesizer {
         std::shared_ptr<Metronome> _metronome;
         std::shared_ptr<Sequencer> _sequencer;
         std::shared_ptr<DrumTrack> _drumTrack;
+        std::shared_ptr<Mixer> _mixer;
         std::unique_ptr<AudioPlayer> _audioPlayer;
 
         // Внутренний метод для нот (чтобы избежать рекурсии при записи)

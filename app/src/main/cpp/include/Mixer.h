@@ -2,6 +2,8 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <atomic>
+#include <cstdint>
 #include "AudioSource.h"
 #include "Sequencer.h"
 
@@ -17,11 +19,21 @@ namespace wavetablesynthesizer {
             _sequencer = sequencer;
         }
 
-        float getSample() override {
-            if (_sequencer) {
-                _sequencer->process(0, 1); // Продвигаем время на 1 семпл
-            }
+        void setRendering(bool rendering) {
+            _isRendering = rendering;
+        }
 
+        bool isRendering() override {
+            return _isRendering;
+        }
+
+        void process(int32_t framesCount) override {
+            if (_sequencer) {
+                _sequencer->process(0, framesCount);
+            }
+        }
+
+        float getSample() override {
             float sample = 0.f;
             {
                 std::lock_guard<std::mutex> lock(_mutex);
@@ -44,5 +56,6 @@ namespace wavetablesynthesizer {
         std::vector<std::shared_ptr<AudioSource>> _sources;
         std::shared_ptr<Sequencer> _sequencer;
         std::mutex _mutex;
+        std::atomic<bool> _isRendering{false};
     };
 }

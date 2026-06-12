@@ -83,6 +83,9 @@ interface WavetableSynthesizer {
     suspend fun addEvent(patternId: Int, timestamp: Long, frequency: Float, isNoteOn: Boolean, trackId: Int, isDrum: Boolean): Int
     suspend fun quantizePattern(patternId: Int, mode: Int)
 
+    suspend fun renderArrangement(path: String)
+    suspend fun getRenderingProgress(): Float
+
     suspend fun triggerKick()
     suspend fun triggerSnare()
     suspend fun triggerHat()

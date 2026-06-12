@@ -33,10 +33,6 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _frequency = MutableLiveData(300f)
     val frequency: LiveData<Float> = _frequency
 
-//    val frequency: LiveData<Float>
-//        get() {
-//            return _frequency
-//        }
     fun setFrequencySliderPosition(frequencySliderPosition: Float) {
         val frequencyInHz = frequencyInHzFromSliderPosition(frequencySliderPosition)
         _frequency.value = frequencyInHz
@@ -610,6 +606,12 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isRecording = MutableLiveData(false)
     val isRecording: LiveData<Boolean> = _isRecording
 
+    private val _isRendering = MutableLiveData(false)
+    val isRendering: LiveData<Boolean> = _isRendering
+
+    private val _renderingProgress = MutableLiveData(0f)
+    val renderingProgress: LiveData<Float> = _renderingProgress
+
     fun toggleRecording() {
         val isCurrentlyRecording = _isRecording.value ?: false
         val nextRecordingState = !isCurrentlyRecording
@@ -691,7 +693,7 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _isDirty = MutableLiveData(false)
     val isDirty: LiveData<Boolean> = _isDirty
 
-    enum class DialogType { NONE, SAVE_CONFIRMATION, PROJECT_NAME, PROJECT_LIST, MIGRATION_REQUIRED }
+    enum class DialogType { NONE, SAVE_CONFIRMATION, PROJECT_NAME, PROJECT_LIST, MIGRATION_REQUIRED, EXPORT_SETUP, RENDERING }
     private val _activeDialog = MutableLiveData(DialogType.NONE)
     val activeDialog: LiveData<DialogType> = _activeDialog
 
@@ -753,6 +755,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _projectsFolderUri = MutableLiveData<String?>(null)
     val projectsFolderUri: LiveData<String?> = _projectsFolderUri
 
+    private val _outputFolderUri = MutableLiveData<String?>(null)
+    val outputFolderUri: LiveData<String?> = _outputFolderUri
+
     fun setProjectsFolderUri(uri: String?, context: Context) {
         _projectsFolderUri.value = uri
         val prefs = context.getSharedPreferences("synth_prefs", Context.MODE_PRIVATE)
@@ -760,6 +765,12 @@ class WavetableSynthesizerViewModel : ViewModel() {
         if (uri != null) {
             refreshProjectList(context)
         }
+    }
+
+    fun setOutputFolderUri(uri: String?, context: Context) {
+        _outputFolderUri.value = uri
+        val prefs = context.getSharedPreferences("synth_prefs", Context.MODE_PRIVATE)
+        prefs.edit { putString("output_folder_uri", uri) }
     }
 
     private fun markDirty() {
@@ -775,6 +786,11 @@ class WavetableSynthesizerViewModel : ViewModel() {
             i++
         }
         return "untitled-$i"
+    }
+
+    fun setProjectName(name: String) {
+        _projectName.value = name
+        markDirty()
     }
     
     fun showProjectNameDialog() {
@@ -821,14 +837,14 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun initStorage(context: Context) {
         val prefs = context.getSharedPreferences("synth_prefs", Context.MODE_PRIVATE)
-        val uri = prefs.getString("projects_folder_uri", null)
-        _projectsFolderUri.value = uri
+        _projectsFolderUri.value = prefs.getString("projects_folder_uri", null)
+        _outputFolderUri.value = prefs.getString("output_folder_uri", null)
         
         refreshProjectList(context)
         
         // Check for migration
         val internalFiles = context.filesDir.listFiles { _, name -> name.endsWith(".udw") }
-        if (internalFiles != null && internalFiles.isNotEmpty() && uri == null) {
+        if (internalFiles != null && internalFiles.isNotEmpty() && _projectsFolderUri.value == null) {
             _activeDialog.value = DialogType.MIGRATION_REQUIRED
         } else if (internalFiles != null && internalFiles.isNotEmpty()) {
             migrateProjectsToExternal(context)
@@ -1070,6 +1086,82 @@ class WavetableSynthesizerViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.e("SynthVM", "Failed to parse project JSON", e)
             }
+        }
+    }
+
+    fun renderToWav(context: Context) {
+        if (_outputFolderUri.value == null) {
+            _activeDialog.value = DialogType.EXPORT_SETUP
+            return
+        }
+
+        viewModelScope.launch {
+            val name = _projectName.value ?: "untitled"
+            val tempFile = File(context.cacheDir, "temp_render.wav")
+            
+            // Stop real-time playback during rendering
+            val wasPlaying = wavetableSynthesizer?.isPlaying() ?: false
+            if (wasPlaying) {
+                wavetableSynthesizer?.stop()
+                updatePlayLabel()
+            }
+
+            _isRendering.value = true
+            _renderingProgress.value = 0f
+            _activeDialog.value = DialogType.RENDERING
+
+            // Poll progress
+            val progressJob = launch {
+                while (isActive) {
+                    val progress = wavetableSynthesizer?.getRenderingProgress() ?: 1f
+                    _renderingProgress.postValue(progress)
+                    if (progress >= 1f) break
+                    delay(100.milliseconds)
+                }
+            }
+
+            withContext(Dispatchers.Default) {
+                wavetableSynthesizer?.renderArrangement(tempFile.absolutePath)
+            }
+            
+            progressJob.cancel()
+            _renderingProgress.value = 1f
+            _isRendering.value = false
+            _activeDialog.value = DialogType.NONE
+            
+            if (tempFile.exists() && tempFile.length() > 44) {
+                val uriStr = _outputFolderUri.value
+                if (uriStr != null) {
+                    withContext(Dispatchers.IO) {
+                        try {
+                            val treeUri = uriStr.toUri()
+                            val treeFile = DocumentFile.fromTreeUri(context, treeUri)
+                            val wavFile = treeFile?.createFile("audio/wav", "$name.wav")
+                            wavFile?.uri?.let { destUri ->
+                                context.contentResolver.openOutputStream(destUri)?.use { out ->
+                                    tempFile.inputStream().use { input ->
+                                        input.copyTo(out)
+                                    }
+                                }
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, "Rendered to: $name.wav", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("SynthVM", "Render copy failed", e)
+                        } finally {
+                            tempFile.delete()
+                        }
+                    }
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Render failed (maybe playlist is empty?)", Toast.LENGTH_SHORT).show()
+                }
+            }
+            
+            // Resume playback if it was active (optional, maybe better leave stopped)
+            // if (wasPlaying) wavetableSynthesizer?.play()
         }
     }
 }

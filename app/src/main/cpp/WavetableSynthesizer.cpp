@@ -1,31 +1,32 @@
 #include "Log.h"
 #include <cmath>
+#include <fstream>
 #include "WavetableSynthesizer.h"
 #include "OboeAudioPlayer.h"
 #include "Mixer.h"
 
 namespace wavetablesynthesizer {
     WavetableSynthesizer::WavetableSynthesizer() {
-        auto mixer = std::make_shared<Mixer>();
+        _mixer = std::make_shared<Mixer>();
 
         for (int i = 0; i < NUM_TRACKS; ++i) {
             auto track = std::make_shared<SynthTrack>(sampleRate);
             _tracks.push_back(track);
-            mixer->addSource(track);
+            _mixer->addSource(track);
         }
 
         _metronome = std::make_shared<Metronome>(sampleRate);
-        mixer->addSource(_metronome);
+        _mixer->addSource(_metronome);
 
         _drumTrack = std::make_shared<DrumTrack>(sampleRate);
-        mixer->addSource(_drumTrack);
+        _mixer->addSource(_drumTrack);
 
         _sequencer = std::make_shared<Sequencer>(sampleRate);
         _sequencer->setNoteCallback(sequencerCallback, this);
         _sequencer->setMetronome(_metronome); // Передаем метроном в секвенсор
-        mixer->setSequencer(_sequencer);
+        _mixer->setSequencer(_sequencer);
 
-        _audioPlayer = std::make_unique<OboeAudioPlayer>(mixer, sampleRate);
+        _audioPlayer = std::make_unique<OboeAudioPlayer>(_mixer, sampleRate);
     }
 
     WavetableSynthesizer::~WavetableSynthesizer() = default;
@@ -51,8 +52,9 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::stop() {
         std::lock_guard<std::mutex> lock(_mutex);
-        if (!_isContinuousPlayActive) return;
         LOGD("stop() called.");
+        _audioPlayer->stop();
+        _isStreamOpen = false;
         for (auto& track : _tracks) {
             track->stopAllNotes();
         }
@@ -94,7 +96,7 @@ namespace wavetablesynthesizer {
     void WavetableSynthesizer::internalNoteOn(int trackId, float frequencyInHz) {
         if (trackId < 0 || trackId >= NUM_TRACKS) return;
 
-        if (!_isStreamOpen) {
+        if (!_isStreamOpen && !_isRendering) {
             _audioPlayer->play();
             _isStreamOpen = true;
         }
@@ -153,9 +155,9 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::setMetronomeEnabled(bool enabled) {
         _metronome->setEnabled(enabled);
-        if (enabled && !_isStreamOpen) {
+        if (enabled && !_isStreamOpen && !_isRendering) {
             std::lock_guard<std::mutex> lock(_mutex);
-            if (!_isStreamOpen) {
+            if (!_isStreamOpen && !_isRendering) {
                 _audioPlayer->play();
                 _isStreamOpen = true;
             }
@@ -201,9 +203,87 @@ namespace wavetablesynthesizer {
         _sequencer->setQuantizationMode(static_cast<QuantizationMode>(mode));
     }
 
+    void WavetableSynthesizer::renderArrangement(const char* path) {
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            _isRendering = true;
+            _mixer->setRendering(true);
+        }
+        _renderingProgress.store(0.0f);
+
+        uint64_t totalSamples = _sequencer->getTotalArrangementSamples();
+        if (totalSamples == 0) {
+            _isRendering = false;
+            _renderingProgress.store(1.0f);
+            return;
+        }
+
+        std::ofstream file(path, std::ios::binary);
+        if (!file.is_open()) {
+            _isRendering = false;
+            _renderingProgress.store(1.0f);
+            return;
+        }
+
+        // WAV Header
+        struct WavHeader {
+            char riff[4] = {'R', 'I', 'F', 'F'};
+            uint32_t fileSize;
+            char wave[4] = {'W', 'A', 'V', 'E'};
+            char fmt[4] = {'f', 'm', 't', ' '};
+            uint32_t fmtSize = 16;
+            uint16_t audioFormat = 1; // PCM
+            uint16_t numChannels = 1;
+            uint32_t sampleRate = 48000;
+            uint32_t byteRate;
+            uint16_t blockAlign;
+            uint16_t bitsPerSample = 16;
+            char data[4] = {'d', 'a', 't', 'a'};
+            uint32_t dataSize;
+        } header;
+
+        header.fileSize = 36 + totalSamples * 2;
+        header.byteRate = 48000 * 2;
+        header.blockAlign = 2;
+        header.dataSize = totalSamples * 2;
+
+        file.write(reinterpret_cast<const char*>(&header), sizeof(header));
+
+        // Prepare for rendering
+        bool wasArrangementMode = _sequencer->isArrangementMode();
+        _sequencer->resetForRendering();
+        for (auto& track : _tracks) track->stopAllNotes();
+
+        // Render loop
+        for (uint64_t i = 0; i < totalSamples; ++i) {
+            _sequencer->process(0, 1);
+            float sample = _mixer->getSample();
+
+            // Clip and convert to 16-bit PCM
+            if (sample > 1.0f) sample = 1.0f;
+            if (sample < -1.0f) sample = -1.0f;
+
+            int16_t pcmSample = static_cast<int16_t>(sample * 32767.0f);
+            file.write(reinterpret_cast<const char*>(&pcmSample), sizeof(pcmSample));
+
+            if (i % 1000 == 0) {
+                _renderingProgress.store(static_cast<float>(i) / totalSamples);
+            }
+        }
+
+        file.close();
+
+        // Restore state
+        _sequencer->stopPlayback();
+        _sequencer->setArrangementMode(wasArrangementMode);
+        _mixer->setRendering(false);
+        _isRendering = false;
+        _renderingProgress.store(1.0f);
+    }
+
     void WavetableSynthesizer::triggerKick() {
         _sequencer->recordDrum(0); // 0 = Kick
-        if (!_isStreamOpen) {
+        if (!_isStreamOpen && !_isRendering) {
             _audioPlayer->play();
             _isStreamOpen = true;
         }
@@ -212,7 +292,7 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::triggerSnare() {
         _sequencer->recordDrum(1); // 1 = Snare
-        if (!_isStreamOpen) {
+        if (!_isStreamOpen && !_isRendering) {
             _audioPlayer->play();
             _isStreamOpen = true;
         }
@@ -221,7 +301,7 @@ namespace wavetablesynthesizer {
 
     void WavetableSynthesizer::triggerHat() {
         _sequencer->recordDrum(2); // 2 = Hat
-        if (!_isStreamOpen) {
+        if (!_isStreamOpen && !_isRendering) {
             _audioPlayer->play();
             _isStreamOpen = true;
         }
