@@ -1293,15 +1293,28 @@ class WavetableSynthesizerViewModel : ViewModel() {
                         try {
                             val treeUri = uriStr.toUri()
                             val treeFile = DocumentFile.fromTreeUri(context, treeUri)
-                            val wavFile = treeFile?.createFile("audio/wav", "$name.wav")
+                            
+                            var fileName = "$name.wav"
+                            treeFile?.let { dir ->
+                                if (dir.findFile(fileName) != null) {
+                                    var i = 1
+                                    while (dir.findFile("$name ($i).wav") != null) {
+                                        i++
+                                    }
+                                    fileName = "$name ($i).wav"
+                                }
+                            }
+                            
+                            val wavFile = treeFile?.createFile("audio/wav", fileName)
                             wavFile?.uri?.let { destUri ->
                                 context.contentResolver.openOutputStream(destUri)?.use { out ->
                                     tempFile.inputStream().use { input ->
                                         input.copyTo(out)
                                     }
                                 }
+                                val actualName = wavFile.name ?: fileName
                                 withContext(Dispatchers.Main) {
-                                    Toast.makeText(context, "Rendered to: $name.wav", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, "Rendered to: $actualName", Toast.LENGTH_LONG).show()
                                 }
                             }
                         } catch (e: Exception) {
