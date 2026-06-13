@@ -2,7 +2,7 @@
 #include "MathConstants.h"
 #include <cmath>
 
-namespace wavetablesynthesizer {
+namespace udaw {
     Metronome::Metronome(double sampleRate) : _sampleRate(sampleRate) {
     }
 

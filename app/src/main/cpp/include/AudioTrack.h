@@ -7,7 +7,7 @@
 #include <fstream>
 #include "AudioSource.h"
 
-namespace wavetablesynthesizer {
+namespace udaw {
 
     class AudioTrack : public AudioSource {
     public:

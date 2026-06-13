@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.theme
+package com.chumakov123.udaw.ui.theme
 
 import android.app.Activity
 import android.os.Build
@@ -27,7 +27,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun WavetableSynthesizerTheme(
+fun UDAWTheme(
     content: @Composable () -> Unit
 ) {
     val view = LocalView.current

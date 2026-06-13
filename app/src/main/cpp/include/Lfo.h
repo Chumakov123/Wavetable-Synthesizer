@@ -3,7 +3,7 @@
 #include "MathConstants.h"
 #include <cmath>
 
-namespace wavetablesynthesizer {
+namespace udaw {
     class Lfo {
     public:
         void setSampleRate(float sampleRate) { _sampleRate = sampleRate; }

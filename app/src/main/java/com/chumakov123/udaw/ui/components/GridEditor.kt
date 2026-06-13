@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.components
+package com.chumakov123.udaw.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -22,19 +22,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chumakov123.wavetablesynthesizer.MidiEventData
-import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import com.chumakov123.udaw.MidiEventData
+import com.chumakov123.udaw.MainViewModel
 import kotlin.math.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
+fun GridEditor(viewModel: MainViewModel) {
     val allEvents by viewModel.patternEvents.observeAsState(emptyList())
     val bpm by viewModel.bpm.observeAsState(120f)
     val isDrumsMode by viewModel.isDrumsMode.observeAsState(false)
     val selectedTrack by viewModel.selectedTrack.observeAsState(0)
     val octave by viewModel.octave.observeAsState(0)
-    val editMode by viewModel.gridEditMode.observeAsState(WavetableSynthesizerViewModel.GridEditMode.DRAG)
+    val editMode by viewModel.gridEditMode.observeAsState(MainViewModel.GridEditMode.DRAG)
 
     val filteredEventsWithIndices = allEvents.mapIndexed { index, event -> index to event }
         .filter { (_, event) ->
@@ -92,7 +92,7 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
                             }
                         },
                         onTap = { offset ->
-                            if (currentEditMode == WavetableSynthesizerViewModel.GridEditMode.PAINT) {
+                            if (currentEditMode == MainViewModel.GridEditMode.PAINT) {
                                 val info = findEventAt(
                                     offset,
                                     currentFilteredWithIndices,
@@ -145,7 +145,7 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
                                 currentEditMode
                             )
                             
-                            if (currentEditMode == WavetableSynthesizerViewModel.GridEditMode.PAINT && dragInfo == null) {
+                            if (currentEditMode == MainViewModel.GridEditMode.PAINT && dragInfo == null) {
                                 val timestamp = (offset.x / size.width * currentTotalSamples).roundToLong()
                                 val quantizedTimestamp = (timestamp / currentSamplesPer16th.toLong()) * currentSamplesPer16th.toLong()
                                 val frequency = getFrequencyFromY(offset.y, size, currentFreqRange, currentIsDrumsMode)
@@ -224,7 +224,7 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
                                             newNoteOff
                                         )
                                         
-                                        if (currentEditMode == WavetableSynthesizerViewModel.GridEditMode.PAINT || currentEditMode == WavetableSynthesizerViewModel.GridEditMode.DRAG) {
+                                        if (currentEditMode == MainViewModel.GridEditMode.PAINT || currentEditMode == MainViewModel.GridEditMode.DRAG) {
                                             viewModel.updateEventFrequency(activeInfo.noteOnIndex, newFreq)
                                             if (activeInfo.noteOffIndex != -1) viewModel.updateEventFrequency(activeInfo.noteOffIndex, newFreq)
                                             
@@ -332,39 +332,39 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
         ) {
             // Режим Paint
             IconButton(
-                onClick = { viewModel.setGridEditMode(WavetableSynthesizerViewModel.GridEditMode.PAINT) },
+                onClick = { viewModel.setGridEditMode(MainViewModel.GridEditMode.PAINT) },
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
                     Icons.Default.Brush,
                     contentDescription = "Paint",
-                    tint = if (editMode == WavetableSynthesizerViewModel.GridEditMode.PAINT) Color(0xFFE91E63) else Color.White.copy(alpha = 0.6f),
+                    tint = if (editMode == MainViewModel.GridEditMode.PAINT) Color(0xFFE91E63) else Color.White.copy(alpha = 0.6f),
                     modifier = Modifier.size(16.dp)
                 )
             }
             
             // Режим Drag
             IconButton(
-                onClick = { viewModel.setGridEditMode(WavetableSynthesizerViewModel.GridEditMode.DRAG) },
+                onClick = { viewModel.setGridEditMode(MainViewModel.GridEditMode.DRAG) },
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
                     Icons.Default.OpenWith,
                     contentDescription = "Drag",
-                    tint = if (editMode == WavetableSynthesizerViewModel.GridEditMode.DRAG) Color(0xFF2196F3) else Color.White.copy(alpha = 0.6f),
+                    tint = if (editMode == MainViewModel.GridEditMode.DRAG) Color(0xFF2196F3) else Color.White.copy(alpha = 0.6f),
                     modifier = Modifier.size(16.dp)
                 )
             }
 
             // Режим Size
             IconButton(
-                onClick = { viewModel.setGridEditMode(WavetableSynthesizerViewModel.GridEditMode.STRETCH) },
+                onClick = { viewModel.setGridEditMode(MainViewModel.GridEditMode.STRETCH) },
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
                     Icons.Default.Straighten,
                     contentDescription = "Size",
-                    tint = if (editMode == WavetableSynthesizerViewModel.GridEditMode.STRETCH) Color(0xFF2196F3) else Color.White.copy(alpha = 0.6f),
+                    tint = if (editMode == MainViewModel.GridEditMode.STRETCH) Color(0xFF2196F3) else Color.White.copy(alpha = 0.6f),
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -383,7 +383,7 @@ fun GridEditor(viewModel: WavetableSynthesizerViewModel) {
             }
         }
 
-        if (filteredEventsWithIndices.isEmpty() && editMode != WavetableSynthesizerViewModel.GridEditMode.PAINT) {
+        if (filteredEventsWithIndices.isEmpty() && editMode != MainViewModel.GridEditMode.PAINT) {
             Text("No notes. Use PAINT mode to add.", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.align(Alignment.Center))
         }
     }
@@ -432,7 +432,7 @@ private fun findEventAt(
     freqRange: ClosedFloatingPointRange<Float>,
     isDrumsMode: Boolean,
     samplesPer16th: Float,
-    editMode: WavetableSynthesizerViewModel.GridEditMode
+    editMode: MainViewModel.GridEditMode
 ): DragInfo? {
     val width = size.width.toFloat()
     val height = size.height.toFloat()
@@ -474,11 +474,11 @@ private fun findEventAt(
             }
             
             if (offset.y in (y - 40f)..(y + 40f)) {
-                if (editMode == WavetableSynthesizerViewModel.GridEditMode.DRAG || editMode == WavetableSynthesizerViewModel.GridEditMode.PAINT) {
+                if (editMode == MainViewModel.GridEditMode.DRAG || editMode == MainViewModel.GridEditMode.PAINT) {
                     if (offset.x in (x - 30f)..(xEnd + 30f)) {
                         return DragInfo(index, noteOffIndex, event.timestamp, noteOffTimestamp, index, false)
                     }
-                } else if (editMode == WavetableSynthesizerViewModel.GridEditMode.STRETCH) {
+                } else if (editMode == MainViewModel.GridEditMode.STRETCH) {
                     if (noteOffIndex != -1) {
                         if (offset.x in (x - 30f)..(xEnd + 30f)) {
                             return DragInfo(index, noteOffIndex, event.timestamp, noteOffTimestamp, noteOffIndex, true)

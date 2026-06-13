@@ -10,7 +10,7 @@ namespace {
         auto sineWaveTable = std::vector<float>(WAVETABLE_LENGTH);
 
         for (auto i = 0; i < WAVETABLE_LENGTH; ++i) {
-            sineWaveTable[i] = std::sin(2.f * wavetablesynthesizer::PI * static_cast<float>(i) / static_cast<float>(WAVETABLE_LENGTH));
+            sineWaveTable[i] = std::sin(2.f * udaw::PI * static_cast<float>(i) / static_cast<float>(WAVETABLE_LENGTH));
         }
         return sineWaveTable;
     }
@@ -21,7 +21,7 @@ namespace {
         constexpr auto HARMONICS_COUNT = 13;
 
         const float coefficient =
-                8.0f / (wavetablesynthesizer::PI * wavetablesynthesizer::PI);
+                8.0f / (udaw::PI * udaw::PI);
 
         for (int k = 1; k <= HARMONICS_COUNT; ++k) {
             const float sign = (k % 2 == 0) ? 1.0f : -1.0f;
@@ -30,7 +30,7 @@ namespace {
 
             for (int j = 0; j < WAVETABLE_LENGTH; ++j) {
                 const float phase =
-                        2.0f * wavetablesynthesizer::PI
+                        2.0f * udaw::PI
                         * static_cast<float>(j)
                         / static_cast<float>(WAVETABLE_LENGTH);
 
@@ -50,7 +50,7 @@ namespace {
         constexpr auto HARMONICS_COUNT = 7;
 
         const float coefficient =
-                4.0f / wavetablesynthesizer::PI;
+                4.0f / udaw::PI;
 
         for (int k = 1; k <= HARMONICS_COUNT; ++k) {
             const auto harmonic = static_cast<float>(2 * k - 1);
@@ -58,7 +58,7 @@ namespace {
 
             for (int j = 0; j < WAVETABLE_LENGTH; ++j) {
                 const float phase =
-                        2.0f * wavetablesynthesizer::PI
+                        2.0f * udaw::PI
                         * static_cast<float>(j)
                         / static_cast<float>(WAVETABLE_LENGTH);
 
@@ -77,7 +77,7 @@ namespace {
         constexpr auto HARMONICS_COUNT = 26;
 
         const float coefficient =
-                2.0f / wavetablesynthesizer::PI;
+                2.0f / udaw::PI;
 
         for (int k = 1; k <= HARMONICS_COUNT; ++k) {
             const float sign = (k % 2 == 0) ? 1.0f : -1.0f;
@@ -86,7 +86,7 @@ namespace {
 
             for (int j = 0; j < WAVETABLE_LENGTH; ++j) {
                 const float phase =
-                        2.0f * wavetablesynthesizer::PI
+                        2.0f * udaw::PI
                         * static_cast<float>(j)
                         / static_cast<float>(WAVETABLE_LENGTH);
 
@@ -118,7 +118,7 @@ namespace {
     }
 }
 
-namespace wavetablesynthesizer {
+namespace udaw {
 
     std::vector<float> WavetableFactory::getWaveTable(Wavetable wavetable) {
         switch (wavetable) {

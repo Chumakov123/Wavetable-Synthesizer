@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace wavetablesynthesizer {
+namespace udaw {
     DelayLine::DelayLine(double sampleRate, float maxDelaySeconds)
         : _sampleRate(sampleRate) {
         _buffer.resize(static_cast<size_t>(sampleRate * maxDelaySeconds), 0.0f);

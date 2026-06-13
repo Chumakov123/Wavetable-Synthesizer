@@ -5,9 +5,9 @@
 
 extern "C" {
 JNIEXPORT jlong JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_create(JNIEnv *env,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_create(JNIEnv *env,
                                                                             jobject thiz) {
-    auto synthesizer = std::make_unique<wavetablesynthesizer::WavetableSynthesizer>();
+    auto synthesizer = std::make_unique<udaw::WavetableSynthesizer>();
 
     if (not synthesizer) {
         LOGD("Failed to create the synthesizer.");
@@ -16,10 +16,10 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_create(JNIE
     return reinterpret_cast<jlong>(synthesizer.release());
 }
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_delete(JNIEnv *env,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_delete(JNIEnv *env,
                                                                             jobject thiz,
                                                                             jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
 
     if (not synthesizer) {
         LOGD("Attempt to destroy an uninitialized synthesizer.");
@@ -29,9 +29,9 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_delete(JNIE
     delete synthesizer;
 }
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_play(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_play(JNIEnv *env, jobject thiz,
                                                                           jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
 
     if (synthesizer) {
         synthesizer->play();
@@ -40,9 +40,9 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_play(JNIEnv
     }
 }
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_stop(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_stop(JNIEnv *env, jobject thiz,
                                                                           jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
 
     if (synthesizer) {
         synthesizer->stop();
@@ -51,10 +51,10 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_stop(JNIEnv
     }
 }
 JNIEXPORT jboolean JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_isPlaying(JNIEnv *env,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_isPlaying(JNIEnv *env,
                                                                                jobject thiz,
                                                                                jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
 
     if (synthesizer) {
         return synthesizer->isPlaying();
@@ -64,11 +64,11 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_isPlaying(J
     return false;
 }
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setFrequency(JNIEnv *env,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setFrequency(JNIEnv *env,
                                                                                   jobject thiz,
                                                                                   jlong synthesizerHandle,
                                                                                   jfloat frequencyInHz) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
 
     if (synthesizer) {
         synthesizer->setFrequency(static_cast<float>(frequencyInHz));
@@ -77,11 +77,11 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setFrequenc
     }
 }
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setVolume(JNIEnv *env,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setVolume(JNIEnv *env,
                                                                                jobject thiz,
                                                                                jlong synthesizerHandle,
                                                                                jfloat volumeInDb) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
 
     if (synthesizer) {
         synthesizer->setVolume(static_cast<float>(volumeInDb));
@@ -90,12 +90,12 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setVolume(J
     }
 }
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setWavetable(JNIEnv *env,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setWavetable(JNIEnv *env,
                                                                                   jobject thiz,
                                                                                   jlong synthesizerHandle,
                                                                                   jint wavetable) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
-    const auto nativeWavetable = static_cast<wavetablesynthesizer::Wavetable>(wavetable);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
+    const auto nativeWavetable = static_cast<udaw::Wavetable>(wavetable);
 
     if (synthesizer) {
         synthesizer->setWavetable(nativeWavetable);
@@ -105,274 +105,274 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setWavetabl
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_noteOn(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_noteOn(JNIEnv *env, jobject thiz,
                                                                           jlong synthesizerHandle,
                                                                           jfloat frequencyInHz) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->noteOn(static_cast<float>(frequencyInHz));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_noteOff(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_noteOff(JNIEnv *env, jobject thiz,
                                                                            jlong synthesizerHandle,
                                                                            jfloat frequencyInHz) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->noteOff(static_cast<float>(frequencyInHz));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setAttackTime(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setAttackTime(JNIEnv *env, jobject thiz,
                                                                                  jlong synthesizerHandle,
                                                                                  jfloat time) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setAttackTime(static_cast<float>(time));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setDecayTime(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setDecayTime(JNIEnv *env, jobject thiz,
                                                                                 jlong synthesizerHandle,
                                                                                 jfloat time) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setDecayTime(static_cast<float>(time));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setSustainLevel(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setSustainLevel(JNIEnv *env, jobject thiz,
                                                                                    jlong synthesizerHandle,
                                                                                    jfloat level) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setSustainLevel(static_cast<float>(level));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setReleaseTime(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setReleaseTime(JNIEnv *env, jobject thiz,
                                                                                   jlong synthesizerHandle,
                                                                                   jfloat time) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setReleaseTime(static_cast<float>(time));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setLfoRate(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setLfoRate(JNIEnv *env, jobject thiz,
                                                                               jlong synthesizerHandle,
                                                                               jfloat rate) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setLfoRate(static_cast<float>(rate));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setLfoDepth(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setLfoDepth(JNIEnv *env, jobject thiz,
                                                                                jlong synthesizerHandle,
                                                                                jfloat depth) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setLfoDepth(static_cast<float>(depth));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setTremoloDepth(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setTremoloDepth(JNIEnv *env, jobject thiz,
                                                                                    jlong synthesizerHandle,
                                                                                    jfloat depth) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setTremoloDepth(static_cast<float>(depth));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setDelayTime(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setDelayTime(JNIEnv *env, jobject thiz,
                                                                                 jlong synthesizerHandle,
                                                                                 jfloat seconds) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setDelayTime(static_cast<float>(seconds));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setDelayFeedback(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setDelayFeedback(JNIEnv *env, jobject thiz,
                                                                                     jlong synthesizerHandle,
                                                                                     jfloat feedback) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setDelayFeedback(static_cast<float>(feedback));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setDelayWet(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setDelayWet(JNIEnv *env, jobject thiz,
                                                                                jlong synthesizerHandle,
                                                                                jfloat wet) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setDelayWet(static_cast<float>(wet));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setMetronomeEnabled(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setMetronomeEnabled(JNIEnv *env, jobject thiz,
                                                                                         jlong synthesizerHandle,
                                                                                         jboolean enabled) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setMetronomeEnabled(static_cast<bool>(enabled));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setBpm(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setBpm(JNIEnv *env, jobject thiz,
                                                                           jlong synthesizerHandle,
                                                                           jfloat bpm) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setBpm(static_cast<float>(bpm));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setRecording(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setRecording(JNIEnv *env, jobject thiz,
                                                                                  jlong synthesizerHandle,
                                                                                  jboolean enabled) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setRecording(static_cast<bool>(enabled));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setPlayback(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setPlayback(JNIEnv *env, jobject thiz,
                                                                                 jlong synthesizerHandle,
                                                                                 jboolean enabled) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setPlayback(static_cast<bool>(enabled));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearSequence(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_clearSequence(JNIEnv *env, jobject thiz,
                                                                                   jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->clearSequence();
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearActiveTrack(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_clearActiveTrack(JNIEnv *env, jobject thiz,
                                                                                      jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->clearActiveTrack();
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setQuantizationMode(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setQuantizationMode(JNIEnv *env, jobject thiz,
                                                                                         jlong synthesizerHandle,
                                                                                         jint mode) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setQuantizationMode(static_cast<int>(mode));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setActiveTrack(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setActiveTrack(JNIEnv *env, jobject thiz,
                                                                                    jlong synthesizerHandle,
                                                                                    jint trackId) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setActiveTrack(static_cast<int>(trackId));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_triggerKick(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_triggerKick(JNIEnv *env, jobject thiz,
                                                                                jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->triggerKick();
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_triggerSnare(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_triggerSnare(JNIEnv *env, jobject thiz,
                                                                                 jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->triggerSnare();
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_triggerHat(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_triggerHat(JNIEnv *env, jobject thiz,
                                                                               jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->triggerHat();
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setDrumVolume(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setDrumVolume(JNIEnv *env, jobject thiz,
                                                                                  jlong synthesizerHandle,
                                                                                  jfloat volumeInDb) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setDrumVolume(static_cast<float>(volumeInDb));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearDrums(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_clearDrums(JNIEnv *env, jobject thiz,
                                                                               jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->clearDrums();
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setArrangementMode(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setArrangementMode(JNIEnv *env, jobject thiz,
                                                                                       jlong synthesizerHandle,
                                                                                       jboolean enabled) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setArrangementMode(static_cast<bool>(enabled));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_addPatternToPlaylist(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_addPatternToPlaylist(JNIEnv *env, jobject thiz,
                                                                                         jlong synthesizerHandle,
                                                                                         jint patternId) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->addPatternToPlaylist(static_cast<int>(patternId));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearPlaylist(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_clearPlaylist(JNIEnv *env, jobject thiz,
                                                                                   jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->clearPlaylist();
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setActivePattern(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setActivePattern(JNIEnv *env, jobject thiz,
                                                                                     jlong synthesizerHandle,
                                                                                     jint patternId) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setActivePattern(static_cast<int>(patternId));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_copyPattern(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_copyPattern(JNIEnv *env, jobject thiz,
                                                                                jlong synthesizerHandle,
                                                                                jint sourceId, jint targetId) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->copyPattern(static_cast<int>(sourceId), static_cast<int>(targetId));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_removePattern(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_removePattern(JNIEnv *env, jobject thiz,
                                                                                  jlong synthesizerHandle,
                                                                                  jint patternId) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->removePattern(static_cast<int>(patternId));
 }
 
 JNIEXPORT jint JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_getPatternCount(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_getPatternCount(JNIEnv *env, jobject thiz,
                                                                                    jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) return synthesizer->getPatternCount();
     return 0;
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_clearAllPatterns(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_clearAllPatterns(JNIEnv *env, jobject thiz,
                                                                                     jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->clearAllPatterns();
 }
 
 JNIEXPORT jint JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_getCurrentPlaylistIndex(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_getCurrentPlaylistIndex(JNIEnv *env, jobject thiz,
                                                                                            jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) return synthesizer->getCurrentPlaylistIndex();
     return 0;
 }
 
 JNIEXPORT jfloatArray JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_getEvents(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_getEvents(JNIEnv *env, jobject thiz,
                                                                                jlong synthesizerHandle,
                                                                                jint patternId) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (!synthesizer) return nullptr;
 
     int count = synthesizer->getEventCount(patternId);
@@ -394,38 +394,38 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_getEvents(J
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_updateEventTimestamp(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_updateEventTimestamp(JNIEnv *env, jobject thiz,
                                                                                           jlong synthesizerHandle,
                                                                                           jint patternId, jint index,
                                                                                           jlong newTimestamp) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->updateEventTimestamp(patternId, index, static_cast<uint64_t>(newTimestamp));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_updateEventFrequency(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_updateEventFrequency(JNIEnv *env, jobject thiz,
                                                                                           jlong synthesizerHandle,
                                                                                           jint patternId, jint index,
                                                                                           jfloat newFrequency) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->updateEventFrequency(patternId, index, static_cast<float>(newFrequency));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_deleteEvent(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_deleteEvent(JNIEnv *env, jobject thiz,
                                                                                 jlong synthesizerHandle,
                                                                                 jint patternId, jint index) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->deleteEvent(patternId, index);
 }
 
 JNIEXPORT jint JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_addEvent(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_addEvent(JNIEnv *env, jobject thiz,
                                                                               jlong synthesizerHandle,
                                                                               jint patternId, jlong timestamp,
                                                                               jfloat frequency, jboolean isNoteOn,
                                                                               jint trackId, jboolean isDrum) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) {
         return synthesizer->addEvent(patternId, static_cast<uint64_t>(timestamp), frequency, isNoteOn, trackId, isDrum);
     }
@@ -433,18 +433,18 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_addEvent(JN
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_quantizePattern(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_quantizePattern(JNIEnv *env, jobject thiz,
                                                                                      jlong synthesizerHandle,
                                                                                      jint patternId, jint mode) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->quantizePattern(patternId, mode);
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_renderArrangement(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_renderArrangement(JNIEnv *env, jobject thiz,
                                                                                       jlong synthesizerHandle,
                                                                                       jstring path) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) {
         const char* nativePath = env->GetStringUTFChars(path, nullptr);
         synthesizer->renderArrangement(nativePath);
@@ -453,10 +453,10 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_renderArran
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_startMicRecording(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_startMicRecording(JNIEnv *env, jobject thiz,
                                                                                        jlong synthesizerHandle,
                                                                                        jstring path) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) {
         const char* nativePath = env->GetStringUTFChars(path, nullptr);
         bool result = synthesizer->startMicRecording(nativePath);
@@ -467,25 +467,25 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_startMicRec
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_stopMicRecording(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_stopMicRecording(JNIEnv *env, jobject thiz,
                                                                                       jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->stopMicRecording();
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_isMicRecording(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_isMicRecording(JNIEnv *env, jobject thiz,
                                                                                     jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) return synthesizer->isMicRecording();
     return false;
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_loadAudioTrack(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_loadAudioTrack(JNIEnv *env, jobject thiz,
                                                                                   jlong synthesizerHandle,
                                                                                   jstring path) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) {
         const char* nativePath = env->GetStringUTFChars(path, nullptr);
         synthesizer->loadAudioTrack(nativePath);
@@ -494,33 +494,33 @@ Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_loadAudioTr
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setAudioTrackEnabled(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setAudioTrackEnabled(JNIEnv *env, jobject thiz,
                                                                                         jlong synthesizerHandle,
                                                                                         jboolean enabled) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setAudioTrackEnabled(static_cast<bool>(enabled));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setAudioTrackOffset(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setAudioTrackOffset(JNIEnv *env, jobject thiz,
                                                                                        jlong synthesizerHandle,
                                                                                        jfloat seconds) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setAudioTrackOffset(static_cast<float>(seconds));
 }
 
 JNIEXPORT void JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_setAudioTrackVolume(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_setAudioTrackVolume(JNIEnv *env, jobject thiz,
                                                                                        jlong synthesizerHandle,
                                                                                        jfloat volumeInDb) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) synthesizer->setAudioTrackVolume(static_cast<float>(volumeInDb));
 }
 
 JNIEXPORT jfloat JNICALL
-Java_com_chumakov123_wavetablesynthesizer_NativeWavetableSynthesizer_getRenderingProgress(JNIEnv *env, jobject thiz,
+Java_com_chumakov123_udaw_NativeWavetableSynthesizer_getRenderingProgress(JNIEnv *env, jobject thiz,
                                                                                          jlong synthesizerHandle) {
-    auto* synthesizer = reinterpret_cast<wavetablesynthesizer::WavetableSynthesizer*>(synthesizerHandle);
+    auto* synthesizer = reinterpret_cast<udaw::WavetableSynthesizer*>(synthesizerHandle);
     if (synthesizer) {
         return synthesizer->getRenderingProgress();
     }

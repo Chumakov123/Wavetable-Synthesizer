@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.components
+package com.chumakov123.udaw.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,14 +27,14 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chumakov123.wavetablesynthesizer.MusicTheory
-import com.chumakov123.wavetablesynthesizer.MusicalKey
-import com.chumakov123.wavetablesynthesizer.Scale
-import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import com.chumakov123.udaw.MusicTheory
+import com.chumakov123.udaw.MusicalKey
+import com.chumakov123.udaw.Scale
+import com.chumakov123.udaw.MainViewModel
 import kotlin.math.pow
 
 @Composable
-fun PianoKeyboard(synthesizerViewModel: WavetableSynthesizerViewModel) {
+fun PianoKeyboard(synthesizerViewModel: MainViewModel) {
     val octave by synthesizerViewModel.octave.observeAsState(0)
     val multiplier = 2f.pow(octave)
 

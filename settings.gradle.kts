@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Wavetable Synthesizer"
+rootProject.name = "U-DAW"
 include(":app")

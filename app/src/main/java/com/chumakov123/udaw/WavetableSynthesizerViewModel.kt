@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer
+package com.chumakov123.udaw
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import androidx.core.content.edit
 import androidx.core.net.toUri
 
-class WavetableSynthesizerViewModel : ViewModel() {
+class MainViewModel : ViewModel() {
     var wavetableSynthesizer: WavetableSynthesizer? = null
         set (value) {
             field = value

@@ -7,7 +7,7 @@
 #include <atomic>
 #include <oboe/Oboe.h>
 
-namespace wavetablesynthesizer {
+namespace udaw {
 
     class AudioRecorder : public oboe::AudioStreamDataCallback {
     public:

@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.theme
+package com.chumakov123.udaw.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

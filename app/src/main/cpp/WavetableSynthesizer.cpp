@@ -6,7 +6,7 @@
 #include "Mixer.h"
 #include "AudioTrack.h"
 
-namespace wavetablesynthesizer {
+namespace udaw {
     WavetableSynthesizer::WavetableSynthesizer() {
         _mixer = std::make_shared<Mixer>();
 

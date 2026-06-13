@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui
+package com.chumakov123.udaw.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -39,40 +39,40 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.geometry.Offset
-import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
-import com.chumakov123.wavetablesynthesizer.ui.components.AdsrControls
-import com.chumakov123.wavetablesynthesizer.ui.components.ArrangementControls
-import com.chumakov123.wavetablesynthesizer.ui.components.DrumSection
-import com.chumakov123.wavetablesynthesizer.ui.components.FxControls
-import com.chumakov123.wavetablesynthesizer.ui.components.GridEditor
-import com.chumakov123.wavetablesynthesizer.ui.components.LfoControls
-import com.chumakov123.wavetablesynthesizer.ui.components.MetronomeControl
-import com.chumakov123.wavetablesynthesizer.ui.components.OctaveControl
-import com.chumakov123.wavetablesynthesizer.ui.components.PianoKeyboard
-import com.chumakov123.wavetablesynthesizer.ui.components.PitchControl
-import com.chumakov123.wavetablesynthesizer.ui.components.PlayControl
-import com.chumakov123.wavetablesynthesizer.ui.components.PresetSelector
-import com.chumakov123.wavetablesynthesizer.ui.components.ProjectStatus
-import com.chumakov123.wavetablesynthesizer.ui.components.ScaleSelectionPanel
-import com.chumakov123.wavetablesynthesizer.ui.components.SynthDialogs
-import com.chumakov123.wavetablesynthesizer.ui.components.TrackSelector
-import com.chumakov123.wavetablesynthesizer.ui.components.TransportControls
-import com.chumakov123.wavetablesynthesizer.ui.components.VolumeControl
-import com.chumakov123.wavetablesynthesizer.ui.components.WavetableSelectionPanel
+import com.chumakov123.udaw.MainViewModel
+import com.chumakov123.udaw.ui.components.AdsrControls
+import com.chumakov123.udaw.ui.components.ArrangementControls
+import com.chumakov123.udaw.ui.components.DrumSection
+import com.chumakov123.udaw.ui.components.FxControls
+import com.chumakov123.udaw.ui.components.GridEditor
+import com.chumakov123.udaw.ui.components.LfoControls
+import com.chumakov123.udaw.ui.components.MetronomeControl
+import com.chumakov123.udaw.ui.components.OctaveControl
+import com.chumakov123.udaw.ui.components.PianoKeyboard
+import com.chumakov123.udaw.ui.components.PitchControl
+import com.chumakov123.udaw.ui.components.PlayControl
+import com.chumakov123.udaw.ui.components.PresetSelector
+import com.chumakov123.udaw.ui.components.ProjectStatus
+import com.chumakov123.udaw.ui.components.ScaleSelectionPanel
+import com.chumakov123.udaw.ui.components.SynthDialogs
+import com.chumakov123.udaw.ui.components.TrackSelector
+import com.chumakov123.udaw.ui.components.TransportControls
+import com.chumakov123.udaw.ui.components.VolumeControl
+import com.chumakov123.udaw.ui.components.WavetableSelectionPanel
 
 @Composable
-fun WavetableSynthesizerApp(
+fun MainScreen(
     modifier: Modifier,
-    synthesizerViewModel: WavetableSynthesizerViewModel
+    synthesizerViewModel: MainViewModel
 ) {
     val isKeyboardMode by synthesizerViewModel.isKeyboardMode.observeAsState(true)
     val isDrumsMode by synthesizerViewModel.isDrumsMode.observeAsState(false)
-    val panelMode by synthesizerViewModel.controlPanelMode.observeAsState(WavetableSynthesizerViewModel.ControlPanelMode.WAVE)
+    val panelMode by synthesizerViewModel.controlPanelMode.observeAsState(MainViewModel.ControlPanelMode.WAVE)
     val isArrangementExpanded by synthesizerViewModel.isArrangementExpanded.observeAsState(false)
     val isDirty by synthesizerViewModel.isDirty.observeAsState(false)
 
     BackHandler(enabled = isDirty) {
-        synthesizerViewModel.showDialog(WavetableSynthesizerViewModel.DialogType.SAVE_CONFIRMATION)
+        synthesizerViewModel.showDialog(MainViewModel.DialogType.SAVE_CONFIRMATION)
     }
 
     // Чтобы сетка не закрывалась при переключении панелей, вынесем её состояние из panelMode
@@ -174,12 +174,12 @@ fun WavetableSynthesizerApp(
                     contentAlignment = Alignment.CenterStart
                 ) {
                     when (panelMode) {
-                        WavetableSynthesizerViewModel.ControlPanelMode.WAVE -> WavetableSelectionPanel(synthesizerViewModel)
-                        WavetableSynthesizerViewModel.ControlPanelMode.ADSR -> AdsrControls(synthesizerViewModel)
-                        WavetableSynthesizerViewModel.ControlPanelMode.LFO -> LfoControls(synthesizerViewModel)
-                        WavetableSynthesizerViewModel.ControlPanelMode.FX -> FxControls(synthesizerViewModel)
-                        WavetableSynthesizerViewModel.ControlPanelMode.SCALE -> ScaleSelectionPanel(synthesizerViewModel)
-                        WavetableSynthesizerViewModel.ControlPanelMode.GRID -> {
+                        MainViewModel.ControlPanelMode.WAVE -> WavetableSelectionPanel(synthesizerViewModel)
+                        MainViewModel.ControlPanelMode.ADSR -> AdsrControls(synthesizerViewModel)
+                        MainViewModel.ControlPanelMode.LFO -> LfoControls(synthesizerViewModel)
+                        MainViewModel.ControlPanelMode.FX -> FxControls(synthesizerViewModel)
+                        MainViewModel.ControlPanelMode.SCALE -> ScaleSelectionPanel(synthesizerViewModel)
+                        MainViewModel.ControlPanelMode.GRID -> {
                             WavetableSelectionPanel(synthesizerViewModel)
                         }
                     }
@@ -252,8 +252,8 @@ fun WavetableSynthesizerApp(
 
 @Composable
 private fun ModeSelector(
-    currentMode: WavetableSynthesizerViewModel.ControlPanelMode,
-    onModeSelected: (WavetableSynthesizerViewModel.ControlPanelMode) -> Unit
+    currentMode: MainViewModel.ControlPanelMode,
+    onModeSelected: (MainViewModel.ControlPanelMode) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -261,8 +261,8 @@ private fun ModeSelector(
             .padding(1.dp),
         horizontalArrangement = Arrangement.spacedBy(1.dp)
     ) {
-        WavetableSynthesizerViewModel.ControlPanelMode.entries
-            .filter { it != WavetableSynthesizerViewModel.ControlPanelMode.GRID }
+        MainViewModel.ControlPanelMode.entries
+            .filter { it != MainViewModel.ControlPanelMode.GRID }
             .forEach { mode ->
                 val isSelected = currentMode == mode
                 Box(

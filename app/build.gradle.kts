@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.chumakov123.wavetablesynthesizer"
+    namespace = "com.chumakov123.udaw"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.chumakov123.wavetablesynthesizer"
+        applicationId = "com.chumakov123.udaw"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

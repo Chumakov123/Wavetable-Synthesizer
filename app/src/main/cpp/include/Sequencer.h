@@ -6,7 +6,7 @@
 #include <cstdint>
 #include "Metronome.h"
 
-namespace wavetablesynthesizer {
+namespace udaw {
 
     struct MidiEvent {
         uint64_t timestamp; // Время в семплах от начала лупа

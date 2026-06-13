@@ -4,7 +4,7 @@
 #include <oboe/Oboe.h>
 #include "AudioPlayer.h"
 
-namespace  wavetablesynthesizer {
+namespace  udaw {
     class AudioSource;
 
     class OboeAudioPlayer : public oboe::AudioStreamDataCallback,

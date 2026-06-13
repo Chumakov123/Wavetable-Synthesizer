@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.components
+package com.chumakov123.udaw.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,12 +23,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import com.chumakov123.udaw.MainViewModel
 import java.util.Locale
 
 @Composable
 fun AdsrControls(
-    synthesizerViewModel: WavetableSynthesizerViewModel,
+    synthesizerViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
     val attack = synthesizerViewModel.attack.observeAsState(0.01f)
@@ -70,7 +70,7 @@ fun AdsrControls(
 
 @Composable
 fun OctaveControl(
-    synthesizerViewModel: WavetableSynthesizerViewModel,
+    synthesizerViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
     val octave by synthesizerViewModel.octave.observeAsState(0)

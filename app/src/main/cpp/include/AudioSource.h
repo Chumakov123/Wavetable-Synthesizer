@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace wavetablesynthesizer {
+namespace udaw {
     class AudioSource {
     public:
         virtual ~AudioSource() = default;

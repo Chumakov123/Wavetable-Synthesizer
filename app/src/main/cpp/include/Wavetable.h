@@ -1,6 +1,6 @@
 #pragma once
 
-namespace  wavetablesynthesizer {
+namespace  udaw {
     enum class Wavetable {
         SINE, TRIANGLE, SQUARE, SAW
     };

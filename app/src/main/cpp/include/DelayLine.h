@@ -3,7 +3,7 @@
 #include <atomic>
 #include <mutex>
 
-namespace wavetablesynthesizer {
+namespace udaw {
     class DelayLine {
     public:
         DelayLine(double sampleRate, float maxDelaySeconds = 2.0f);

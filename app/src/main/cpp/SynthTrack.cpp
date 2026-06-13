@@ -1,7 +1,7 @@
 #include "SynthTrack.h"
 #include <cmath>
 
-namespace wavetablesynthesizer {
+namespace udaw {
     SynthTrack::SynthTrack(double sampleRate) : _sampleRate(sampleRate), _delayLine(sampleRate) {
         for (int i = 0; i < MAX_VOICES; ++i) {
             _voices.push_back(std::make_shared<WavetableOscillator>(

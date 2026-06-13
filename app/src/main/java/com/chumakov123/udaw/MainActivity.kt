@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer
+package com.chumakov123.udaw
 
 import android.content.Intent
 import android.os.Bundle
@@ -15,11 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.chumakov123.wavetablesynthesizer.ui.WavetableSynthesizerApp
-import com.chumakov123.wavetablesynthesizer.ui.theme.WavetableSynthesizerTheme
+import com.chumakov123.udaw.ui.MainScreen
+import com.chumakov123.udaw.ui.theme.UDAWTheme
 
 class MainActivity : ComponentActivity() {
-    private val synthesizerViewModel: WavetableSynthesizerViewModel by viewModels()
+    private val synthesizerViewModel: MainViewModel by viewModels()
     private val synthesizer = NativeWavetableSynthesizer()
 
     private val projectsDirLauncher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
@@ -84,9 +84,9 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            WavetableSynthesizerTheme {
+            UDAWTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    WavetableSynthesizerApp(
+                    MainScreen(
                         modifier = Modifier.padding(innerPadding),
                         synthesizerViewModel)
                 }

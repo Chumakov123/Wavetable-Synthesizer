@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.components
+package com.chumakov123.udaw.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,13 +48,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chumakov123.wavetablesynthesizer.MainActivity
-import com.chumakov123.wavetablesynthesizer.R
-import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import com.chumakov123.udaw.MainActivity
+import com.chumakov123.udaw.R
+import com.chumakov123.udaw.MainViewModel
 
 @Composable
 fun PitchControl(
-    synthesizerViewModel: WavetableSynthesizerViewModel
+    synthesizerViewModel: MainViewModel
 ) {
     val frequency = synthesizerViewModel.frequency.observeAsState()
     PitchControlContent(
@@ -83,7 +83,7 @@ fun PitchControlContent(
 
 @Composable
 fun PlayControl(
-    synthesizerViewModel: WavetableSynthesizerViewModel
+    synthesizerViewModel: MainViewModel
 ) {
     val playButtonLabel = synthesizerViewModel.playButtonLabel.observeAsState()
     Button(onClick = { synthesizerViewModel.playClicked() }) {
@@ -93,7 +93,7 @@ fun PlayControl(
 
 @Composable
 fun VolumeControl(
-    synthesizerViewModel: WavetableSynthesizerViewModel
+    synthesizerViewModel: MainViewModel
 ) {
     val volume = synthesizerViewModel.volume.observeAsState()
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -109,7 +109,7 @@ fun VolumeControl(
 }
 
 @Composable
-fun MetronomeControl(viewModel: WavetableSynthesizerViewModel) {
+fun MetronomeControl(viewModel: MainViewModel) {
     val isEnabled by viewModel.isMetronomeEnabled.observeAsState(false)
     val bpm by viewModel.bpm.observeAsState(120f)
 
@@ -133,7 +133,7 @@ fun MetronomeControl(viewModel: WavetableSynthesizerViewModel) {
 }
 
 @Composable
-fun ProjectStatus(viewModel: WavetableSynthesizerViewModel) {
+fun ProjectStatus(viewModel: MainViewModel) {
     val name by viewModel.projectName.observeAsState("untitled")
     val isDirty by viewModel.isDirty.observeAsState(false)
     
@@ -148,7 +148,7 @@ fun ProjectStatus(viewModel: WavetableSynthesizerViewModel) {
 }
 
 @Composable
-fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
+fun TransportControls(viewModel: MainViewModel) {
     val isRecording by viewModel.isRecording.observeAsState(false)
     val isPlaying by viewModel.isPlayingRecording.observeAsState(false)
     val context = LocalContext.current
@@ -169,7 +169,7 @@ fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
                 }, modifier = Modifier.size(30.dp)) {
                     Icon(Icons.Default.FileUpload, null, Modifier.size(18.dp), tint = Color.Cyan)
                 }
-                IconButton(onClick = { viewModel.showDialog(WavetableSynthesizerViewModel.DialogType.PROJECT_LIST) }, modifier = Modifier.size(30.dp)) {
+                IconButton(onClick = { viewModel.showDialog(MainViewModel.DialogType.PROJECT_LIST) }, modifier = Modifier.size(30.dp)) {
                     Icon(Icons.Default.FileDownload, null, Modifier.size(18.dp), tint = Color.Magenta)
                 }
                 IconButton(onClick = { viewModel.renderToWav(context) }, modifier = Modifier.size(30.dp)) {
@@ -198,13 +198,13 @@ fun TransportControls(viewModel: WavetableSynthesizerViewModel) {
 }
 
 @Composable
-fun QuantizationSelector(viewModel: WavetableSynthesizerViewModel) {
-    val currentQuant by viewModel.quantization.observeAsState(WavetableSynthesizerViewModel.Quantization.OFF)
+fun QuantizationSelector(viewModel: MainViewModel) {
+    val currentQuant by viewModel.quantization.observeAsState(MainViewModel.Quantization.OFF)
     Row(
         modifier = Modifier.background(Color.DarkGray, RoundedCornerShape(4.dp)).padding(1.dp),
         horizontalArrangement = Arrangement.spacedBy(1.dp)
     ) {
-        WavetableSynthesizerViewModel.Quantization.entries.forEach { mode ->
+        MainViewModel.Quantization.entries.forEach { mode ->
             val isSelected = currentQuant == mode
             Box(
                 modifier = Modifier
@@ -219,7 +219,7 @@ fun QuantizationSelector(viewModel: WavetableSynthesizerViewModel) {
 }
 
 @Composable
-fun TrackSelector(viewModel: WavetableSynthesizerViewModel) {
+fun TrackSelector(viewModel: MainViewModel) {
     val selectedTrack by viewModel.selectedTrack.observeAsState(0)
     Row(
         modifier = Modifier.background(Color.DarkGray, RoundedCornerShape(4.dp)).padding(1.dp),
@@ -244,12 +244,12 @@ fun TrackSelector(viewModel: WavetableSynthesizerViewModel) {
 }
 
 @Composable
-fun SynthDialogs(viewModel: WavetableSynthesizerViewModel) {
-    val activeDialog by viewModel.activeDialog.observeAsState(WavetableSynthesizerViewModel.DialogType.NONE)
+fun SynthDialogs(viewModel: MainViewModel) {
+    val activeDialog by viewModel.activeDialog.observeAsState(MainViewModel.DialogType.NONE)
     val context = LocalContext.current
 
     when (activeDialog) {
-        WavetableSynthesizerViewModel.DialogType.PROJECT_NAME -> {
+        MainViewModel.DialogType.PROJECT_NAME -> {
             var name by remember { mutableStateOf(viewModel.projectName.value ?: "") }
             AlertDialog(
                 onDismissRequest = { viewModel.dismissDialog() },
@@ -289,7 +289,7 @@ fun SynthDialogs(viewModel: WavetableSynthesizerViewModel) {
                 }
             )
         }
-        WavetableSynthesizerViewModel.DialogType.SAVE_CONFIRMATION -> {
+        MainViewModel.DialogType.SAVE_CONFIRMATION -> {
             AlertDialog(
                 onDismissRequest = { viewModel.dismissDialog() },
                 title = { Text("Unsaved Changes") },
@@ -337,7 +337,7 @@ fun SynthDialogs(viewModel: WavetableSynthesizerViewModel) {
                 }
             )
         }
-        WavetableSynthesizerViewModel.DialogType.PROJECT_LIST -> {
+        MainViewModel.DialogType.PROJECT_LIST -> {
             val list by viewModel.projectList.observeAsState(emptyList())
             AlertDialog(
                 onDismissRequest = { viewModel.dismissDialog() },
@@ -395,7 +395,7 @@ fun SynthDialogs(viewModel: WavetableSynthesizerViewModel) {
                 }
             )
         }
-        WavetableSynthesizerViewModel.DialogType.MIGRATION_REQUIRED -> {
+        MainViewModel.DialogType.MIGRATION_REQUIRED -> {
             AlertDialog(
                 onDismissRequest = { viewModel.dismissDialog() },
                 title = { Text("Storage Migration") },
@@ -411,7 +411,7 @@ fun SynthDialogs(viewModel: WavetableSynthesizerViewModel) {
                 }
             )
         }
-        WavetableSynthesizerViewModel.DialogType.EXPORT_SETUP -> {
+        MainViewModel.DialogType.EXPORT_SETUP -> {
             AlertDialog(
                 onDismissRequest = { viewModel.dismissDialog() },
                 title = { Text("Export Setup") },
@@ -427,7 +427,7 @@ fun SynthDialogs(viewModel: WavetableSynthesizerViewModel) {
                 }
             )
         }
-        WavetableSynthesizerViewModel.DialogType.RENDERING -> {
+        MainViewModel.DialogType.RENDERING -> {
             val progress by viewModel.renderingProgress.observeAsState(0f)
             AlertDialog(
                 onDismissRequest = { }, // Force wait

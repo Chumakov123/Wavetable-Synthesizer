@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.components
+package com.chumakov123.udaw.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures

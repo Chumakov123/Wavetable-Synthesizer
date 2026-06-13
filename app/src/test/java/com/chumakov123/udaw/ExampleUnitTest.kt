@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer
+package com.chumakov123.udaw
 
 import org.junit.Test
 

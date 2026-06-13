@@ -1,7 +1,7 @@
 #include "AdsrEnvelope.h"
 #include <algorithm>
 
-namespace wavetablesynthesizer {
+namespace udaw {
 
     void AdsrEnvelope::noteOn() {
         _state.store(AdsrState::ATTACK, std::memory_order_release);

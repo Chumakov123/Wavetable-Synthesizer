@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.components
+package com.chumakov123.udaw.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,11 +25,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chumakov123.wavetablesynthesizer.MainActivity
-import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import com.chumakov123.udaw.MainActivity
+import com.chumakov123.udaw.MainViewModel
 
 @Composable
-fun ArrangementControls(viewModel: WavetableSynthesizerViewModel) {
+fun ArrangementControls(viewModel: MainViewModel) {
     val isArrangementMode by viewModel.isArrangementMode.observeAsState(false)
     val activePattern by viewModel.activePattern.observeAsState(0)
     val playlist by viewModel.playlist.observeAsState(emptyList())
@@ -150,7 +150,7 @@ fun ArrangementControls(viewModel: WavetableSynthesizerViewModel) {
 }
 
 @Composable
-fun PatternSelector(viewModel: WavetableSynthesizerViewModel, activePattern: Int) {
+fun PatternSelector(viewModel: MainViewModel, activePattern: Int) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)

@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.components
+package com.chumakov123.udaw.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,11 +22,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import com.chumakov123.udaw.MainViewModel
 
 @Composable
 fun PresetSelector(
-    synthesizerViewModel: WavetableSynthesizerViewModel,
+    synthesizerViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
     val presets by synthesizerViewModel.presets.observeAsState(emptyList())

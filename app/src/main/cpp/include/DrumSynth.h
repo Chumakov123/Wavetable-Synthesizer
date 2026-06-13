@@ -4,7 +4,7 @@
 #include <random>
 #include "AudioSource.h"
 
-namespace wavetablesynthesizer {
+namespace udaw {
 
     class WhiteNoise {
     public:

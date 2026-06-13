@@ -8,7 +8,7 @@
 #include "WavetableFactory.h"
 #include "DelayLine.h"
 
-namespace wavetablesynthesizer {
+namespace udaw {
     class SynthTrack : public AudioSource {
     public:
         SynthTrack(double sampleRate);

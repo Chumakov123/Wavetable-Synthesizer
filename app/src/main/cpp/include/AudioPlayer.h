@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace wavetablesynthesizer {
+namespace udaw {
     class AudioPlayer {
     public:
         virtual ~AudioPlayer() = default;

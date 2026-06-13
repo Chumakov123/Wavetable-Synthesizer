@@ -3,7 +3,7 @@
 #include <fstream>
 #include <algorithm>
 
-namespace wavetablesynthesizer {
+namespace udaw {
 
     AudioTrack::AudioTrack(int samplingRate) : _samplingRate(samplingRate) {}
 

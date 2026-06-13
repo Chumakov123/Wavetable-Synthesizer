@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.theme
+package com.chumakov123.udaw.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

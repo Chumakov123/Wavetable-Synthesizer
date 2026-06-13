@@ -1,7 +1,7 @@
 #pragma once
 #include <atomic>
 
-namespace wavetablesynthesizer {
+namespace udaw {
     enum class AdsrState {
         IDLE, ATTACK, DECAY, SUSTAIN, RELEASE
     };

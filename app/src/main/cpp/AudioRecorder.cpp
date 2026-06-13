@@ -1,7 +1,7 @@
 #include "AudioRecorder.h"
 #include "Log.h"
 
-namespace wavetablesynthesizer {
+namespace udaw {
 
     AudioRecorder::AudioRecorder() {}
 

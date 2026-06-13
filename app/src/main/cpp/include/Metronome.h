@@ -4,7 +4,7 @@
 #include <atomic>
 #include <cmath>
 
-namespace wavetablesynthesizer {
+namespace udaw {
     class Metronome : public AudioSource {
     public:
         Metronome(double sampleRate);

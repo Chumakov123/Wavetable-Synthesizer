@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer
+package com.chumakov123.udaw
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -68,7 +68,7 @@ class NativeWavetableSynthesizer : WavetableSynthesizer, DefaultLifecycleObserve
 
     companion object {
         init {
-            System.loadLibrary("wavetablesynthesizer")
+            System.loadLibrary("udaw")
         }
     }
 

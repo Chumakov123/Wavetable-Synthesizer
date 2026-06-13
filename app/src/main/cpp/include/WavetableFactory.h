@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 
-namespace  wavetablesynthesizer {
+namespace  udaw {
     enum class Wavetable;
     class WavetableFactory {
     public:

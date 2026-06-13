@@ -1,5 +1,6 @@
-package com.chumakov123.wavetablesynthesizer
+package com.chumakov123.udaw
 
+import com.chumakov123.udaw.R
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import kotlinx.serialization.Serializable

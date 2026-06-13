@@ -7,7 +7,7 @@
 #include "AudioSource.h"
 #include "Sequencer.h"
 
-namespace wavetablesynthesizer {
+namespace udaw {
     class Mixer : public AudioSource {
     public:
         void addSource(const std::shared_ptr<AudioSource>& source) {

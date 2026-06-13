@@ -2,7 +2,7 @@
 #include <cmath>
 #include "MathConstants.h"
 
-namespace wavetablesynthesizer {
+namespace udaw {
     WavetableOscillator::WavetableOscillator(std::vector<float> waveTable, float sampleRate)
     : waveTable{std::move(waveTable)}, sampleRate{sampleRate} {
         _envelope.setSampleRate(sampleRate);

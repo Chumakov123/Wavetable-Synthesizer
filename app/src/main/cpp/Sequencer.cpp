@@ -1,7 +1,7 @@
 #include "Sequencer.h"
 #include <algorithm>
 
-namespace wavetablesynthesizer {
+namespace udaw {
 
     Sequencer::Sequencer(double sampleRate) : _sampleRate(sampleRate) {
         _patterns.emplace_back();

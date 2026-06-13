@@ -14,7 +14,7 @@
 #include "AudioRecorder.h"
 #include "AudioTrack.h"
 
-namespace wavetablesynthesizer {
+namespace udaw {
     class AudioPlayer;
 
     constexpr  auto sampleRate = 48000;

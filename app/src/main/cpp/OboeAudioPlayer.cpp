@@ -3,7 +3,7 @@
 
 using namespace oboe;
 
-namespace wavetablesynthesizer {
+namespace udaw {
 
     OboeAudioPlayer::OboeAudioPlayer(std::shared_ptr<AudioSource> source, int samplingRate)
             : _source{std::move(source)}, _samplingRate{samplingRate} {}

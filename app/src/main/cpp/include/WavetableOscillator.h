@@ -6,7 +6,7 @@
 #include "AdsrEnvelope.h"
 #include "Lfo.h"
 
-namespace  wavetablesynthesizer {
+namespace  udaw {
     class WavetableOscillator : public AudioSource {
     public:
         WavetableOscillator() = default;

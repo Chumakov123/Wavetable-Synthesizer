@@ -1,7 +1,7 @@
 #include "DrumSynth.h"
 #include <algorithm>
 
-namespace wavetablesynthesizer {
+namespace udaw {
 
     KickDrum::KickDrum(double sampleRate) : _sampleRate(sampleRate) {}
 

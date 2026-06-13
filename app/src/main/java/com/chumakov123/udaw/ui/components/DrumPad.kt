@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.components
+package com.chumakov123.udaw.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import com.chumakov123.udaw.MainViewModel
 
 @Composable
 fun DrumPad(
@@ -57,7 +57,7 @@ fun DrumPad(
 }
 
 @Composable
-fun DrumSection(viewModel: WavetableSynthesizerViewModel) {
+fun DrumSection(viewModel: MainViewModel) {
     Row(
         modifier = Modifier
             .fillMaxSize()

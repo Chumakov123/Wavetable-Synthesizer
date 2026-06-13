@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.components
+package com.chumakov123.udaw.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,10 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import com.chumakov123.udaw.MainViewModel
 
 @Composable
-fun FxControls(viewModel: WavetableSynthesizerViewModel) {
+fun FxControls(viewModel: MainViewModel) {
     val delayTime by viewModel.delayTime.observeAsState(0.5f)
     val delayFeedback by viewModel.delayFeedback.observeAsState(0.5f)
     val delayWet by viewModel.delayWet.observeAsState(0.0f)

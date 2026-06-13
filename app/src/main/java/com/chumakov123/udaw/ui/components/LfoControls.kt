@@ -1,4 +1,4 @@
-package com.chumakov123.wavetablesynthesizer.ui.components
+package com.chumakov123.udaw.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,12 +12,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
+import com.chumakov123.udaw.MainViewModel
 import java.util.Locale
 
 @Composable
 fun LfoControls(
-    synthesizerViewModel: WavetableSynthesizerViewModel,
+    synthesizerViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
     val rate = synthesizerViewModel.lfoRate.observeAsState(5.0f)
