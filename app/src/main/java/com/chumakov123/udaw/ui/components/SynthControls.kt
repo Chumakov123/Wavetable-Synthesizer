@@ -161,7 +161,9 @@ fun TransportControls(viewModel: MainViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 IconButton(onClick = {
-                    if (viewModel.projectName.value?.startsWith("untitled") == true) {
+                    if (viewModel.projectsFolderUri.value == null) {
+                        viewModel.showDialog(MainViewModel.DialogType.PROJECTS_FOLDER_REQUIRED)
+                    } else if (viewModel.projectName.value?.startsWith("untitled") == true) {
                         viewModel.showProjectNameDialog()
                     } else {
                         viewModel.saveProject(context)
@@ -169,7 +171,13 @@ fun TransportControls(viewModel: MainViewModel) {
                 }, modifier = Modifier.size(30.dp)) {
                     Icon(Icons.Default.FileUpload, null, Modifier.size(18.dp), tint = Color.Cyan)
                 }
-                IconButton(onClick = { viewModel.showDialog(MainViewModel.DialogType.PROJECT_LIST) }, modifier = Modifier.size(30.dp)) {
+                IconButton(onClick = {
+                    if (viewModel.projectsFolderUri.value == null) {
+                        viewModel.showDialog(MainViewModel.DialogType.PROJECTS_FOLDER_REQUIRED)
+                    } else {
+                        viewModel.showDialog(MainViewModel.DialogType.PROJECT_LIST)
+                    }
+                }, modifier = Modifier.size(30.dp)) {
                     Icon(Icons.Default.FileDownload, null, Modifier.size(18.dp), tint = Color.Magenta)
                 }
                 IconButton(onClick = { viewModel.renderToWav(context) }, modifier = Modifier.size(30.dp)) {
@@ -392,6 +400,22 @@ fun SynthDialogs(viewModel: MainViewModel) {
                 confirmButton = {},
                 dismissButton = {
                     TextButton(onClick = { viewModel.dismissDialog() }) { Text("Close") }
+                }
+            )
+        }
+        MainViewModel.DialogType.PROJECTS_FOLDER_REQUIRED -> {
+            AlertDialog(
+                onDismissRequest = { viewModel.dismissDialog() },
+                title = { Text("Projects Folder") },
+                text = { Text("Please select a folder where your projects will be saved.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        (context as? MainActivity)?.requestProjectsFolder()
+                        viewModel.dismissDialog()
+                    }) { Text("Select Folder") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { viewModel.dismissDialog() }) { Text("Cancel") }
                 }
             )
         }

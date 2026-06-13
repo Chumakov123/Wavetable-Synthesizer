@@ -1,21 +1,22 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ProGuard rules for U-DAW
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Oboe library (audio engine)
+-keep class com.google.oboe.** { *; }
+-dontwarn com.google.oboe.**
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep JNI methods
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep the NativeWavetableSynthesizer class and its members
+-keep class com.chumakov123.udaw.NativeWavetableSynthesizer { *; }
+
+# Kotlin Serialization (if used for complex data passing via JNI)
+-keepattributes *Annotation*, EnclosingMethod, Signature, InnerClasses
+-keep class kotlinx.serialization.json.** { *; }
+
+# General Native Support
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}

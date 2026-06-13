@@ -850,7 +850,7 @@ class MainViewModel : ViewModel() {
     private val _isDirty = MutableLiveData(false)
     val isDirty: LiveData<Boolean> = _isDirty
 
-    enum class DialogType { NONE, SAVE_CONFIRMATION, PROJECT_NAME, PROJECT_LIST, MIGRATION_REQUIRED, EXPORT_SETUP, RENDERING }
+    enum class DialogType { NONE, SAVE_CONFIRMATION, PROJECT_NAME, PROJECT_LIST, MIGRATION_REQUIRED, EXPORT_SETUP, RENDERING, PROJECTS_FOLDER_REQUIRED }
     private val _activeDialog = MutableLiveData(DialogType.NONE)
     val activeDialog: LiveData<DialogType> = _activeDialog
 
@@ -923,6 +923,7 @@ class MainViewModel : ViewModel() {
         prefs.edit { putString("projects_folder_uri", uri) }
         if (uri != null) {
             refreshProjectList(context)
+            migrateProjectsToExternal(context)
         }
     }
 
@@ -1114,6 +1115,11 @@ class MainViewModel : ViewModel() {
     }
 
     fun saveProject(context: Context, name: String? = null) {
+        if (_projectsFolderUri.value == null) {
+            _activeDialog.value = DialogType.PROJECTS_FOLDER_REQUIRED
+            return
+        }
+
         val finalName = name ?: _projectName.value ?: "untitled"
         if (_isDirty.value == false && name == null) {
             Log.d("SynthVM", "No changes to save")
