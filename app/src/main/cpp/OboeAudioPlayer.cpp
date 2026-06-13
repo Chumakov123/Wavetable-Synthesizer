@@ -6,7 +6,7 @@ using namespace oboe;
 namespace wavetablesynthesizer {
 
     OboeAudioPlayer::OboeAudioPlayer(std::shared_ptr<AudioSource> source, int samplingRate)
-        : _source{std::move(source)}, _samplingRate{samplingRate} {}
+            : _source{std::move(source)}, _samplingRate{samplingRate} {}
 
     OboeAudioPlayer::~OboeAudioPlayer() {
         OboeAudioPlayer::stop();
@@ -22,14 +22,15 @@ namespace wavetablesynthesizer {
         AudioStreamBuilder builder;
         const auto result =
                 builder.setPerformanceMode(PerformanceMode::LowLatency)
-                    ->setDirection(Direction::Output)
-                    ->setSampleRate(_samplingRate)
-                    ->setDataCallback(this)
-                    ->setSharingMode(SharingMode::Exclusive)
-                    ->setFormat(AudioFormat::Float)
-                    ->setChannelCount(channelCount)
-                    ->setSampleRateConversionQuality(SampleRateConversionQuality::Best)
-                    ->openStream(_stream);
+                        ->setDirection(Direction::Output)
+                        ->setSampleRate(_samplingRate)
+                        ->setDataCallback(this)
+                        ->setErrorCallback(this)
+                        ->setSharingMode(SharingMode::Exclusive)
+                        ->setFormat(AudioFormat::Float)
+                        ->setChannelCount(channelCount)
+                        ->setSampleRateConversionQuality(SampleRateConversionQuality::Best)
+                        ->openStream(_stream);
 
         if (result != Result::OK) {
             return static_cast<int32_t>(result);
@@ -47,6 +48,12 @@ namespace wavetablesynthesizer {
             _stream.reset();
         }
         _source->onPlaybackStopped();
+    }
+
+    void OboeAudioPlayer::onErrorAfterClose(oboe::AudioStream *audioStream, oboe::Result error) {
+        if (error == oboe::Result::ErrorDisconnected) {
+            play();
+        }
     }
 
     oboe::DataCallbackResult

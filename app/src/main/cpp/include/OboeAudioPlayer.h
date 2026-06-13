@@ -8,6 +8,7 @@ namespace  wavetablesynthesizer {
     class AudioSource;
 
     class OboeAudioPlayer : public oboe::AudioStreamDataCallback,
+                            public oboe::AudioStreamErrorCallback,
                             public AudioPlayer {
     public:
         static constexpr auto channelCount = oboe::ChannelCount::Mono;
@@ -21,6 +22,8 @@ namespace  wavetablesynthesizer {
         oboe::DataCallbackResult onAudioReady(oboe::AudioStream* audioStream,
                                               void* audioData,
                                               int32_t framesCount) override;
+
+        void onErrorAfterClose(oboe::AudioStream* audioStream, oboe::Result error) override;
     private:
         std::shared_ptr<AudioSource> _source;
         std::shared_ptr<oboe::AudioStream> _stream;
