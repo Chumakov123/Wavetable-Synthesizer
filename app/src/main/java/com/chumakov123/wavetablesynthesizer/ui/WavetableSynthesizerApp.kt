@@ -53,6 +53,7 @@ import com.chumakov123.wavetablesynthesizer.ui.components.PitchControl
 import com.chumakov123.wavetablesynthesizer.ui.components.PlayControl
 import com.chumakov123.wavetablesynthesizer.ui.components.PresetSelector
 import com.chumakov123.wavetablesynthesizer.ui.components.ProjectStatus
+import com.chumakov123.wavetablesynthesizer.ui.components.ScaleSelectionPanel
 import com.chumakov123.wavetablesynthesizer.ui.components.SynthDialogs
 import com.chumakov123.wavetablesynthesizer.ui.components.TrackSelector
 import com.chumakov123.wavetablesynthesizer.ui.components.TransportControls
@@ -177,6 +178,7 @@ fun WavetableSynthesizerApp(
                         WavetableSynthesizerViewModel.ControlPanelMode.ADSR -> AdsrControls(synthesizerViewModel)
                         WavetableSynthesizerViewModel.ControlPanelMode.LFO -> LfoControls(synthesizerViewModel)
                         WavetableSynthesizerViewModel.ControlPanelMode.FX -> FxControls(synthesizerViewModel)
+                        WavetableSynthesizerViewModel.ControlPanelMode.SCALE -> ScaleSelectionPanel(synthesizerViewModel)
                         WavetableSynthesizerViewModel.ControlPanelMode.GRID -> {
                             WavetableSelectionPanel(synthesizerViewModel)
                         }

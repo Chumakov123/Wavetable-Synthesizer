@@ -27,6 +27,9 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.chumakov123.wavetablesynthesizer.MusicTheory
+import com.chumakov123.wavetablesynthesizer.MusicalKey
+import com.chumakov123.wavetablesynthesizer.Scale
 import com.chumakov123.wavetablesynthesizer.WavetableSynthesizerViewModel
 import kotlin.math.pow
 
@@ -35,22 +38,43 @@ fun PianoKeyboard(synthesizerViewModel: WavetableSynthesizerViewModel) {
     val octave by synthesizerViewModel.octave.observeAsState(0)
     val multiplier = 2f.pow(octave)
 
-    val baseWhiteNotes = remember {
-        listOf(
-            "C" to 261.63f, "D" to 293.66f, "E" to 329.63f, "F" to 349.23f,
-            "G" to 392.00f, "A" to 440.00f, "B" to 493.88f,
-            "C2" to 523.25f, "D2" to 587.33f, "E2" to 659.25f, "F2" to 698.46f,
-            "G2" to 783.99f, "A2" to 880.00f, "B2" to 987.77f, "C3" to 1046.50f
-        )
+    val selectedScale by synthesizerViewModel.selectedScale.observeAsState(Scale.CHROMATIC)
+    val selectedKey by synthesizerViewModel.selectedKey.observeAsState(MusicalKey.C)
+
+    val isChromatic = selectedScale == Scale.CHROMATIC
+
+    val baseWhiteNotes = remember(selectedScale, selectedKey) {
+        if (isChromatic) {
+            listOf(
+                60 to 261.63f, 62 to 293.66f, 64 to 329.63f, 65 to 349.23f,
+                67 to 392.00f, 69 to 440.00f, 71 to 493.88f,
+                72 to 523.25f, 74 to 587.33f, 76 to 659.25f, 77 to 698.46f,
+                79 to 783.99f, 81 to 880.00f, 83 to 987.77f, 84 to 1046.50f
+            )
+        } else {
+            val notes = mutableListOf<Pair<Int, Float>>()
+            var currentMidi = 60 + selectedKey.semitonesFromC
+            while (notes.size < 15) {
+                if (MusicTheory.isNoteInScale(currentMidi, selectedKey, selectedScale)) {
+                    notes.add(currentMidi to MusicTheory.getFrequency(currentMidi))
+                }
+                currentMidi++
+            }
+            notes
+        }
     }
 
-    val baseBlackNotes = remember {
-        listOf(
-            ("C#" to 277.18f) to 0, ("D#" to 311.13f) to 1, ("F#" to 369.99f) to 3,
-            ("G#" to 415.30f) to 4, ("A#" to 466.16f) to 5,
-            ("C#2" to 554.37f) to 7, ("D#2" to 622.25f) to 8, ("F#2" to 739.99f) to 10,
-            ("G#2" to 830.61f) to 11, ("A#2" to 932.33f) to 12
-        )
+    val baseBlackNotes = remember(selectedScale, selectedKey) {
+        if (isChromatic) {
+            listOf(
+                (61 to 277.18f) to 0, (63 to 311.13f) to 1, (66 to 369.99f) to 3,
+                (68 to 415.30f) to 4, (70 to 466.16f) to 5,
+                (73 to 554.37f) to 7, (75 to 622.25f) to 8, (78 to 739.99f) to 10,
+                (80 to 830.61f) to 11, (82 to 932.33f) to 12
+            )
+        } else {
+            emptyList()
+        }
     }
 
     val activeNotes by synthesizerViewModel.activeNotes.observeAsState(emptySet())
@@ -85,7 +109,7 @@ fun PianoKeyboard(synthesizerViewModel: WavetableSynthesizerViewModel) {
 
         Box(modifier = Modifier
             .fillMaxSize()
-            .pointerInput(whiteKeyWidthPx, blackKeyWidthPx, blackKeyHeightPx) {
+            .pointerInput(whiteKeyWidthPx, blackKeyWidthPx, blackKeyHeightPx, baseWhiteNotes, baseBlackNotes) {
                 awaitEachGesture {
                     while (true) {
                         val event = awaitPointerEvent()
@@ -126,10 +150,11 @@ fun PianoKeyboard(synthesizerViewModel: WavetableSynthesizerViewModel) {
             }) {
             // Белые клавиши
             Row(modifier = Modifier.fillMaxSize()) {
-                baseWhiteNotes.forEach { (name, baseFreq) ->
+                baseWhiteNotes.forEach { (baseMidi, baseFreq) ->
+                    val actualMidi = baseMidi + octave * 12
                     val freq = baseFreq * multiplier
                     PianoKey(
-                        name = name,
+                        name = MusicTheory.getNoteName(actualMidi),
                         isActive = activeNotes.contains(freq),
                         color = Color.White,
                         activeColor = Color.Yellow,
@@ -144,10 +169,11 @@ fun PianoKeyboard(synthesizerViewModel: WavetableSynthesizerViewModel) {
 
             // Черные клавиши
             baseBlackNotes.forEach { (noteInfo, index) ->
-                val (name, baseFreq) = noteInfo
+                val (baseMidi, baseFreq) = noteInfo
+                val actualMidi = baseMidi + octave * 12
                 val freq = baseFreq * multiplier
                 PianoKey(
-                    name = name,
+                    name = MusicTheory.getNoteName(actualMidi),
                     isActive = activeNotes.contains(freq),
                     color = Color.Black,
                     activeColor = Color.Yellow,
@@ -166,8 +192,8 @@ private fun getFrequencyAt(
     whiteKeyWidth: Float,
     blackKeyWidth: Float,
     blackKeyHeight: Float,
-    whiteNotes: List<Pair<String, Float>>,
-    blackNotes: List<Pair<Pair<String, Float>, Int>>
+    whiteNotes: List<Pair<Int, Float>>,
+    blackNotes: List<Pair<Pair<Int, Float>, Int>>
 ): Float? {
     val x = position.x
     val y = position.y

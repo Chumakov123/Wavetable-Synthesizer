@@ -135,12 +135,18 @@ class WavetableSynthesizerViewModel : ViewModel() {
     private val _selectedPresetIndex = MutableLiveData(0)
     val selectedPresetIndex: LiveData<Int> = _selectedPresetIndex
 
-    enum class ControlPanelMode { WAVE, ADSR, LFO, FX, GRID }
+    enum class ControlPanelMode { WAVE, ADSR, LFO, FX, GRID, SCALE }
     private val _controlPanelMode = MutableLiveData(ControlPanelMode.WAVE)
     val controlPanelMode: LiveData<ControlPanelMode> = _controlPanelMode
 
     private val _octave = MutableLiveData(0)
     val octave: LiveData<Int> = _octave
+
+    private val _selectedScale = MutableLiveData(Scale.CHROMATIC)
+    val selectedScale: LiveData<Scale> = _selectedScale
+
+    private val _selectedKey = MutableLiveData(MusicalKey.C)
+    val selectedKey: LiveData<MusicalKey> = _selectedKey
 
     private val _attack = MutableLiveData(0.01f)
     val attack: LiveData<Float> = _attack
@@ -209,7 +215,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
         val vocalTrackPath: String? = null,
         val isVocalTrackEnabled: Boolean = true,
         val vocalTrackOffset: Float = 0f,
-        val vocalTrackVolume: Float = 0f
+        val vocalTrackVolume: Float = 0f,
+        val selectedScale: Scale = Scale.CHROMATIC,
+        val selectedKey: MusicalKey = MusicalKey.C
     )
     
     private val trackStates = Array(4) { TrackState() }
@@ -303,6 +311,14 @@ class WavetableSynthesizerViewModel : ViewModel() {
 
     fun setOctave(octave: Int) {
         _octave.value = octave
+    }
+
+    fun setScale(scale: Scale) {
+        _selectedScale.value = scale
+    }
+
+    fun setSelectedKey(key: MusicalKey) {
+        _selectedKey.value = key
     }
 
     fun setAttack(time: Float) {
@@ -869,6 +885,8 @@ class WavetableSynthesizerViewModel : ViewModel() {
         _activePattern.value = 0
         _playlist.value = emptyList()
         _currentPlaylistIndex.value = 0
+        _selectedScale.value = Scale.CHROMATIC
+        _selectedKey.value = MusicalKey.C
         
         viewModelScope.launch {
             wavetableSynthesizer?.clearAllPatterns()
@@ -1120,7 +1138,9 @@ class WavetableSynthesizerViewModel : ViewModel() {
                 vocalTrackPath = _vocalTrackPath.value,
                 isVocalTrackEnabled = _isVocalTrackEnabled.value ?: true,
                 vocalTrackOffset = _vocalTrackOffset.value ?: 0f,
-                vocalTrackVolume = _vocalTrackVolume.value ?: 0f
+                vocalTrackVolume = _vocalTrackVolume.value ?: 0f,
+                selectedScale = _selectedScale.value ?: Scale.CHROMATIC,
+                selectedKey = _selectedKey.value ?: MusicalKey.C
             )
 
             val jsonString = Json.encodeToString(projectData)
@@ -1207,6 +1227,8 @@ class WavetableSynthesizerViewModel : ViewModel() {
                 _isVocalTrackEnabled.value = projectData.isVocalTrackEnabled
                 _vocalTrackOffset.value = projectData.vocalTrackOffset
                 _vocalTrackVolume.value = projectData.vocalTrackVolume
+                _selectedScale.value = projectData.selectedScale
+                _selectedKey.value = projectData.selectedKey
 
                 projectData.tracks.forEachIndexed { i, state ->
                     if (i < trackStates.size) {
